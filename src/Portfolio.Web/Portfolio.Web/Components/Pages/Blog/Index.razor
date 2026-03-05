@@ -3,12 +3,14 @@
 
 <PageTitle>Blog | David Buckley</PageTitle>
 
-<MudText Typo="Typo.h3" Class="mb-2 fw-bold">Blog</MudText>
-<MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mb-2">
-    Thoughts on AI development, application security, and .NET from someone who has been building software since 1994.
-</MudText>
-<MudDivider Class="mb-8" />
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Typo="Typo.h3" Class="fw-bold mb-1">Blog</MudText>
+        <MudText Typo="Typo.subtitle1">Thoughts on AI development, application security, and .NET from someone who has been building software since 1994.</MudText>
+    </MudContainer>
+</div>
 
+<div class="page-content">
 <MudGrid>
     @foreach (var post in BlogService.GetAllPosts())
     {
@@ -57,6 +59,7 @@
         </MudItem>
     }
 </MudGrid>
+</div>
 
 @code {
     private Color GetCategoryColor(string category) => category switch
@@ -67,3 +70,4 @@
         _ => Color.Default
     };
 }
+

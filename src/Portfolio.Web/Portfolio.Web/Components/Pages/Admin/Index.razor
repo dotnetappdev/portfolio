@@ -8,12 +8,21 @@
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-2 fw-bold">
-    <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
-    Admin Dashboard
-</MudText>
-<MudDivider Class="mb-6" />
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudAvatar Color="Color.Primary" Size="Size.Large" Style="background:rgba(196,181,253,0.15);">
+                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Style="font-size:32px;" />
+            </MudAvatar>
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h4" Class="fw-bold">Admin Dashboard</MudText>
+                <MudText Typo="Typo.subtitle1">Manage users and portfolio settings</MudText>
+            </MudStack>
+        </MudStack>
+    </MudContainer>
+</div>
 
+<div class="page-content">
 <MudGrid>
     <MudItem xs="12" md="6">
         <MudCard Elevation="3">
@@ -93,6 +102,7 @@
         </MudCard>
     </MudItem>
 </MudGrid>
+</div>
 
 @code {
     private MudForm _form = null!;
@@ -142,3 +152,4 @@
         }
     }
 }
+

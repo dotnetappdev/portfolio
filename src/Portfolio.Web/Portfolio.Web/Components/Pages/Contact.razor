@@ -5,14 +5,16 @@
 
 <PageTitle>Contact | David Buckley</PageTitle>
 
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Typo="Typo.h3" Class="fw-bold mb-1">Get In Touch</MudText>
+        <MudText Typo="Typo.subtitle1">I'm always open to discussing new opportunities, interesting projects, or just having a chat about technology.</MudText>
+    </MudContainer>
+</div>
+
+<div class="page-content">
 <MudGrid Justify="Justify.Center">
     <MudItem xs="12" md="8">
-        <MudText Typo="Typo.h3" Class="mb-2 fw-bold">Get In Touch</MudText>
-        <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mb-6">
-            I'm always open to discussing new opportunities, interesting projects, or just having a chat about technology.
-        </MudText>
-        <MudDivider Class="mb-6" />
-
         <MudCard Elevation="3">
             <MudCardContent>
                 <MudForm @ref="_form" @bind-IsValid="_isValid">
@@ -40,6 +42,7 @@
         </MudCard>
     </MudItem>
 </MudGrid>
+</div>
 
 @code {
     private MudForm _form = null!;
@@ -68,3 +71,4 @@
         }
     }
 }
+

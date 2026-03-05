@@ -4,39 +4,43 @@
 
 <PageTitle>David Buckley | AI & Security Engineer</PageTitle>
 
-<MudPaper Class="hero-section pa-12 mb-8" Elevation="0" Square="true">
-    <MudGrid Justify="Justify.Center">
-        <MudItem xs="12" md="8" Class="text-center">
-            <MudAvatar Style="width:120px;height:120px;margin:0 auto 24px;" Color="Color.Primary">
-                <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:80px;" />
-            </MudAvatar>
-            <MudText Typo="Typo.h2" Class="mb-2 fw-bold">David Buckley</MudText>
-            <MudText Typo="Typo.h5" Color="Color.Secondary" Class="mb-3">
-                Senior Software Engineer &amp; AI Developer • 30 Years Experience
-            </MudText>
-            <MudStack Row="true" Justify="Justify.Center" Spacing="1" Class="mb-5">
-                <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Psychology">AI &amp; LLM Integration</MudChip>
-                <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Security">Application Security</MudChip>
-                <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Code">.NET &amp; C#</MudChip>
-            </MudStack>
-            <MudText Typo="Typo.body1" Class="mb-6" Style="max-width:640px;margin:0 auto;">
-                I build AI-driven chat assistants and secure software in .NET. From shipping conversational AI
-                that helps users get things done, to hardening APIs against real threats, I bring both sides
-                together so your product ships fast and stands up when it matters. Currently deepening my knowledge
-                across a wider range of LLMs — including Ollama, Claude, and Codex — to stay at the leading edge
-                of what is possible with AI in production.
-            </MudText>
-            <MudStack Row="true" Justify="Justify.Center" Spacing="2">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/projects" StartIcon="@Icons.Material.Filled.Apps">
-                    View My Work
-                </MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Href="/contact" StartIcon="@Icons.Material.Filled.Email">
-                    Get In Touch
-                </MudButton>
-            </MudStack>
-        </MudItem>
-    </MudGrid>
+<MudPaper Class="hero-section" Elevation="0" Square="true">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" md="8" Class="text-center">
+                <MudAvatar Style="width:120px;height:120px;margin:0 auto 24px;" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:80px;" />
+                </MudAvatar>
+                <MudText Typo="Typo.h2" Class="mb-2 fw-bold">David Buckley</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Secondary" Class="mb-3">
+                    Senior Software Engineer &amp; AI Developer • 30 Years Experience
+                </MudText>
+                <MudStack Row="true" Justify="Justify.Center" Spacing="1" Class="mb-5">
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Psychology">AI &amp; LLM Integration</MudChip>
+                    <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Security">Application Security</MudChip>
+                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Code">.NET &amp; C#</MudChip>
+                </MudStack>
+                <MudText Typo="Typo.body1" Class="mb-6" Style="max-width:640px;margin:0 auto;">
+                    I build AI-driven chat assistants and secure software in .NET. From shipping conversational AI
+                    that helps users get things done, to hardening APIs against real threats, I bring both sides
+                    together so your product ships fast and stands up when it matters. Currently deepening my knowledge
+                    across a wider range of LLMs — including Ollama, Claude, and Codex — to stay at the leading edge
+                    of what is possible with AI in production.
+                </MudText>
+                <MudStack Row="true" Justify="Justify.Center" Spacing="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/projects" StartIcon="@Icons.Material.Filled.Apps">
+                        View My Work
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Href="/contact" StartIcon="@Icons.Material.Filled.Email">
+                        Get In Touch
+                    </MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
 </MudPaper>
+
+<div class="page-content">
 
 <MudGrid Class="mb-8">
     <MudItem xs="12" sm="3">
@@ -183,6 +187,8 @@ else
         }
     </MudChipSet>
 </MudPaper>
+
+</div>
 
 @code {
     private List<Portfolio.Shared.Models.ProjectDto>? _projects;

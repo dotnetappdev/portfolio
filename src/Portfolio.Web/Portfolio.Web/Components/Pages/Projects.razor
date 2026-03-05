@@ -4,11 +4,14 @@
 
 <PageTitle>Projects | David Buckley</PageTitle>
 
-<MudText Typo="Typo.h3" Class="mb-2 fw-bold">My Projects</MudText>
-<MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mb-6">
-    A showcase of applications and systems I've designed and built over my career.
-</MudText>
-<MudDivider Class="mb-6" />
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Typo="Typo.h3" Class="fw-bold mb-1">My Projects</MudText>
+        <MudText Typo="Typo.subtitle1">A showcase of applications and systems I've designed and built over my career.</MudText>
+    </MudContainer>
+</div>
+
+<div class="page-content">
 
 @if (_projects == null)
 {
@@ -71,6 +74,8 @@ else
     </MudGrid>
 }
 
+</div>
+
 @code {
     private List<Portfolio.Shared.Models.ProjectDto>? _projects;
 
@@ -99,3 +104,4 @@ else
         _ => Icons.Material.Filled.Apps
     };
 }
+

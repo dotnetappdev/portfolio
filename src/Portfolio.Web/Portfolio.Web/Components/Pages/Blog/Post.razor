@@ -6,12 +6,15 @@
 
 @if (_post == null)
 {
-    <MudText Typo="Typo.h4" Class="mb-4">Post not found</MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/blog"
-               StartIcon="@Icons.Material.Filled.ArrowBack">Back to Blog</MudButton>
+    <div class="page-content">
+        <MudText Typo="Typo.h4" Class="mb-4">Post not found</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/blog"
+                   StartIcon="@Icons.Material.Filled.ArrowBack">Back to Blog</MudButton>
+    </div>
 }
 else
 {
+    <div class="page-content">
     <MudGrid Justify="Justify.Center">
         <MudItem xs="12" md="8">
             <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/blog"
@@ -99,6 +102,7 @@ else
             </MudGrid>
         </MudItem>
     </MudGrid>
+    </div>
 }
 
 @code {
