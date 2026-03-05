@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Portfolio.Shared.Models;
 using System.Net.Http.Json;
 
@@ -6,8 +7,13 @@ namespace Portfolio.Web.Services;
 public class PortfolioApiService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<PortfolioApiService> _logger;
 
-    public PortfolioApiService(HttpClient httpClient) => _httpClient = httpClient;
+    public PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiService> logger)
+    {
+        _httpClient = httpClient;
+        _logger = logger;
+    }
 
     public async Task<List<ProjectDto>> GetProjectsAsync()
     {
@@ -15,8 +21,14 @@ public class PortfolioApiService
         {
             return await _httpClient.GetFromJsonAsync<List<ProjectDto>>("api/projects") ?? new List<ProjectDto>();
         }
-        catch
+        catch (HttpRequestException ex)
         {
+            _logger.LogWarning(ex, "API unavailable when fetching projects. Using fallback data.");
+            return GetFallbackProjects();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching projects. Using fallback data.");
             return GetFallbackProjects();
         }
     }
@@ -27,8 +39,14 @@ public class PortfolioApiService
         {
             return await _httpClient.GetFromJsonAsync<List<SkillDto>>("api/skills") ?? new List<SkillDto>();
         }
-        catch
+        catch (HttpRequestException ex)
         {
+            _logger.LogWarning(ex, "API unavailable when fetching skills. Using fallback data.");
+            return GetFallbackSkills();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching skills. Using fallback data.");
             return GetFallbackSkills();
         }
     }
@@ -40,8 +58,14 @@ public class PortfolioApiService
             var response = await _httpClient.PostAsJsonAsync("api/contact", dto);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (HttpRequestException ex)
         {
+            _logger.LogWarning(ex, "API unavailable when sending contact message.");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error sending contact message.");
             return false;
         }
     }
