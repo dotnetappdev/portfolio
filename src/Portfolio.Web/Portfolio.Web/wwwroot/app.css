@@ -1,0 +1,101 @@
+/* ── Hero section ─────────────────────────────────────────── */
+.hero-section {
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+    color: white;
+    border-radius: 0 0 32px 32px;
+    min-height: 460px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 64px 0;
+}
+
+/* dark-mode hero — rich BookIt deep purples */
+:root[data-mud-theme="dark"] .hero-section,
+.dark .hero-section {
+    background: linear-gradient(135deg, #0F0A1E 0%, #1E0A3C 20%, #2D1B69 50%, #4C1D95 80%, #6D28D9 100%);
+}
+
+/* subtle radial glow overlay */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.12) 0%, transparent 65%),
+                radial-gradient(ellipse at 75% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.hero-section .mud-typography {
+    color: white !important;
+}
+
+/* ── Inner page banner ─────────────────────────────────────── */
+.page-banner {
+    background: linear-gradient(135deg, #4338CA 0%, #5B5BD6 55%, #7C3AED 100%);
+    padding: 52px 0 44px;
+    border-radius: 0 0 24px 24px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.page-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.10) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+:root[data-mud-theme="dark"] .page-banner,
+.dark .page-banner {
+    background: linear-gradient(135deg, #1A0A3E 0%, #2D1B69 45%, #4C1D95 100%);
+}
+
+.page-banner .mud-typography {
+    color: white !important;
+}
+
+/* ── Page content container ────────────────────────────────── */
+.page-content {
+    padding: 40px 24px 48px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── Typography helpers ───────────────────────────────────── */
+.fw-bold {
+    font-weight: 700 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* ── Card hover lift ──────────────────────────────────────── */
+.mud-card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.mud-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent) !important;
+}
+
+/* ── Dark mode card border accent ─────────────────────────── */
+:root[data-mud-theme="dark"] .mud-card,
+.dark .mud-card {
+    border: 1px solid rgba(196, 181, 253, 0.12);
+}
+
+/* ── Scrollbar (dark mode) ────────────────────────────────── */
+:root[data-mud-theme="dark"],
+.dark {
+    scrollbar-color: var(--mud-palette-primary) var(--mud-palette-background);
+    scrollbar-width: thin;
+}

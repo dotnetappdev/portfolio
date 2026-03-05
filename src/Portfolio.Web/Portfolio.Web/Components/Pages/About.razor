@@ -1,0 +1,126 @@
+@page "/about"
+
+<PageTitle>About | David Buckley</PageTitle>
+
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Typo="Typo.h3" Class="fw-bold mb-1">About Me</MudText>
+        <MudText Typo="Typo.subtitle1">Senior software engineer with 30 years building production systems across healthcare, finance, and enterprise.</MudText>
+    </MudContainer>
+</div>
+
+<div class="page-content">
+<MudGrid>
+    <MudItem xs="12" md="4">
+        <MudCard Elevation="3" Class="text-center pa-4">
+            <MudAvatar Style="width:150px;height:150px;margin:0 auto 16px;" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:100px;" />
+            </MudAvatar>
+            <MudText Typo="Typo.h5" Class="fw-bold">David Buckley</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Senior Software Engineer &amp; AI Developer</MudText>
+            <MudDivider Class="my-4" />
+            <MudStack Spacing="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Work" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">30+ Years Experience</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">United Kingdom</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Psychology" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">AI &amp; Security Specialist</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">Available for Opportunities</MudText>
+                </MudStack>
+            </MudStack>
+            <MudDivider Class="my-4" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Href="/contact">
+                Get In Touch
+            </MudButton>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="8">
+        <MudText Typo="Typo.body1" Class="mb-4">
+            I have been writing software professionally since 1994 and I still find it genuinely exciting.
+            Over three decades I have worked across desktop, web, mobile and cloud, but the last few years
+            have pulled me strongly toward two things that I think are shaping where software goes next:
+            artificial intelligence and application security.
+        </MudText>
+
+        <MudText Typo="Typo.body1" Class="mb-4">
+            On the AI side I build real production systems rather than proof of concept toys. I use Semantic
+            Kernel and Azure OpenAI to add intelligent features to .NET applications, things like AI chat
+            assistants, document summarisation, anomaly detection and smart search. I care about making AI
+            reliable and auditable because most of my work touches sectors like healthcare where a wrong
+            answer is not just annoying, it can cause harm.
+        </MudText>
+
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Security has been a growing focus for the same reason. Working on patient data systems forces
+            you to treat security as a first class concern rather than something you bolt on at the end.
+            I apply OWASP principles, model threats during design, and push for penetration testing before
+            go live rather than hoping nothing breaks. That mindset has saved real projects from real problems.
+        </MudText>
+
+        <MudText Typo="Typo.body1" Class="mb-6">
+            The foundation under all of this is the .NET ecosystem. C#, ASP.NET Core, Blazor, Entity Framework
+            Core, and .NET MAUI are the tools I reach for every day. I am on .NET 10 and I follow the platform
+            closely because knowing what is coming lets me make better architectural decisions now.
+        </MudText>
+
+        <MudText Typo="Typo.h5" Class="mb-3 fw-bold">Career Highlights</MudText>
+        <MudTimeline>
+            <MudTimelineItem Color="Color.Primary" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">AI Engineering and Security Focus</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">2022 to Present</MudText>
+                    <MudText Typo="Typo.body2">
+                        Shipping AI powered features into production .NET applications using Semantic Kernel,
+                        Azure OpenAI and RAG pipelines. Embedding security practices into every project from
+                        threat modelling and OWASP reviews to penetration testing and identity hardening.
+                        Delivering BookIt, Curo, Patient CRM and an AI diagnostic assistant.
+                    </MudText>
+                </ItemContent>
+            </MudTimelineItem>
+            <MudTimelineItem Color="Color.Secondary" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">Modern .NET and Cloud</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">2016 to 2022</MudText>
+                    <MudText Typo="Typo.body2">
+                        Deep dive into ASP.NET Core, Azure and microservices. Designed REST APIs and event
+                        driven architectures for enterprise clients. Started applying formal security reviews
+                        after a client security audit showed gaps that mattered.
+                    </MudText>
+                </ItemContent>
+            </MudTimelineItem>
+            <MudTimelineItem Color="Color.Tertiary" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">Enterprise .NET Development</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">2005 to 2016</MudText>
+                    <MudText Typo="Typo.body2">
+                        Senior developer across finance, retail and healthcare. WinForms, WPF, ASP.NET Web
+                        Forms, early MVC, SQL Server design and optimisation. This era taught me the importance
+                        of maintainable code because I was the one maintaining it five years later.
+                    </MudText>
+                </ItemContent>
+            </MudTimelineItem>
+            <MudTimelineItem Color="Color.Warning" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">Early Career</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">1994 to 2005</MudText>
+                    <MudText Typo="Typo.body2">
+                        Started with Visual Basic and early .NET Framework. Built desktop and database
+                        systems across several industries. Writing code for actual users from the very
+                        beginning shaped how I think about software even now.
+                    </MudText>
+                </ItemContent>
+            </MudTimelineItem>
+        </MudTimeline>
+    </MudItem>
+</MudGrid>
+</div>

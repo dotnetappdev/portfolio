@@ -1,0 +1,14 @@
+@page "/access-denied"
+
+<PageTitle>Access Denied</PageTitle>
+
+<MudGrid Justify="Justify.Center" Class="mt-12">
+    <MudItem xs="12" md="6" Class="text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Error" Style="font-size:80px;" />
+        <MudText Typo="Typo.h4" Class="mt-4 mb-2">Access Denied</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+            You don't have permission to access this page.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">Return Home</MudButton>
+    </MudItem>
+</MudGrid>

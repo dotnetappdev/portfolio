@@ -1,0 +1,129 @@
+@page "/blog/{Slug}"
+@using Portfolio.Web.Services
+@inject NavigationManager Navigation
+
+<PageTitle>@(_post?.Title ?? "Post Not Found") | David Buckley Blog</PageTitle>
+
+@if (_post == null)
+{
+    <div class="page-content">
+        <MudText Typo="Typo.h4" Class="mb-4">Post not found</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/blog"
+                   StartIcon="@Icons.Material.Filled.ArrowBack">Back to Blog</MudButton>
+    </div>
+}
+else
+{
+    <div class="page-content">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" md="8">
+            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/blog"
+                       StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-4">
+                Back to Blog
+            </MudButton>
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="1">
+                <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(_post.Category)"
+                         Variant="Variant.Filled">@_post.Category</MudChip>
+                @foreach (var tag in _post.Tags)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">@tag</MudChip>
+                }
+            </MudStack>
+
+            <MudText Typo="Typo.h3" Class="fw-bold mb-3">@_post.Title</MudText>
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-6" Spacing="3">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Secondary" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">David Buckley</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@_post.PublishedDate</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@_post.ReadMinutes min read</MudText>
+                </MudStack>
+            </MudStack>
+
+            <MudDivider Class="mb-6" />
+
+            <MudPaper Elevation="0" Class="pa-2">
+                @foreach (var paragraph in GetParagraphs(_post.Body))
+                {
+                    <MudText Typo="Typo.body1" Class="mb-5" Style="line-height:1.8;">@paragraph</MudText>
+                }
+            </MudPaper>
+
+            <MudDivider Class="mt-8 mb-6" />
+
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudAvatar Color="Color.Primary" Size="Size.Large">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                    </MudAvatar>
+                    <MudStack Spacing="0" Class="ml-3">
+                        <MudText Typo="Typo.h6" Class="fw-bold">David Buckley</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Senior Software Engineer &amp; AI Developer</MudText>
+                    </MudStack>
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="mb-3">
+                    30 years building .NET software. Currently focused on AI integration and application security.
+                    Hire me and I will bring both to your team.
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/contact"
+                           StartIcon="@Icons.Material.Filled.Email" Size="Size.Small">
+                    Get In Touch
+                </MudButton>
+            </MudPaper>
+
+            <MudDivider Class="mt-8 mb-4" />
+            <MudText Typo="Typo.h5" Class="mb-4 fw-bold">More Posts</MudText>
+            <MudGrid>
+                @foreach (var related in BlogService.GetAllPosts().Where(p => p.Slug != _post.Slug).Take(2))
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudCard Elevation="2">
+                            <MudCardContent>
+                                <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(related.Category)"
+                                         Variant="Variant.Filled" Class="mb-2">@related.Category</MudChip>
+                                <MudText Typo="Typo.h6" Class="fw-bold mb-2">@related.Title</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@related.Summary</MudText>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                           Href="@($"/blog/{related.Slug}")">Read Post</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = string.Empty;
+    private BlogPost? _post;
+
+    protected override void OnParametersSet()
+    {
+        _post = BlogService.GetBySlug(Slug);
+    }
+
+    private static IEnumerable<string> GetParagraphs(string body) =>
+        body.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Trim())
+            .Where(p => p.Length > 0);
+
+    private Color GetCategoryColor(string category) => category switch
+    {
+        "AI" => Color.Tertiary,
+        "Security" => Color.Error,
+        ".NET" => Color.Primary,
+        _ => Color.Default
+    };
+}

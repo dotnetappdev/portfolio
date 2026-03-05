@@ -1,0 +1,107 @@
+@page "/projects"
+@rendermode InteractiveServer
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
+
+<PageTitle>Projects | David Buckley</PageTitle>
+
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Typo="Typo.h3" Class="fw-bold mb-1">My Projects</MudText>
+        <MudText Typo="Typo.subtitle1">A showcase of applications and systems I've designed and built over my career.</MudText>
+    </MudContainer>
+</div>
+
+<div class="page-content">
+
+@if (_projects == null)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid>
+        @foreach (var project in _projects)
+        {
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3" Style="height:100%;">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="@GetProjectColor(project.Category)" Size="Size.Large">
+                                <MudIcon Icon="@GetProjectIcon(project.Category)" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h5">@project.Title</MudText>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">@project.Category</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            @if (project.IsFeatured)
+                            {
+                                <MudChip T="string" Color="Color.Warning" Size="Size.Small">Featured</MudChip>
+                            }
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1" Class="mb-4">@project.Description</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Technologies Used:</MudText>
+                        <MudChipSet T="string">
+                            @foreach (var tech in project.TechStack.Split(','))
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@tech.Trim()</MudChip>
+                            }
+                        </MudChipSet>
+                    </MudCardContent>
+                    @if (project.GitHubUrl != null || project.LiveUrl != null)
+                    {
+                        <MudCardActions>
+                            @if (project.GitHubUrl != null)
+                            {
+                                <MudButton Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Custom.Brands.GitHub" Href="@project.GitHubUrl" Target="_blank">
+                                    GitHub
+                                </MudButton>
+                            }
+                            @if (project.LiveUrl != null)
+                            {
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Launch" Href="@project.LiveUrl" Target="_blank">
+                                    Live Demo
+                                </MudButton>
+                            }
+                        </MudCardActions>
+                    }
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+</div>
+
+@code {
+    private List<Portfolio.Shared.Models.ProjectDto>? _projects;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _projects = await ApiService.GetProjectsAsync();
+    }
+
+    private Color GetProjectColor(string category) => category switch
+    {
+        "Healthcare" => Color.Error,
+        "Mobile Application" => Color.Secondary,
+        "Web Application" => Color.Primary,
+        "AI" => Color.Tertiary,
+        "Security" => Color.Warning,
+        _ => Color.Tertiary
+    };
+
+    private string GetProjectIcon(string category) => category switch
+    {
+        "Healthcare" => Icons.Material.Filled.LocalHospital,
+        "Mobile Application" => Icons.Material.Filled.PhoneAndroid,
+        "Web Application" => Icons.Material.Filled.Web,
+        "AI" => Icons.Material.Filled.Psychology,
+        "Security" => Icons.Material.Filled.Security,
+        _ => Icons.Material.Filled.Apps
+    };
+}
+

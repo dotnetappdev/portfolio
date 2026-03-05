@@ -1,0 +1,72 @@
+@page "/login"
+@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inject IAntiforgery Antiforgery
+
+<PageTitle>Login | David Buckley Portfolio</PageTitle>
+
+@{
+    var queryParams = QueryHelpers.ParseQuery(new Uri(NavigationManager.Uri).Query);
+    var errorParam = queryParams.TryGetValue("error", out var ev) ? ev.ToString() : null;
+    var returnUrlParam = queryParams.TryGetValue("returnUrl", out var rv) ? rv.ToString() : "/admin";
+
+    AntiforgeryTokenSet? tokens = null;
+    if (HttpContext is not null)
+        tokens = Antiforgery.GetAndStoreTokens(HttpContext);
+}
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+}
+
+<MudGrid Justify="Justify.Center" Class="mt-8">
+    <MudItem xs="12" sm="8" md="5">
+        <MudCard Elevation="4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Class="text-center fw-bold">Admin Login</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center">
+                        Sign in to access the admin area
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (errorParam == "locked")
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">
+                        Account is locked due to multiple failed attempts. Please try again later.
+                    </MudAlert>
+                }
+                else if (errorParam == "invalid")
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">
+                        Invalid email or password.
+                    </MudAlert>
+                }
+                <form method="post" action="/account/login">
+                    @if (tokens is not null)
+                    {
+                        <input type="hidden" name="@tokens.FormFieldName" value="@tokens.RequestToken" />
+                    }
+                    <input type="hidden" name="returnUrl" value="@returnUrlParam" />
+                    <div class="mb-4">
+                        <label style="display:block;font-size:0.875rem;color:var(--mud-palette-text-secondary);margin-bottom:4px;">Email</label>
+                        <input type="email" name="email" required autocomplete="username"
+                               style="width:100%;padding:16px 14px;border:1px solid var(--mud-palette-lines-inputs);border-radius:4px;font-size:1rem;background:transparent;color:var(--mud-palette-text-primary);box-sizing:border-box;" />
+                    </div>
+                    <div class="mb-4">
+                        <label style="display:block;font-size:0.875rem;color:var(--mud-palette-text-secondary);margin-bottom:4px;">Password</label>
+                        <input type="password" name="password" required autocomplete="current-password"
+                               style="width:100%;padding:16px 14px;border:1px solid var(--mud-palette-lines-inputs);border-radius:4px;font-size:1rem;background:transparent;color:var(--mud-palette-text-primary);box-sizing:border-box;" />
+                    </div>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                               Size="Size.Large" ButtonType="ButtonType.Submit"
+                               StartIcon="@Icons.Material.Filled.Login">
+                        Sign In
+                    </MudButton>
+                </form>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>

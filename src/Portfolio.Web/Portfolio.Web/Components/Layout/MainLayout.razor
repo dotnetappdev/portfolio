@@ -1,0 +1,129 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-2 cursor-pointer" @onclick='() => Navigation.NavigateTo("/")'>
+            David Buckley
+        </MudText>
+        <MudSpacer />
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudButton Color="Color.Inherit" Href="/">Home</MudButton>
+            <MudButton Color="Color.Inherit" Href="/projects">Projects</MudButton>
+            <MudButton Color="Color.Inherit" Href="/skills">Skills</MudButton>
+            <MudButton Color="Color.Inherit" Href="/about">About</MudButton>
+            <MudButton Color="Color.Inherit" Href="/blog">Blog</MudButton>
+            <MudButton Color="Color.Inherit" Href="/contact">Contact</MudButton>
+        </MudHidden>
+        <MudTooltip Text="@(_isDarkMode ? "Switch to light mode" : "Switch to dark mode")" Placement="Placement.Bottom">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                           Color="Color.Inherit" OnClick="@ToggleDarkMode"
+                           aria-label="@(_isDarkMode ? "Switch to light mode" : "Switch to dark mode")" />
+        </MudTooltip>
+        <AuthorizeView>
+            <Authorized>
+                <MudButton Color="Color.Inherit" Href="/admin">Admin</MudButton>
+                <MudButton Color="Color.Inherit" Href="/logout">Logout</MudButton>
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Color="Color.Inherit" Href="/login">Login</MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <MudNavMenu>
+            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">Home</MudNavLink>
+            <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.Apps">Projects</MudNavLink>
+            <MudNavLink Href="/skills" Icon="@Icons.Material.Filled.Code">Skills</MudNavLink>
+            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Person">About</MudNavLink>
+            <MudNavLink Href="/blog" Icon="@Icons.Material.Filled.Article">Blog</MudNavLink>
+            <MudNavLink Href="/contact" Icon="@Icons.Material.Filled.Email">Contact</MudNavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <MudNavLink Href="/admin" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin</MudNavLink>
+                    <MudNavLink Href="/logout" Icon="@Icons.Material.Filled.Logout">Logout</MudNavLink>
+                </Authorized>
+            </AuthorizeView>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+<MudScrollToTop>
+    <MudFab Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" />
+</MudScrollToTop>
+
+@code {
+    private bool _isDarkMode = true;
+    private bool _drawerOpen = false;
+    private MudThemeProvider _mudThemeProvider = null!;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            // BookIt brand — indigo/violet primary, sky secondary, emerald tertiary
+            Primary = "#5B5BD6",
+            Secondary = "#0EA5E9",
+            Tertiary = "#10B981",
+            AppbarBackground = "#5B5BD6",
+            Background = "#F5F5FF",
+            Surface = "#FFFFFF",
+            DrawerBackground = "#F0F0FA",
+            DrawerText = "#1A1A3E",
+            TextPrimary = "#11111A",
+            TextSecondary = "#6B6B8C",
+            ActionDefault = "#9595A8",
+            Divider = "#E4E4F0",
+            LinesDefault = "#E4E4F0",
+            LinesInputs = "#C4C4D8",
+            TableLines = "#E4E4F0",
+            OverlayLight = "rgba(255,255,255,0.75)",
+        },
+        PaletteDark = new PaletteDark
+        {
+            // BookIt dark — rich purple backgrounds, bright violet accents
+            Primary = "#C4B5FD",
+            Secondary = "#67E8F9",
+            Tertiary = "#6EE7B7",
+            AppbarBackground = "#2D1B69",
+            Background = "#0F0A1E",
+            Surface = "#1E1335",
+            DrawerBackground = "#180E2C",
+            DrawerText = "#EDE9FE",
+            TextPrimary = "#F5F0FF",
+            TextSecondary = "#A78BFA",
+            ActionDefault = "#7C3AED",
+            Divider = "#3B2A6E",
+            LinesDefault = "#3B2A6E",
+            LinesInputs = "#4C3A82",
+            TableLines = "#3B2A6E",
+            OverlayDark = "rgba(0,0,0,0.75)",
+        }
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Respect the OS colour-scheme preference once the browser is available.
+            // _isDarkMode is already true so dark renders on the first paint;
+            // this then syncs to whatever the OS reports.
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleDarkMode() => _isDarkMode = !_isDarkMode;
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+}

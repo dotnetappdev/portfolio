@@ -1,0 +1,73 @@
+@page "/blog"
+@using Portfolio.Web.Services
+
+<PageTitle>Blog | David Buckley</PageTitle>
+
+<div class="page-banner">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudText Typo="Typo.h3" Class="fw-bold mb-1">Blog</MudText>
+        <MudText Typo="Typo.subtitle1">Thoughts on AI development, application security, and .NET from someone who has been building software since 1994.</MudText>
+    </MudContainer>
+</div>
+
+<div class="page-content">
+<MudGrid>
+    @foreach (var post in BlogService.GetAllPosts())
+    {
+        <MudItem xs="12">
+            <MudCard Elevation="2" Class="mb-2">
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" md="9">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2" Spacing="1">
+                                <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(post.Category)"
+                                         Variant="Variant.Filled">@post.Category</MudChip>
+                                @foreach (var tag in post.Tags.Take(3))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default"
+                                             Variant="Variant.Outlined">@tag</MudChip>
+                                }
+                            </MudStack>
+                            <MudLink Href="@($"/blog/{post.Slug}")" Typo="Typo.h5" Color="Color.Default"
+                                     Class="fw-bold mb-2" Style="text-decoration:none;">
+                                @post.Title
+                            </MudLink>
+                            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mt-2 mb-3">
+                                @post.Summary
+                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@post.PublishedDate</MudText>
+                                </MudStack>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@post.ReadMinutes min read</MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" md="3" Class="d-flex align-end justify-end">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                       Href="@($"/blog/{post.Slug}")"
+                                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                                Read Post
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+</div>
+
+@code {
+    private Color GetCategoryColor(string category) => category switch
+    {
+        "AI" => Color.Tertiary,
+        "Security" => Color.Error,
+        ".NET" => Color.Primary,
+        _ => Color.Default
+    };
+}
+
