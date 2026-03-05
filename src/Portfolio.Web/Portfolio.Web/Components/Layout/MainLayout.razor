@@ -21,8 +21,11 @@
             <MudButton Color="Color.Inherit" Href="/blog">Blog</MudButton>
             <MudButton Color="Color.Inherit" Href="/contact">Contact</MudButton>
         </MudHidden>
-        <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
-                       Color="Color.Inherit" OnClick="@ToggleDarkMode" />
+        <MudTooltip Text="@(_isDarkMode ? "Switch to light mode" : "Switch to dark mode")" Placement="Placement.Bottom">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                           Color="Color.Inherit" OnClick="@ToggleDarkMode"
+                           aria-label="@(_isDarkMode ? "Switch to light mode" : "Switch to dark mode")" />
+        </MudTooltip>
         <AuthorizeView>
             <Authorized>
                 <MudButton Color="Color.Inherit" Href="/admin">Admin</MudButton>
@@ -63,7 +66,7 @@
 </MudScrollToTop>
 
 @code {
-    private bool _isDarkMode = false;
+    private bool _isDarkMode = true;
     private bool _drawerOpen = false;
     private MudThemeProvider _mudThemeProvider = null!;
 
@@ -115,6 +118,9 @@
     {
         if (firstRender)
         {
+            // Respect the OS colour-scheme preference once the browser is available.
+            // _isDarkMode is already true so dark renders on the first paint;
+            // this then syncs to whatever the OS reports.
             _isDarkMode = await _mudThemeProvider.GetSystemPreference();
             StateHasChanged();
         }
