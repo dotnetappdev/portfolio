@@ -4,6 +4,7 @@ using MudBlazor.Services;
 using Portfolio.Web.Components;
 using Portfolio.Web.Data;
 using Portfolio.Web.Services;
+using Portfolio.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    DatabaseProviderFactory.ConfigureDbContext(options, builder.Configuration));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -60,7 +61,10 @@ else
 }
 
 app.UseStatusCodePagesWithReExecute("/not-found");
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
@@ -70,6 +74,23 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Portfolio.Web.Client._Imports).Assembly);
+
+// Proper HTTP endpoint for login — Blazor Server circuits cannot set cookies,
+// so authentication must go through a standard HTTP POST handler.
+app.MapPost("/account/login", async (
+    HttpContext httpContext,
+    SignInManager<ApplicationUser> signInManager,
+    [Microsoft.AspNetCore.Mvc.FromForm] string email,
+    [Microsoft.AspNetCore.Mvc.FromForm] string password,
+    [Microsoft.AspNetCore.Mvc.FromForm] string? returnUrl) =>
+{
+    var result = await signInManager.PasswordSignInAsync(email, password, isPersistent: false, lockoutOnFailure: true);
+    if (result.Succeeded)
+        return Results.Redirect(returnUrl ?? "/admin");
+    if (result.IsLockedOut)
+        return Results.Redirect($"/login?error=locked&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
+    return Results.Redirect($"/login?error=invalid&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
+}).DisableAntiforgery();
 
 app.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
 {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Data;
+using Portfolio.Api.Infrastructure;
 using Portfolio.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    DatabaseProviderFactory.ConfigureDbContext(options, builder.Configuration));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

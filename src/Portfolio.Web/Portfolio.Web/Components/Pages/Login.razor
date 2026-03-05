@@ -1,11 +1,14 @@
 @page "/login"
-@rendermode InteractiveServer
-@using Microsoft.AspNetCore.Identity
-@inject SignInManager<Portfolio.Web.Data.ApplicationUser> SignInManager
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
 
 <PageTitle>Login | David Buckley Portfolio</PageTitle>
+
+@{
+    var queryParams = QueryHelpers.ParseQuery(new Uri(NavigationManager.Uri).Query);
+    var errorParam = queryParams.TryGetValue("error", out var ev) ? ev.ToString() : null;
+    var returnUrlParam = queryParams.TryGetValue("returnUrl", out var rv) ? rv.ToString() : "/admin";
+}
 
 <MudGrid Justify="Justify.Center" Class="mt-8">
     <MudItem xs="12" sm="8" md="5">
@@ -19,67 +22,38 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudForm @ref="_form" @bind-IsValid="_isValid">
-                    <MudTextField @bind-Value="_email" Label="Email" Required="true"
-                                  RequiredError="Email is required" InputType="InputType.Email"
-                                  Variant="Variant.Outlined" Class="mb-4"
-                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
-                    <MudTextField @bind-Value="_password" Label="Password" Required="true"
-                                  RequiredError="Password is required"
-                                  InputType="@(_showPassword ? InputType.Text : InputType.Password)"
-                                  Variant="Variant.Outlined" Class="mb-4"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                  OnAdornmentClick="@(() => _showPassword = !_showPassword)" />
-                    @if (_errorMessage != null)
-                    {
-                        <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
-                    }
+                @if (errorParam == "locked")
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">
+                        Account is locked due to multiple failed attempts. Please try again later.
+                    </MudAlert>
+                }
+                else if (errorParam == "invalid")
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">
+                        Invalid email or password.
+                    </MudAlert>
+                }
+                <form method="post" action="/account/login">
+                    <input type="hidden" name="returnUrl" value="@returnUrlParam" />
+                    <div class="mb-4">
+                        <label style="display:block;font-size:0.875rem;color:var(--mud-palette-text-secondary);margin-bottom:4px;">Email</label>
+                        <input type="email" name="email" required autocomplete="username"
+                               style="width:100%;padding:16px 14px;border:1px solid var(--mud-palette-lines-inputs);border-radius:4px;font-size:1rem;background:transparent;color:var(--mud-palette-text-primary);box-sizing:border-box;" />
+                    </div>
+                    <div class="mb-4">
+                        <label style="display:block;font-size:0.875rem;color:var(--mud-palette-text-secondary);margin-bottom:4px;">Password</label>
+                        <input type="password" name="password" required autocomplete="current-password"
+                               style="width:100%;padding:16px 14px;border:1px solid var(--mud-palette-lines-inputs);border-radius:4px;font-size:1rem;background:transparent;color:var(--mud-palette-text-primary);box-sizing:border-box;" />
+                    </div>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                               Size="Size.Large" OnClick="@HandleLogin" Disabled="@_logging"
+                               Size="Size.Large" ButtonType="ButtonType.Submit"
                                StartIcon="@Icons.Material.Filled.Login">
-                        @(_logging ? "Signing In..." : "Sign In")
+                        Sign In
                     </MudButton>
-                </MudForm>
+                </form>
             </MudCardContent>
         </MudCard>
     </MudItem>
 </MudGrid>
 
-@code {
-    private MudForm _form = null!;
-    private bool _isValid;
-    private bool _logging;
-    private bool _showPassword;
-    private string _email = string.Empty;
-    private string _password = string.Empty;
-    private string? _errorMessage;
-
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
-
-    private async Task HandleLogin()
-    {
-        await _form.Validate();
-        if (!_isValid) return;
-
-        _logging = true;
-        _errorMessage = null;
-
-        var result = await SignInManager.PasswordSignInAsync(_email, _password, isPersistent: false, lockoutOnFailure: true);
-
-        if (result.Succeeded)
-        {
-            Navigation.NavigateTo(ReturnUrl ?? "/admin", forceLoad: true);
-        }
-        else if (result.IsLockedOut)
-        {
-            _errorMessage = "Account is locked due to multiple failed attempts. Please try again later.";
-        }
-        else
-        {
-            _errorMessage = "Invalid email or password.";
-        }
-        _logging = false;
-    }
-}
