@@ -1,0 +1,152 @@
+@page "/"
+@rendermode InteractiveServer
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
+
+<PageTitle>David Buckley | Senior Software Developer</PageTitle>
+
+<MudPaper Class="hero-section pa-12 mb-8" Elevation="0" Square="true">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" md="8" Class="text-center">
+            <MudAvatar Style="width:120px;height:120px;margin:0 auto 24px;" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:80px;" />
+            </MudAvatar>
+            <MudText Typo="Typo.h2" Class="mb-2 fw-bold">David Buckley</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Secondary" Class="mb-4">
+                Senior Software Developer • 30 Years Experience
+            </MudText>
+            <MudText Typo="Typo.body1" Class="mb-6" Style="max-width:600px;margin:0 auto;">
+                Passionate about crafting robust, scalable software solutions. Specialising in .NET, Blazor,
+                and modern web technologies that deliver real business value.
+            </MudText>
+            <MudStack Row="true" Justify="Justify.Center" Spacing="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/projects" StartIcon="@Icons.Material.Filled.Apps">
+                    View My Work
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Href="/contact" StartIcon="@Icons.Material.Filled.Email">
+                    Get In Touch
+                </MudButton>
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudGrid Class="mb-8">
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="pa-6 text-center" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" Style="font-size:48px;" />
+            <MudText Typo="Typo.h3" Class="mt-2 fw-bold">30+</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Years Experience</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="pa-6 text-center" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.Apps" Color="Color.Secondary" Style="font-size:48px;" />
+            <MudText Typo="Typo.h3" Class="mt-2 fw-bold">50+</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Projects Delivered</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="pa-6 text-center" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.Code" Color="Color.Tertiary" Style="font-size:48px;" />
+            <MudText Typo="Typo.h3" Class="mt-2 fw-bold">.NET 10</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Latest Technology</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.h4" Class="mb-2 fw-bold">Featured Projects</MudText>
+<MudDivider Class="mb-6" />
+
+@if (_projects == null)
+{
+    <MudGrid>
+        @for (int i = 0; i < 4; i++)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
+            </MudItem>
+        }
+    </MudGrid>
+}
+else
+{
+    <MudGrid>
+        @foreach (var project in _projects)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Style="height:100%;">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="@GetProjectColor(project.Category)">
+                                <MudIcon Icon="@GetProjectIcon(project.Category)" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">@project.Title</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@project.Category</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">@project.ShortDescription</MudText>
+                        <MudChipSet T="string" Class="mt-2">
+                            @foreach (var tech in project.TechStack.Split(',').Take(3))
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@tech.Trim()</MudChip>
+                            }
+                        </MudChipSet>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"/projects/{project.Id}")">
+                            Learn More
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+    <MudStack Row="true" Justify="Justify.Center" Class="mt-6">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/projects" EndIcon="@Icons.Material.Filled.ArrowForward">
+            View All Projects
+        </MudButton>
+    </MudStack>
+}
+
+<MudPaper Class="pa-8 mt-10 mb-8 text-center" Elevation="2">
+    <MudText Typo="Typo.h4" Class="mb-3 fw-bold">Core Technologies</MudText>
+    <MudChipSet T="string">
+        @foreach (var tech in _coreSkills)
+        {
+            <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@tech</MudChip>
+        }
+    </MudChipSet>
+</MudPaper>
+
+@code {
+    private List<Portfolio.Shared.Models.ProjectDto>? _projects;
+    
+    private readonly string[] _coreSkills = {
+        "C#", ".NET 10", "ASP.NET Core", "Blazor", ".NET MAUI",
+        "SQL Server", "Entity Framework Core", "REST APIs", "MudBlazor", "Azure"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _projects = await ApiService.GetProjectsAsync();
+    }
+
+    private Color GetProjectColor(string category) => category switch
+    {
+        "Healthcare" => Color.Error,
+        "Mobile Application" => Color.Secondary,
+        "Web Application" => Color.Primary,
+        _ => Color.Tertiary
+    };
+
+    private string GetProjectIcon(string category) => category switch
+    {
+        "Healthcare" => Icons.Material.Filled.LocalHospital,
+        "Mobile Application" => Icons.Material.Filled.PhoneAndroid,
+        "Web Application" => Icons.Material.Filled.Web,
+        _ => Icons.Material.Filled.Apps
+    };
+}

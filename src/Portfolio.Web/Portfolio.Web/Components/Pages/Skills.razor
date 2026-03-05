@@ -1,0 +1,63 @@
+@page "/skills"
+@rendermode InteractiveServer
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
+
+<PageTitle>Skills | David Buckley</PageTitle>
+
+<MudText Typo="Typo.h3" Class="mb-2 fw-bold">Technical Skills</MudText>
+<MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mb-6">
+    30 years of hands-on experience across the full software development stack.
+</MudText>
+<MudDivider Class="mb-6" />
+
+@if (_skillsByCategory == null)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid>
+        @foreach (var group in _skillsByCategory)
+        {
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">@group.Key</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @foreach (var skill in group.Value)
+                        {
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                                <MudText Style="min-width:180px;" Typo="Typo.body2">@skill.Name</MudText>
+                                <MudProgressLinear Color="@GetSkillColor(skill.Proficiency)" Value="@((double)skill.Proficiency)" Class="flex-grow-1" Rounded="true" Size="Size.Medium" />
+                                <MudText Typo="Typo.caption" Class="ml-2" Style="min-width:35px;">@skill.Proficiency%</MudText>
+                            </MudStack>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private Dictionary<string, List<Portfolio.Shared.Models.SkillDto>>? _skillsByCategory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var skills = await ApiService.GetSkillsAsync();
+        _skillsByCategory = skills
+            .GroupBy(s => s.Category)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+
+    private Color GetSkillColor(int proficiency) => proficiency switch
+    {
+        >= 90 => Color.Success,
+        >= 75 => Color.Primary,
+        >= 60 => Color.Info,
+        _ => Color.Warning
+    };
+}

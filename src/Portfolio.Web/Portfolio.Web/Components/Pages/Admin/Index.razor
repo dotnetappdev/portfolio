@@ -1,0 +1,144 @@
+@page "/admin"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<Portfolio.Web.Data.ApplicationUser> UserManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Admin | David Buckley Portfolio</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-2 fw-bold">
+    <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
+    Admin Dashboard
+</MudText>
+<MudDivider Class="mb-6" />
+
+<MudGrid>
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                        Create New Account
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudForm @ref="_form" @bind-IsValid="_isValid">
+                    <MudTextField @bind-Value="_newUser.Email" Label="Email Address" Required="true"
+                                  RequiredError="Email is required" InputType="InputType.Email"
+                                  Variant="Variant.Outlined" Class="mb-3" />
+                    <MudTextField @bind-Value="_firstName" Label="First Name"
+                                  Variant="Variant.Outlined" Class="mb-3" />
+                    <MudTextField @bind-Value="_lastName" Label="Last Name"
+                                  Variant="Variant.Outlined" Class="mb-3" />
+                    <MudTextField @bind-Value="_newUser.Password" Label="Password" Required="true"
+                                  RequiredError="Password is required"
+                                  InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined" Class="mb-3"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _showPassword = !_showPassword)"
+                                  HelperText="Min 8 chars, must include uppercase, number and special character" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               OnClick="@HandleCreateUser" Disabled="@_creating"
+                               StartIcon="@Icons.Material.Filled.PersonAdd">
+                        @(_creating ? "Creating..." : "Create Account")
+                    </MudButton>
+                </MudForm>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                        Existing Users
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (_users == null)
+                {
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                }
+                else
+                {
+                    <MudList T="string">
+                        @foreach (var user in _users)
+                        {
+                            <MudListItem>
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                    </MudAvatar>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2">@user.Email</MudText>
+                                        @if (!string.IsNullOrEmpty(user.FirstName))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@user.FirstName @user.LastName</MudText>
+                                        }
+                                    </MudStack>
+                                </MudStack>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private MudForm _form = null!;
+    private bool _isValid;
+    private bool _creating;
+    private bool _showPassword;
+    private string _firstName = string.Empty;
+    private string _lastName = string.Empty;
+    private Portfolio.Shared.Models.CreateUserDto _newUser = new();
+    private List<Portfolio.Web.Data.ApplicationUser>? _users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _users = await UserManager.Users.ToListAsync();
+    }
+
+    private async Task HandleCreateUser()
+    {
+        await _form.Validate();
+        if (!_isValid) return;
+
+        _creating = true;
+        var user = new Portfolio.Web.Data.ApplicationUser
+        {
+            UserName = _newUser.Email,
+            Email = _newUser.Email,
+            FirstName = _firstName,
+            LastName = _lastName,
+            EmailConfirmed = true
+        };
+
+        var result = await UserManager.CreateAsync(user, _newUser.Password);
+        _creating = false;
+
+        if (result.Succeeded)
+        {
+            Snackbar.Add($"Account created for {_newUser.Email}", Severity.Success);
+            _newUser = new Portfolio.Shared.Models.CreateUserDto();
+            _firstName = string.Empty;
+            _lastName = string.Empty;
+            _users = await UserManager.Users.ToListAsync();
+        }
+        else
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            Snackbar.Add($"Failed to create account: {errors}", Severity.Error);
+        }
+    }
+}

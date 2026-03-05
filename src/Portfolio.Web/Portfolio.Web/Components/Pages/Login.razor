@@ -1,0 +1,85 @@
+@page "/login"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<Portfolio.Web.Data.ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Login | David Buckley Portfolio</PageTitle>
+
+<MudGrid Justify="Justify.Center" Class="mt-8">
+    <MudItem xs="12" sm="8" md="5">
+        <MudCard Elevation="4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Class="text-center fw-bold">Admin Login</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center">
+                        Sign in to access the admin area
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudForm @ref="_form" @bind-IsValid="_isValid">
+                    <MudTextField @bind-Value="_email" Label="Email" Required="true"
+                                  RequiredError="Email is required" InputType="InputType.Email"
+                                  Variant="Variant.Outlined" Class="mb-4"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+                    <MudTextField @bind-Value="_password" Label="Password" Required="true"
+                                  RequiredError="Password is required"
+                                  InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined" Class="mb-4"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _showPassword = !_showPassword)" />
+                    @if (_errorMessage != null)
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+                    }
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                               Size="Size.Large" OnClick="@HandleLogin" Disabled="@_logging"
+                               StartIcon="@Icons.Material.Filled.Login">
+                        @(_logging ? "Signing In..." : "Sign In")
+                    </MudButton>
+                </MudForm>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private MudForm _form = null!;
+    private bool _isValid;
+    private bool _logging;
+    private bool _showPassword;
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private string? _errorMessage;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private async Task HandleLogin()
+    {
+        await _form.Validate();
+        if (!_isValid) return;
+
+        _logging = true;
+        _errorMessage = null;
+
+        var result = await SignInManager.PasswordSignInAsync(_email, _password, isPersistent: false, lockoutOnFailure: true);
+
+        if (result.Succeeded)
+        {
+            Navigation.NavigateTo(ReturnUrl ?? "/admin", forceLoad: true);
+        }
+        else if (result.IsLockedOut)
+        {
+            _errorMessage = "Account is locked due to multiple failed attempts. Please try again later.";
+        }
+        else
+        {
+            _errorMessage = "Invalid email or password.";
+        }
+        _logging = false;
+    }
+}

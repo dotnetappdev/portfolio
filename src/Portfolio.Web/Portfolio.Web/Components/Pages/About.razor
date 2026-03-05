@@ -1,0 +1,88 @@
+@page "/about"
+
+<PageTitle>About | David Buckley</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12" md="4">
+        <MudCard Elevation="3" Class="text-center pa-4">
+            <MudAvatar Style="width:150px;height:150px;margin:0 auto 16px;" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:100px;" />
+            </MudAvatar>
+            <MudText Typo="Typo.h5" Class="fw-bold">David Buckley</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Senior Software Developer</MudText>
+            <MudDivider Class="my-4" />
+            <MudStack Spacing="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Work" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">30+ Years Experience</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">United Kingdom</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">Available for Opportunities</MudText>
+                </MudStack>
+            </MudStack>
+            <MudDivider Class="my-4" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Href="/contact">
+                Get In Touch
+            </MudButton>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="8">
+        <MudText Typo="Typo.h3" Class="mb-4 fw-bold">About Me</MudText>
+        
+        <MudText Typo="Typo.body1" Class="mb-4">
+            With over 30 years of experience in software development, I've had the privilege of working 
+            across many industries and technologies — from early Windows desktop applications to modern 
+            cloud-native, cross-platform solutions.
+        </MudText>
+
+        <MudText Typo="Typo.body1" Class="mb-4">
+            My passion lies in building software that genuinely helps people and businesses. Whether it's 
+            a healthcare platform managing patient care, a booking system streamlining operations, or a 
+            mobile app reaching users on every device — I care about quality, performance, and user experience.
+        </MudText>
+
+        <MudText Typo="Typo.body1" Class="mb-6">
+            I specialise in the Microsoft .NET ecosystem, with deep expertise in ASP.NET Core, Blazor, 
+            .NET MAUI, SQL Server, and Entity Framework Core. I embrace modern practices including clean 
+            architecture, SOLID principles, and test-driven development.
+        </MudText>
+
+        <MudText Typo="Typo.h5" Class="mb-3 fw-bold">Career Highlights</MudText>
+        <MudTimeline>
+            <MudTimelineItem Color="Color.Primary" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">Modern .NET Era</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">2019 – Present</MudText>
+                    <MudText Typo="Typo.body2">Building modern Blazor web apps, .NET MAUI mobile applications, and microservices on .NET 6 through .NET 10. Delivering BookIt, Curo, MAUI App, and Patient CRM.</MudText>
+                </ItemContent>
+            </MudTimelineItem>
+            <MudTimelineItem Color="Color.Secondary" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">ASP.NET Core & Cloud</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">2016 – 2019</MudText>
+                    <MudText Typo="Typo.body2">Transitioned to ASP.NET Core and Azure cloud. Designed RESTful APIs and microservice architectures for enterprise clients.</MudText>
+                </ItemContent>
+            </MudTimelineItem>
+            <MudTimelineItem Color="Color.Tertiary" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">Enterprise .NET Development</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">2005 – 2016</MudText>
+                    <MudText Typo="Typo.body2">Senior developer roles in enterprise environments. WinForms, WPF, ASP.NET Web Forms and early MVC development. SQL Server database design and optimisation.</MudText>
+                </ItemContent>
+            </MudTimelineItem>
+            <MudTimelineItem Color="Color.Warning" Size="Size.Medium">
+                <ItemContent>
+                    <MudText Typo="Typo.h6">Early Career</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">1994 – 2005</MudText>
+                    <MudText Typo="Typo.body2">Started with Visual Basic and early .NET Framework. Built desktop applications and database systems for various industries.</MudText>
+                </ItemContent>
+            </MudTimelineItem>
+        </MudTimeline>
+    </MudItem>
+</MudGrid>
