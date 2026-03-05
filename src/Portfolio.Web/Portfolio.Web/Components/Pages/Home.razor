@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 @inject Portfolio.Web.Services.PortfolioApiService ApiService
 
-<PageTitle>David Buckley | Senior Software Developer</PageTitle>
+<PageTitle>David Buckley | AI & Security Engineer</PageTitle>
 
 <MudPaper Class="hero-section pa-12 mb-8" Elevation="0" Square="true">
     <MudGrid Justify="Justify.Center">
@@ -11,12 +11,18 @@
                 <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:80px;" />
             </MudAvatar>
             <MudText Typo="Typo.h2" Class="mb-2 fw-bold">David Buckley</MudText>
-            <MudText Typo="Typo.h5" Color="Color.Secondary" Class="mb-4">
-                Senior Software Developer • 30 Years Experience
+            <MudText Typo="Typo.h5" Color="Color.Secondary" Class="mb-3">
+                Senior Software Engineer &amp; AI Developer • 30 Years Experience
             </MudText>
-            <MudText Typo="Typo.body1" Class="mb-6" Style="max-width:600px;margin:0 auto;">
-                Passionate about crafting robust, scalable software solutions. Specialising in .NET, Blazor,
-                and modern web technologies that deliver real business value.
+            <MudStack Row="true" Justify="Justify.Center" Spacing="1" Class="mb-5">
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Psychology">AI &amp; LLM Integration</MudChip>
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Security">Application Security</MudChip>
+                <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small" Icon="@Icons.Material.Filled.Code">.NET &amp; C#</MudChip>
+            </MudStack>
+            <MudText Typo="Typo.body1" Class="mb-6" Style="max-width:640px;margin:0 auto;">
+                I build production AI systems and secure software in .NET. From integrating large language models
+                into enterprise apps to hardening APIs against real threats, I bring both sides together so your
+                product ships fast and stands up when it matters.
             </MudText>
             <MudStack Row="true" Justify="Justify.Center" Spacing="2">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Href="/projects" StartIcon="@Icons.Material.Filled.Apps">
@@ -31,25 +37,32 @@
 </MudPaper>
 
 <MudGrid Class="mb-8">
-    <MudItem xs="12" sm="4">
+    <MudItem xs="12" sm="3">
         <MudPaper Class="pa-6 text-center" Elevation="2">
             <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" Style="font-size:48px;" />
             <MudText Typo="Typo.h3" Class="mt-2 fw-bold">30+</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Years Experience</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Years in .NET</MudText>
         </MudPaper>
     </MudItem>
-    <MudItem xs="12" sm="4">
+    <MudItem xs="12" sm="3">
         <MudPaper Class="pa-6 text-center" Elevation="2">
-            <MudIcon Icon="@Icons.Material.Filled.Apps" Color="Color.Secondary" Style="font-size:48px;" />
+            <MudIcon Icon="@Icons.Material.Filled.Psychology" Color="Color.Secondary" Style="font-size:48px;" />
+            <MudText Typo="Typo.h3" Class="mt-2 fw-bold">AI</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">First Approach</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudPaper Class="pa-6 text-center" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Error" Style="font-size:48px;" />
+            <MudText Typo="Typo.h3" Class="mt-2 fw-bold">SecOps</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Security Built In</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudPaper Class="pa-6 text-center" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.Apps" Color="Color.Tertiary" Style="font-size:48px;" />
             <MudText Typo="Typo.h3" Class="mt-2 fw-bold">50+</MudText>
             <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Projects Delivered</MudText>
-        </MudPaper>
-    </MudItem>
-    <MudItem xs="12" sm="4">
-        <MudPaper Class="pa-6 text-center" Elevation="2">
-            <MudIcon Icon="@Icons.Material.Filled.Code" Color="Color.Tertiary" Style="font-size:48px;" />
-            <MudText Typo="Typo.h3" Class="mt-2 fw-bold">.NET 10</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Latest Technology</MudText>
         </MudPaper>
     </MudItem>
 </MudGrid>
@@ -71,7 +84,7 @@
 else
 {
     <MudGrid>
-        @foreach (var project in _projects)
+        @foreach (var project in _projects.Take(4))
         {
             <MudItem xs="12" sm="6" md="3">
                 <MudCard Elevation="3" Style="height:100%;">
@@ -111,7 +124,50 @@ else
     </MudStack>
 }
 
-<MudPaper Class="pa-8 mt-10 mb-8 text-center" Elevation="2">
+<MudGrid Class="mt-10 mb-8">
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-8" Elevation="2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.Psychology" Color="Color.Primary" Style="font-size:36px;" />
+                <MudText Typo="Typo.h5" Class="fw-bold ml-2">AI Development</MudText>
+            </MudStack>
+            <MudText Typo="Typo.body1" Class="mb-3">
+                I integrate AI where it actually adds value. That means Semantic Kernel, Azure OpenAI, RAG pipelines,
+                and .NET ML in production systems rather than demos. I have shipped AI assistants, document intelligence
+                features, and anomaly detection tools that real users rely on every day.
+            </MudText>
+            <MudChipSet T="string">
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">Semantic Kernel</MudChip>
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">Azure OpenAI</MudChip>
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">RAG</MudChip>
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">ML.NET</MudChip>
+                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">Vector Search</MudChip>
+            </MudChipSet>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-8" Elevation="2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Error" Style="font-size:36px;" />
+                <MudText Typo="Typo.h5" Class="fw-bold ml-2">Application Security</MudText>
+            </MudStack>
+            <MudText Typo="Typo.body1" Class="mb-3">
+                Security is not a checkbox at the end of a sprint. I build it into every layer from authentication
+                design and threat modelling to penetration testing and dependency audits. Healthcare and finance
+                projects have sharpened my instincts for what actually breaks in the wild.
+            </MudText>
+            <MudChipSet T="string">
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">OWASP</MudChip>
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">OAuth2 / OIDC</MudChip>
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">Threat Modelling</MudChip>
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">Pen Testing</MudChip>
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">ASP.NET Identity</MudChip>
+            </MudChipSet>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudPaper Class="pa-8 mb-8 text-center" Elevation="2">
     <MudText Typo="Typo.h4" Class="mb-3 fw-bold">Core Technologies</MudText>
     <MudChipSet T="string">
         @foreach (var tech in _coreSkills)
@@ -123,10 +179,11 @@ else
 
 @code {
     private List<Portfolio.Shared.Models.ProjectDto>? _projects;
-    
+
     private readonly string[] _coreSkills = {
-        "C#", ".NET 10", "ASP.NET Core", "Blazor", ".NET MAUI",
-        "SQL Server", "Entity Framework Core", "REST APIs", "MudBlazor", "Azure"
+        "C#", ".NET 10", "ASP.NET Core", "Blazor", "Semantic Kernel",
+        "Azure OpenAI", "SQL Server", "Entity Framework Core", "REST APIs",
+        "OAuth2", "OWASP", "MudBlazor", "Azure", ".NET MAUI"
     };
 
     protected override async Task OnInitializedAsync()
@@ -139,6 +196,8 @@ else
         "Healthcare" => Color.Error,
         "Mobile Application" => Color.Secondary,
         "Web Application" => Color.Primary,
+        "AI" => Color.Tertiary,
+        "Security" => Color.Warning,
         _ => Color.Tertiary
     };
 
@@ -147,6 +206,8 @@ else
         "Healthcare" => Icons.Material.Filled.LocalHospital,
         "Mobile Application" => Icons.Material.Filled.PhoneAndroid,
         "Web Application" => Icons.Material.Filled.Web,
+        "AI" => Icons.Material.Filled.Psychology,
+        "Security" => Icons.Material.Filled.Security,
         _ => Icons.Material.Filled.Apps
     };
 }

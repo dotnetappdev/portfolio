@@ -90,7 +90,7 @@ app.MapPost("/account/login", async (
     if (result.IsLockedOut)
         return Results.Redirect($"/login?error=locked&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
     return Results.Redirect($"/login?error=invalid&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
-}).DisableAntiforgery();
+});
 
 app.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
 {
