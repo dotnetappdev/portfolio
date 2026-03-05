@@ -1,21 +1,51 @@
-/* Hero section */
+/* ── Hero section ─────────────────────────────────────────── */
 .hero-section {
     background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
     color: white;
-    border-radius: 0 0 24px 24px;
-    min-height: 400px;
+    border-radius: 0 0 32px 32px;
+    min-height: 420px;
     display: flex;
     align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* subtle radial glow overlay */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.12) 0%, transparent 65%),
+                radial-gradient(ellipse at 75% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
 }
 
 .hero-section .mud-typography {
     color: white !important;
 }
 
+/* ── Typography helpers ───────────────────────────────────── */
 .fw-bold {
     font-weight: 700 !important;
 }
 
 .cursor-pointer {
     cursor: pointer;
+}
+
+/* ── Card hover lift ──────────────────────────────────────── */
+.mud-card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.mud-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent) !important;
+}
+
+/* ── Scrollbar (dark mode) ────────────────────────────────── */
+:root[data-mud-theme="dark"],
+.dark {
+    scrollbar-color: var(--mud-palette-primary) var(--mud-palette-background);
+    scrollbar-width: thin;
 }
