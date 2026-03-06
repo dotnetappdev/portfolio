@@ -127,6 +127,16 @@ public class ApplicationUser : IdentityUser
     public string? LastName { get; set; }
 }
 
+/// <summary>Admin-configurable general application settings (single row, Id = 1).</summary>
+public class AppSettings
+{
+    public int Id { get; set; }
+
+    /// <summary>Base URL of the Portfolio API used by PortfolioApiService (e.g. https://api.example.com/).</summary>
+    [MaxLength(500)]
+    public string? ApiBaseUrl { get; set; }
+}
+
 /// <summary>Admin-configurable SMS provider settings (single row, Id = 1).</summary>
 public class SmsSettings
 {
@@ -179,6 +189,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public DbSet<HeroStat> HeroStats => Set<HeroStat>();
+    public DbSet<AppSettings> AppSettings => Set<AppSettings>();
     public DbSet<SmsSettings> SmsSettings => Set<SmsSettings>();
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
     public DbSet<CmsPage> CmsPages => Set<CmsPage>();
@@ -198,6 +209,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // Seed a default (disabled) SMS settings row so the admin page always has a record
         builder.Entity<SmsSettings>().HasData(
             new SmsSettings { Id = 1, Provider = "None", IsEnabled = false }
+        );
+
+        // Seed a default app settings row
+        builder.Entity<AppSettings>().HasData(
+            new AppSettings { Id = 1, ApiBaseUrl = "https://localhost:7002/" }
         );
 
         // Seed default navigation menu items

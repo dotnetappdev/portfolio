@@ -39,10 +39,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-builder.Services.AddHttpClient<PortfolioApiService>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7002/");
-});
+// Named HTTP client for the Portfolio API — base URL is stored in AppSettings (DB)
+builder.Services.AddHttpClient("PortfolioApi");
 
 // Named HTTP clients for SMS providers
 builder.Services.AddHttpClient("Twilio");
@@ -53,6 +51,8 @@ builder.Services.AddScoped<SmsSender>();
 builder.Services.AddScoped<Portfolio.Web.Services.BlogService>();
 builder.Services.AddScoped<Portfolio.Web.Services.CmsPageService>();
 builder.Services.AddScoped<Portfolio.Web.Services.MenuService>();
+builder.Services.AddScoped<Portfolio.Web.Services.AppSettingsService>();
+builder.Services.AddScoped<Portfolio.Web.Services.PortfolioApiService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();

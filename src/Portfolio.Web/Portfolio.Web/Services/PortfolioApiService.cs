@@ -1,34 +1,48 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Portfolio.Shared.Models;
+using Portfolio.Web.Data;
 using System.Net.Http.Json;
 
 namespace Portfolio.Web.Services;
 
-public class PortfolioApiService
+public class PortfolioApiService(
+    IHttpClientFactory httpClientFactory,
+    ApplicationDbContext dbContext,
+    ILogger<PortfolioApiService> logger)
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<PortfolioApiService> _logger;
+    // Cached within the scoped lifetime (one per request) to avoid repeated DB hits
+    private string? _cachedBaseUrl;
 
-    public PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiService> logger)
+    /// <summary>Returns an HttpClient whose BaseAddress is resolved from the DB setting (cached per scope).</summary>
+    private async Task<HttpClient> GetClientAsync()
     {
-        _httpClient = httpClient;
-        _logger = logger;
+        if (_cachedBaseUrl == null)
+        {
+            var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
+            _cachedBaseUrl = settings?.ApiBaseUrl ?? "https://localhost:7002/";
+        }
+
+        var client = httpClientFactory.CreateClient("PortfolioApi");
+        client.BaseAddress = new Uri(_cachedBaseUrl.TrimEnd('/') + "/");
+        return client;
     }
 
     public async Task<List<ProjectDto>> GetProjectsAsync()
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<List<ProjectDto>>("api/projects") ?? new List<ProjectDto>();
+            var client = await GetClientAsync();
+            return await client.GetFromJsonAsync<List<ProjectDto>>("api/projects") ?? new List<ProjectDto>();
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "API unavailable when fetching projects. Using fallback data.");
+            logger.LogWarning(ex, "API unavailable when fetching projects. Using fallback data.");
             return GetFallbackProjects();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error fetching projects. Using fallback data.");
+            logger.LogError(ex, "Unexpected error fetching projects. Using fallback data.");
             return GetFallbackProjects();
         }
     }
@@ -37,16 +51,17 @@ public class PortfolioApiService
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<List<SkillDto>>("api/skills") ?? new List<SkillDto>();
+            var client = await GetClientAsync();
+            return await client.GetFromJsonAsync<List<SkillDto>>("api/skills") ?? new List<SkillDto>();
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "API unavailable when fetching skills. Using fallback data.");
+            logger.LogWarning(ex, "API unavailable when fetching skills. Using fallback data.");
             return GetFallbackSkills();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error fetching skills. Using fallback data.");
+            logger.LogError(ex, "Unexpected error fetching skills. Using fallback data.");
             return GetFallbackSkills();
         }
     }
@@ -55,17 +70,18 @@ public class PortfolioApiService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/contact", dto);
+            var client = await GetClientAsync();
+            var response = await client.PostAsJsonAsync("api/contact", dto);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "API unavailable when sending contact message.");
+            logger.LogWarning(ex, "API unavailable when sending contact message.");
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error sending contact message.");
+            logger.LogError(ex, "Unexpected error sending contact message.");
             return false;
         }
     }
