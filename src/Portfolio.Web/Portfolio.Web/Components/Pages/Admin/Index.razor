@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @inject UserManager<Portfolio.Web.Data.ApplicationUser> UserManager
+@inject Portfolio.Web.Data.ApplicationDbContext DbContext
 @inject ISnackbar Snackbar
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
@@ -16,95 +17,210 @@
             </MudAvatar>
             <MudStack Spacing="0">
                 <MudText Typo="Typo.h4" Class="fw-bold">Admin Dashboard</MudText>
-                <MudText Typo="Typo.subtitle1">Manage users and portfolio settings</MudText>
+                <MudText Typo="Typo.subtitle1">Manage users, hero stats and portfolio settings</MudText>
             </MudStack>
         </MudStack>
     </MudContainer>
 </div>
 
 <div class="page-content">
-<MudGrid>
-    <MudItem xs="12" md="6">
-        <MudCard Elevation="3">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">
-                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
-                        Create New Account
-                    </MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudForm @ref="_form" @bind-IsValid="_isValid">
-                    <MudTextField @bind-Value="_newUser.Email" Label="Email Address" Required="true"
-                                  RequiredError="Email is required" InputType="InputType.Email"
-                                  Variant="Variant.Outlined" Class="mb-3" />
-                    <MudTextField @bind-Value="_firstName" Label="First Name"
-                                  Variant="Variant.Outlined" Class="mb-3" />
-                    <MudTextField @bind-Value="_lastName" Label="Last Name"
-                                  Variant="Variant.Outlined" Class="mb-3" />
-                    <MudTextField @bind-Value="_newUser.Password" Label="Password" Required="true"
-                                  RequiredError="Password is required"
-                                  InputType="@(_showPassword ? InputType.Text : InputType.Password)"
-                                  Variant="Variant.Outlined" Class="mb-3"
-                                  Adornment="Adornment.End"
-                                  AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                  OnAdornmentClick="@(() => _showPassword = !_showPassword)"
-                                  HelperText="Min 8 chars, must include uppercase, number and special character" />
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                               OnClick="@HandleCreateUser" Disabled="@_creating"
-                               StartIcon="@Icons.Material.Filled.PersonAdd">
-                        @(_creating ? "Creating..." : "Create Account")
-                    </MudButton>
-                </MudForm>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
 
-    <MudItem xs="12" md="6">
-        <MudCard Elevation="3">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">
-                        <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
-                        Existing Users
-                    </MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                @if (_users == null)
-                {
-                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-                }
-                else
-                {
-                    <MudList T="string">
-                        @foreach (var user in _users)
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="mt-4">
+
+    <!-- ── Hero Stats tab ──────────────────────────────── -->
+    <MudTabPanel Text="Hero Stats" Icon="@Icons.Material.Filled.Dashboard">
+        <MudGrid Class="mt-4">
+            <MudItem xs="12" md="5">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@(_editingStat == null ? Icons.Material.Filled.AddChart : Icons.Material.Filled.Edit)" Class="mr-2" />
+                                @(_editingStat == null ? "Add New Stat Card" : "Edit Stat Card")
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudForm @ref="_statForm" @bind-IsValid="_statFormValid">
+                            <MudTextField @bind-Value="_statValue" Label="Value (e.g. 30+, AI, £1M+)"
+                                          Required="true" RequiredError="Value is required"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_statLabel" Label="Label (e.g. Years in .NET)"
+                                          Required="true" RequiredError="Label is required"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                            <MudSelect @bind-Value="_statColor" Label="Colour" Variant="Variant.Outlined" Class="mb-3">
+                                <MudSelectItem Value="@("Primary")">Primary (Violet)</MudSelectItem>
+                                <MudSelectItem Value="@("Secondary")">Secondary (Cyan)</MudSelectItem>
+                                <MudSelectItem Value="@("Tertiary")">Tertiary (Emerald)</MudSelectItem>
+                                <MudSelectItem Value="@("Error")">Error (Red)</MudSelectItem>
+                                <MudSelectItem Value="@("Success")">Success (Green)</MudSelectItem>
+                                <MudSelectItem Value="@("Warning")">Warning (Amber)</MudSelectItem>
+                            </MudSelect>
+                            <MudNumericField @bind-Value="_statSortOrder" Label="Sort Order"
+                                             Variant="Variant.Outlined" Class="mb-3" Min="1" />
+                        </MudForm>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@SaveStat" Disabled="@_savingStat"
+                                   StartIcon="@Icons.Material.Filled.Save">
+                            @(_savingStat ? "Saving..." : (_editingStat == null ? "Add Stat" : "Save Changes"))
+                        </MudButton>
+                        @if (_editingStat != null)
                         {
-                            <MudListItem>
-                                <MudStack Row="true" AlignItems="AlignItems.Center">
-                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                        <MudIcon Icon="@Icons.Material.Filled.Person" />
-                                    </MudAvatar>
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body2">@user.Email</MudText>
-                                        @if (!string.IsNullOrEmpty(user.FirstName))
-                                        {
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@user.FirstName @user.LastName</MudText>
-                                        }
-                                    </MudStack>
-                                </MudStack>
-                            </MudListItem>
+                            <MudButton Variant="Variant.Text" Color="Color.Default"
+                                       OnClick="@CancelEditStat" Class="ml-2">
+                                Cancel
+                            </MudButton>
                         }
-                    </MudList>
-                }
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-</MudGrid>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.ViewModule" Class="mr-2" />
+                                Current Stat Cards
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_heroStats == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else if (_heroStats.Count == 0)
+                        {
+                            <MudText Color="Color.Secondary">No stat cards yet. Add one using the form.</MudText>
+                        }
+                        else
+                        {
+                            <MudList T="string" Dense="true">
+                                @foreach (var stat in _heroStats.OrderBy(s => s.SortOrder))
+                                {
+                                    <MudListItem>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                <MudChip T="string" Color="@GetMudColor(stat.Color)" Size="Size.Small" Variant="Variant.Filled">
+                                                    @stat.Value
+                                                </MudChip>
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2">@stat.Label</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Order: @stat.SortOrder · @stat.Color</MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                            <MudStack Row="true" Spacing="0">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                               Size="Size.Small" Color="Color.Primary"
+                                                               OnClick="@(() => StartEditStat(stat))"
+                                                               aria-label="Edit stat card" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Size="Size.Small" Color="Color.Error"
+                                                               OnClick="@(() => DeleteStat(stat.Id))"
+                                                               aria-label="Delete stat card" />
+                                            </MudStack>
+                                        </MudStack>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <!-- ── Users tab ──────────────────────────────────── -->
+    <MudTabPanel Text="Users" Icon="@Icons.Material.Filled.People">
+        <MudGrid Class="mt-4">
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                                Create New Account
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudForm @ref="_form" @bind-IsValid="_isValid">
+                            <MudTextField @bind-Value="_newUser.Email" Label="Email Address" Required="true"
+                                          RequiredError="Email is required" InputType="InputType.Email"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_firstName" Label="First Name"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_lastName" Label="Last Name"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_newUser.Password" Label="Password" Required="true"
+                                          RequiredError="Password is required"
+                                          InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                          OnAdornmentClick="@(() => _showPassword = !_showPassword)"
+                                          HelperText="Min 8 chars, must include uppercase, number and special character" />
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="@HandleCreateUser" Disabled="@_creating"
+                                       StartIcon="@Icons.Material.Filled.PersonAdd">
+                                @(_creating ? "Creating..." : "Create Account")
+                            </MudButton>
+                        </MudForm>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                                Existing Users
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_users == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else
+                        {
+                            <MudList T="string">
+                                @foreach (var user in _users)
+                                {
+                                    <MudListItem>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                                            <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                                <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                            </MudAvatar>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2">@user.Email</MudText>
+                                                @if (!string.IsNullOrEmpty(user.FirstName))
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@user.FirstName @user.LastName</MudText>
+                                                }
+                                            </MudStack>
+                                        </MudStack>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+</MudTabs>
 </div>
 
 @code {
+    // ── Users ───────────────────────────────────────────────
     private MudForm _form = null!;
     private bool _isValid;
     private bool _creating;
@@ -114,11 +230,24 @@
     private Portfolio.Shared.Models.CreateUserDto _newUser = new();
     private List<Portfolio.Web.Data.ApplicationUser>? _users;
 
+    // ── Hero Stats ──────────────────────────────────────────
+    private MudForm _statForm = null!;
+    private bool _statFormValid;
+    private bool _savingStat;
+    private List<Portfolio.Web.Data.HeroStat>? _heroStats;
+    private Portfolio.Web.Data.HeroStat? _editingStat;
+    private string _statValue = string.Empty;
+    private string _statLabel = string.Empty;
+    private string _statColor = "Primary";
+    private int _statSortOrder = 1;
+
     protected override async Task OnInitializedAsync()
     {
         _users = await UserManager.Users.ToListAsync();
+        _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
     }
 
+    // ── User management ─────────────────────────────────────
     private async Task HandleCreateUser()
     {
         await _form.Validate();
@@ -151,5 +280,79 @@
             Snackbar.Add($"Failed to create account: {errors}", Severity.Error);
         }
     }
-}
 
+    // ── Hero Stat management ────────────────────────────────
+    private void StartEditStat(Portfolio.Web.Data.HeroStat stat)
+    {
+        _editingStat = stat;
+        _statValue = stat.Value;
+        _statLabel = stat.Label;
+        _statColor = stat.Color;
+        _statSortOrder = stat.SortOrder;
+    }
+
+    private void CancelEditStat()
+    {
+        _editingStat = null;
+        _statValue = string.Empty;
+        _statLabel = string.Empty;
+        _statColor = "Primary";
+        _statSortOrder = 1;
+    }
+
+    private async Task SaveStat()
+    {
+        await _statForm.Validate();
+        if (!_statFormValid) return;
+
+        _savingStat = true;
+
+        if (_editingStat != null)
+        {
+            _editingStat.Value = _statValue;
+            _editingStat.Label = _statLabel;
+            _editingStat.Color = _statColor;
+            _editingStat.SortOrder = _statSortOrder;
+            DbContext.HeroStats.Update(_editingStat);
+        }
+        else
+        {
+            var newStat = new Portfolio.Web.Data.HeroStat
+            {
+                Value = _statValue,
+                Label = _statLabel,
+                Color = _statColor,
+                SortOrder = _statSortOrder
+            };
+            DbContext.HeroStats.Add(newStat);
+        }
+
+        await DbContext.SaveChangesAsync();
+        _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        _savingStat = false;
+        CancelEditStat();
+        Snackbar.Add("Stat card saved successfully.", Severity.Success);
+    }
+
+    private async Task DeleteStat(int id)
+    {
+        var stat = await DbContext.HeroStats.FindAsync(id);
+        if (stat != null)
+        {
+            DbContext.HeroStats.Remove(stat);
+            await DbContext.SaveChangesAsync();
+            _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+            Snackbar.Add("Stat card deleted.", Severity.Info);
+        }
+    }
+
+    private Color GetMudColor(string colorName) => colorName switch
+    {
+        "Secondary" => Color.Secondary,
+        "Tertiary"  => Color.Tertiary,
+        "Error"     => Color.Error,
+        "Success"   => Color.Success,
+        "Warning"   => Color.Warning,
+        _           => Color.Primary
+    };
+}
