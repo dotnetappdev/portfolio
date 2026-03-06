@@ -37,6 +37,74 @@ public class BlogPost
     /// <summary>Returns individual tag strings trimmed of whitespace.</summary>
     public string[] TagList =>
         Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    // ── SEO ──────────────────────────────────────────────────────────────────
+    /// <summary>Overrides the browser tab title and og:title for this post.</summary>
+    [MaxLength(300)]
+    public string? MetaTitle { get; set; }
+
+    /// <summary>meta description and og:description for search engines.</summary>
+    [MaxLength(500)]
+    public string? MetaDescription { get; set; }
+
+    /// <summary>Open Graph image URL shown when shared on social media.</summary>
+    [MaxLength(500)]
+    public string? OgImage { get; set; }
+
+    /// <summary>Explicit canonical URL; if null the current request URL is used.</summary>
+    [MaxLength(500)]
+    public string? CanonicalUrl { get; set; }
+}
+
+/// <summary>An arbitrary CMS page with a custom slug and rich HTML content.</summary>
+public class CmsPage
+{
+    public int Id { get; set; }
+
+    [Required, MaxLength(300)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required, MaxLength(300)]
+    public string Slug { get; set; } = string.Empty;
+
+    /// <summary>HTML body produced by the WYSIWYG editor.</summary>
+    [Required]
+    public string Body { get; set; } = string.Empty;
+
+    public bool IsPublished { get; set; } = true;
+    public DateTime PublishedDate { get; set; } = DateTime.UtcNow;
+
+    // ── SEO ──────────────────────────────────────────────────────────────────
+    [MaxLength(300)]
+    public string? MetaTitle { get; set; }
+    [MaxLength(500)]
+    public string? MetaDescription { get; set; }
+    [MaxLength(500)]
+    public string? OgImage { get; set; }
+    [MaxLength(500)]
+    public string? CanonicalUrl { get; set; }
+}
+
+/// <summary>A navigation menu item stored in the database.</summary>
+public class MenuItem
+{
+    public int Id { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Label { get; set; } = string.Empty;
+
+    [Required, MaxLength(500)]
+    public string Url { get; set; } = string.Empty;
+
+    /// <summary>MUI icon name, e.g. "Home", "Article". Empty = no icon.</summary>
+    [MaxLength(100)]
+    public string Icon { get; set; } = string.Empty;
+
+    public int SortOrder { get; set; }
+    public bool IsVisible { get; set; } = true;
+
+    /// <summary>When true the link opens in a new browser tab.</summary>
+    public bool OpenInNewTab { get; set; }
 }
 
 public class ApplicationUser : IdentityUser
@@ -99,6 +167,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<HeroStat> HeroStats => Set<HeroStat>();
     public DbSet<SmsSettings> SmsSettings => Set<SmsSettings>();
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+    public DbSet<CmsPage> CmsPages => Set<CmsPage>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -114,6 +184,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // Seed a default (disabled) SMS settings row so the admin page always has a record
         builder.Entity<SmsSettings>().HasData(
             new SmsSettings { Id = 1, Provider = "None", IsEnabled = false }
+        );
+
+        // Seed default navigation menu items
+        builder.Entity<MenuItem>().HasData(
+            new MenuItem { Id = 1, Label = "Home",     Url = "/",         Icon = "Home",              SortOrder = 1,  IsVisible = true },
+            new MenuItem { Id = 2, Label = "Projects", Url = "/projects", Icon = "Apps",              SortOrder = 2,  IsVisible = true },
+            new MenuItem { Id = 3, Label = "Skills",   Url = "/skills",   Icon = "Code",              SortOrder = 3,  IsVisible = true },
+            new MenuItem { Id = 4, Label = "About",    Url = "/about",    Icon = "Person",            SortOrder = 4,  IsVisible = true },
+            new MenuItem { Id = 5, Label = "Blog",     Url = "/blog",     Icon = "Article",           SortOrder = 5,  IsVisible = true },
+            new MenuItem { Id = 6, Label = "Contact",  Url = "/contact",  Icon = "Email",             SortOrder = 6,  IsVisible = true }
         );
 
         // Seed initial blog posts migrated from the hardcoded BlogService
@@ -221,7 +301,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             new BlogPost
             {
                 Id = 3,
-                Slug = "what-thirty-years-of-csharp-taught-me-about-code-that-lasts",
+                Slug = "what-three-decades-of-software-development-taught-me-about-code-that-lasts",
                 Title = "What Three Decades of Software Development Taught Me About Writing Code That Lasts",
                 Summary = "I have maintained codebases I wrote fifteen years ago. That experience is humbling and instructive in ways that no architecture course ever was.",
                 Category = ".NET",

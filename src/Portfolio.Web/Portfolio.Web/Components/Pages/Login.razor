@@ -1,26 +1,20 @@
 @page "/login"
-@using Microsoft.AspNetCore.Antiforgery
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.Extensions.Configuration
 @inject NavigationManager NavigationManager
-@inject IAntiforgery Antiforgery
 @inject IConfiguration Config
 @inject IWebHostEnvironment Env
 
 <PageTitle>Login | David Buckley Portfolio</PageTitle>
 
 @{
-    var queryParams = QueryHelpers.ParseQuery(new Uri(NavigationManager.Uri).Query);
-    var errorParam = queryParams.TryGetValue("error", out var ev) ? ev.ToString() : null;
+    var queryParams    = QueryHelpers.ParseQuery(new Uri(NavigationManager.Uri).Query);
+    var errorParam     = queryParams.TryGetValue("error",     out var ev) ? ev.ToString() : null;
     var returnUrlParam = queryParams.TryGetValue("returnUrl", out var rv) ? rv.ToString() : "/admin";
 
-    AntiforgeryTokenSet? tokens = null;
-    if (HttpContext is not null)
-        tokens = Antiforgery.GetAndStoreTokens(HttpContext);
-
-    var isDev          = Env.IsDevelopment();
-    var hintEmail      = isDev ? (Config["DefaultAdmin:Email"]    ?? "admin@portfolio.com") : string.Empty;
-    var hintPassword   = isDev ? (Config["DefaultAdmin:Password"] ?? "Admin@123456!")       : string.Empty;
+    var isDev       = Env.IsDevelopment();
+    var hintEmail   = isDev ? (Config["DefaultAdmin:Email"]    ?? "admin@portfolio.com") : string.Empty;
+    var hintPassword = isDev ? (Config["DefaultAdmin:Password"] ?? "Admin@123456!")       : string.Empty;
 }
 
 @code {
@@ -62,10 +56,7 @@
                 }
 
                 <form method="post" action="/account/login">
-                    @if (tokens is not null)
-                    {
-                        <input type="hidden" name="@tokens.FormFieldName" value="@tokens.RequestToken" />
-                    }
+                    <AntiforgeryToken />
                     <input type="hidden" name="returnUrl" value="@returnUrlParam" />
                     <div class="mb-4">
                         <label style="display:block;font-size:0.875rem;color:var(--mud-palette-text-secondary);margin-bottom:4px;">Email</label>

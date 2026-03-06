@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@inject Portfolio.Web.Services.MenuService MenuService
 
 <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
 <MudPopoverProvider />
@@ -14,12 +15,17 @@
         </MudText>
         <MudSpacer />
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudButton Color="Color.Inherit" Href="/">Home</MudButton>
-            <MudButton Color="Color.Inherit" Href="/projects">Projects</MudButton>
-            <MudButton Color="Color.Inherit" Href="/skills">Skills</MudButton>
-            <MudButton Color="Color.Inherit" Href="/about">About</MudButton>
-            <MudButton Color="Color.Inherit" Href="/blog">Blog</MudButton>
-            <MudButton Color="Color.Inherit" Href="/contact">Contact</MudButton>
+            @foreach (var item in _menuItems)
+            {
+                @if (item.OpenInNewTab)
+                {
+                    <MudButton Color="Color.Inherit" Href="@item.Url" Target="_blank">@item.Label</MudButton>
+                }
+                else
+                {
+                    <MudButton Color="Color.Inherit" Href="@item.Url">@item.Label</MudButton>
+                }
+            }
         </MudHidden>
         <MudTooltip Text="@(_isDarkMode ? "Switch to light mode" : "Switch to dark mode")" Placement="Placement.Bottom">
             <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
@@ -39,12 +45,14 @@
 
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <MudNavMenu>
-            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">Home</MudNavLink>
-            <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.Apps">Projects</MudNavLink>
-            <MudNavLink Href="/skills" Icon="@Icons.Material.Filled.Code">Skills</MudNavLink>
-            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Person">About</MudNavLink>
-            <MudNavLink Href="/blog" Icon="@Icons.Material.Filled.Article">Blog</MudNavLink>
-            <MudNavLink Href="/contact" Icon="@Icons.Material.Filled.Email">Contact</MudNavLink>
+            @foreach (var item in _menuItems)
+            {
+                <MudNavLink Href="@item.Url"
+                            Icon="@GetMudIcon(item.Icon)"
+                            Target="@(item.OpenInNewTab ? "_blank" : "_self")">
+                    @item.Label
+                </MudNavLink>
+            }
             <AuthorizeView>
                 <Authorized>
                     <MudNavLink Href="/admin" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin</MudNavLink>
@@ -67,6 +75,31 @@
     private bool _isDarkMode = true;
     private bool _drawerOpen = false;
     private MudThemeProvider _mudThemeProvider = null!;
+    private List<Portfolio.Web.Data.MenuItem> _menuItems = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        // For static SSR pre-rendering: load synchronously so the nav is populated on first render.
+        // For interactive circuits (e.g. admin page): defer to OnAfterRenderAsync to avoid a
+        // race condition where the async yield interferes with MudPopoverProvider registration.
+        if (!RendererInfo.IsInteractive)
+            _menuItems = await MenuService.GetVisibleItemsAsync();
+    }
+
+    private static string GetMudIcon(string iconName) => iconName switch
+    {
+        "Home"               => Icons.Material.Filled.Home,
+        "Apps"               => Icons.Material.Filled.Apps,
+        "Code"               => Icons.Material.Filled.Code,
+        "Person"             => Icons.Material.Filled.Person,
+        "Article"            => Icons.Material.Filled.Article,
+        "Email"              => Icons.Material.Filled.Email,
+        "AdminPanelSettings" => Icons.Material.Filled.AdminPanelSettings,
+        "Link"               => Icons.Material.Filled.Link,
+        "Pages"              => Icons.Material.Filled.Pages,
+        "Description"        => Icons.Material.Filled.Description,
+        _                    => Icons.Material.Filled.NavigateNext,
+    };
 
     private readonly MudTheme _theme = new()
     {
@@ -116,6 +149,13 @@
     {
         if (firstRender)
         {
+            // Load DB menu items for interactive circuits without risking a race with
+            // MudPopoverProvider (which is why we do NOT do this in OnInitializedAsync).
+            if (RendererInfo.IsInteractive)
+            {
+                _menuItems = await MenuService.GetVisibleItemsAsync();
+            }
+
             // Dark mode is the portfolio default; intentionally not syncing to OS preference.
             await _mudThemeProvider.GetSystemPreference();
             StateHasChanged();

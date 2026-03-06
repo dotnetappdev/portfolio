@@ -3,10 +3,13 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using Portfolio.Web.Components.Shared
 @inject UserManager<Portfolio.Web.Data.ApplicationUser> UserManager
 @inject Portfolio.Web.Data.ApplicationDbContext DbContext
 @inject Portfolio.Web.Services.SmsSender SmsSender
 @inject Portfolio.Web.Services.BlogService BlogService
+@inject Portfolio.Web.Services.CmsPageService CmsPageService
+@inject Portfolio.Web.Services.MenuService MenuService
 @inject ISnackbar Snackbar
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
@@ -395,18 +398,46 @@
                                                      Variant="Variant.Outlined" Class="mb-3" Min="1" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudDatePicker @bind-Date="_postPublishedDate" Label="Published Date"
-                                                   Variant="Variant.Outlined" Class="mb-3" />
+                                    <MudTextField @bind-Value="_postPublishedDateStr" Label="Published Date"
+                                                  InputType="InputType.Date"
+                                                  Variant="Variant.Outlined" Class="mb-3" />
                                 </MudItem>
                                 <MudItem xs="12">
-                                    <MudTextField @bind-Value="_postBody" Label="Body" Required="true"
-                                                  RequiredError="Body is required"
-                                                  Variant="Variant.Outlined" Lines="12" Class="mb-3"
-                                                  HelperText="Each blank-line-separated paragraph will be rendered as its own block." />
+                                    <MudText Typo="Typo.subtitle2" Class="mb-2">Post Body</MudText>
+                                    <RichTextEditor @ref="_postBodyEditor" Placeholder="Write your post here..." />
                                 </MudItem>
                                 <MudItem xs="12">
                                     <MudSwitch @bind-Value="_postIsPublished" Label="Published"
                                                Color="Color.Success" />
+                                </MudItem>
+
+                                <!-- SEO section -->
+                                <MudItem xs="12">
+                                    <MudDivider Class="my-2" />
+                                    <MudText Typo="Typo.subtitle2" Class="mb-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Size="Size.Small" Class="mr-1" />
+                                        SEO &amp; Social
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_postMetaTitle" Label="Meta Title (overrides page title)"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="Leave blank to use the post title" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_postOgImage" Label="OG Image URL"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="Social share image (1200×630 recommended)" />
+                                </MudItem>
+                                <MudItem xs="12" md="8">
+                                    <MudTextField @bind-Value="_postMetaDescription" Label="Meta Description"
+                                                  Variant="Variant.Outlined" Lines="2" Class="mb-3"
+                                                  HelperText="Shown in search results. Leave blank to use the summary." />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_postCanonicalUrl" Label="Canonical URL"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="Leave blank to use the current URL" />
                                 </MudItem>
                             </MudGrid>
                         </MudForm>
@@ -505,6 +536,303 @@
         </MudGrid>
     </MudTabPanel>
 
+    <!-- ── Pages tab ──────────────────────────────────────── -->
+    <MudTabPanel Text="Pages" Icon="@Icons.Material.Filled.Pages">
+        <MudGrid Class="mt-4">
+
+            <!-- Form: create / edit -->
+            <MudItem xs="12">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@(_editingPage == null ? Icons.Material.Filled.Add : Icons.Material.Filled.Edit)" Class="mr-2" />
+                                @(_editingPage == null ? "New Page" : "Edit Page")
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudForm @ref="_pageForm" @bind-IsValid="_pageFormValid">
+                            <MudGrid>
+                                <MudItem xs="12" md="8">
+                                    <MudTextField @bind-Value="_pageTitle" Label="Page Title" Required="true"
+                                                  RequiredError="Title is required"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  OnBlur="@GeneratePageSlugFromTitle" />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_pageSlug" Label="Slug (URL path)" Required="true"
+                                                  RequiredError="Slug is required"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="e.g. my-custom-page → /my-custom-page" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.subtitle2" Class="mb-2">Page Content</MudText>
+                                    <RichTextEditor @ref="_pageBodyEditor" Placeholder="Write your page content here..." />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_pagePublishedDateStr" Label="Published Date"
+                                                  InputType="InputType.Date"
+                                                  Variant="Variant.Outlined" Class="mb-3 mt-3" />
+                                </MudItem>
+                                <MudItem xs="12" md="8" Class="d-flex align-end">
+                                    <MudSwitch @bind-Value="_pageIsPublished" Label="Published"
+                                               Color="Color.Success" Class="mb-3 mt-3" />
+                                </MudItem>
+
+                                <!-- SEO section -->
+                                <MudItem xs="12">
+                                    <MudDivider Class="my-2" />
+                                    <MudText Typo="Typo.subtitle2" Class="mb-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Size="Size.Small" Class="mr-1" />
+                                        SEO &amp; Social
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_pageMetaTitle" Label="Meta Title"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="Leave blank to use the page title" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_pageOgImage" Label="OG Image URL"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="Social share image (1200×630 recommended)" />
+                                </MudItem>
+                                <MudItem xs="12" md="8">
+                                    <MudTextField @bind-Value="_pageMetaDescription" Label="Meta Description"
+                                                  Variant="Variant.Outlined" Lines="2" Class="mb-3"
+                                                  HelperText="Shown in search results (150–160 characters)" />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_pageCanonicalUrl" Label="Canonical URL"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="Leave blank to use the current URL" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudForm>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@SavePage" Disabled="@_savingPage"
+                                   StartIcon="@Icons.Material.Filled.Save">
+                            @(_savingPage ? "Saving..." : (_editingPage == null ? "Create Page" : "Save Changes"))
+                        </MudButton>
+                        @if (_editingPage != null)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Default"
+                                       OnClick="@CancelEditPage" Class="ml-2">Cancel</MudButton>
+                        }
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <!-- Page list -->
+            <MudItem xs="12">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
+                                All Pages
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_cmsPages == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else if (_cmsPages.Count == 0)
+                        {
+                            <MudText Color="Color.Secondary">No pages yet. Create one using the form above.</MudText>
+                        }
+                        else
+                        {
+                            <MudTable Items="@_cmsPages" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                                <HeaderContent>
+                                    <MudTh>Title</MudTh>
+                                    <MudTh>URL Slug</MudTh>
+                                    <MudTh>Published</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Title">
+                                        <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="URL Slug">
+                                        <MudLink Href="@($"/{context.Slug}")"  Target="_blank" Typo="Typo.caption">
+                                            /@context.Slug
+                                        </MudLink>
+                                    </MudTd>
+                                    <MudTd DataLabel="Published">
+                                        <MudText Typo="Typo.body2">@context.PublishedDate.ToString("d MMM yyyy")</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Status">
+                                        @if (context.IsPublished)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Published</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Draft</MudChip>
+                                        }
+                                    </MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="0">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Size="Size.Small" Color="Color.Primary"
+                                                           OnClick="@(() => StartEditPage(context))"
+                                                           aria-label="Edit page" />
+                                            <MudIconButton Icon="@(context.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                                           Size="Size.Small" Color="Color.Secondary"
+                                                           OnClick="@(() => TogglePublishPage(context))"
+                                                           aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                           Size="Size.Small" Color="Color.Error"
+                                                           OnClick="@(() => DeletePage(context.Id))"
+                                                           aria-label="Delete page" />
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+        </MudGrid>
+    </MudTabPanel>
+
+    <!-- ── Menus tab ───────────────────────────────────────── -->
+    <MudTabPanel Text="Menus" Icon="@Icons.Material.Filled.Menu">
+        <MudGrid Class="mt-4">
+
+            <!-- Add / edit form -->
+            <MudItem xs="12" md="5">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@(_editingMenuItem == null ? Icons.Material.Filled.AddLink : Icons.Material.Filled.Edit)" Class="mr-2" />
+                                @(_editingMenuItem == null ? "Add Menu Item" : "Edit Menu Item")
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudForm @ref="_menuForm" @bind-IsValid="_menuFormValid">
+                            <MudTextField @bind-Value="_menuLabel" Label="Label" Required="true"
+                                          RequiredError="Label is required"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_menuUrl" Label="URL" Required="true"
+                                          RequiredError="URL is required"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          HelperText="Use /path for internal, https:// for external" />
+                            <MudSelect @bind-Value="_menuIcon" Label="Icon" Variant="Variant.Outlined" Class="mb-3">
+                                <MudSelectItem Value="@("NavigateNext")">Default arrow</MudSelectItem>
+                                <MudSelectItem Value="@("Home")">Home</MudSelectItem>
+                                <MudSelectItem Value="@("Apps")">Apps/Projects</MudSelectItem>
+                                <MudSelectItem Value="@("Code")">Code/Skills</MudSelectItem>
+                                <MudSelectItem Value="@("Person")">Person/About</MudSelectItem>
+                                <MudSelectItem Value="@("Article")">Article/Blog</MudSelectItem>
+                                <MudSelectItem Value="@("Email")">Email/Contact</MudSelectItem>
+                                <MudSelectItem Value="@("Pages")">Page</MudSelectItem>
+                                <MudSelectItem Value="@("Description")">Document</MudSelectItem>
+                                <MudSelectItem Value="@("Link")">External Link</MudSelectItem>
+                            </MudSelect>
+                            <MudNumericField @bind-Value="_menuSortOrder" Label="Sort Order"
+                                             Variant="Variant.Outlined" Class="mb-3" Min="1" />
+                            <MudSwitch @bind-Value="_menuIsVisible" Label="Visible in navigation"
+                                       Color="Color.Success" Class="mb-2" />
+                            <MudSwitch @bind-Value="_menuOpenInNewTab" Label="Open in new tab"
+                                       Color="Color.Info" />
+                        </MudForm>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@SaveMenuItem" Disabled="@_savingMenuItem"
+                                   StartIcon="@Icons.Material.Filled.Save">
+                            @(_savingMenuItem ? "Saving..." : (_editingMenuItem == null ? "Add Item" : "Save Changes"))
+                        </MudButton>
+                        @if (_editingMenuItem != null)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Default"
+                                       OnClick="@CancelEditMenuItem" Class="ml-2">Cancel</MudButton>
+                        }
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <!-- Menu item list -->
+            <MudItem xs="12" md="7">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
+                                Navigation Menu
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_menuItems == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else if (_menuItems.Count == 0)
+                        {
+                            <MudText Color="Color.Secondary">No menu items yet.</MudText>
+                        }
+                        else
+                        {
+                            <MudList T="string" Dense="true">
+                                @foreach (var item in _menuItems.OrderBy(m => m.SortOrder))
+                                {
+                                    <MudListItem>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary" Style="min-width:24px;">@item.SortOrder</MudText>
+                                                <MudStack Spacing="0">
+                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                        <MudText Typo="Typo.body2" Class="fw-bold">@item.Label</MudText>
+                                                        @if (!item.IsVisible)
+                                                        {
+                                                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">hidden</MudChip>
+                                                        }
+                                                        @if (item.OpenInNewTab)
+                                                        {
+                                                            <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Color="Color.Secondary" />
+                                                        }
+                                                    </MudStack>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Url</MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                            <MudStack Row="true" Spacing="0">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                               Size="Size.Small" Color="Color.Primary"
+                                                               OnClick="@(() => StartEditMenuItem(item))"
+                                                               aria-label="Edit menu item" />
+                                                <MudIconButton Icon="@(item.IsVisible ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                                               Size="Size.Small" Color="Color.Secondary"
+                                                               OnClick="@(() => ToggleMenuItemVisibility(item))"
+                                                               aria-label="Toggle visibility" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Size="Size.Small" Color="Color.Error"
+                                                               OnClick="@(() => DeleteMenuItem(item.Id))"
+                                                               aria-label="Delete menu item" />
+                                            </MudStack>
+                                        </MudStack>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+        </MudGrid>
+    </MudTabPanel>
+
 </MudTabs>
 </div>
 
@@ -537,6 +865,8 @@
         _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
                        ?? new Portfolio.Web.Data.SmsSettings();
         _blogPosts = await BlogService.GetAllForAdminAsync();
+        _cmsPages  = await CmsPageService.GetAllForAdminAsync();
+        _menuItems = await MenuService.GetAllForAdminAsync();
     }
 
     // ── User management ─────────────────────────────────────
@@ -654,16 +984,21 @@
     private bool _savingPost;
     private List<Portfolio.Web.Data.BlogPost>? _blogPosts;
     private Portfolio.Web.Data.BlogPost? _editingPost;
+    private RichTextEditor _postBodyEditor = null!;
 
-    private string _postTitle       = string.Empty;
-    private string _postSlug        = string.Empty;
-    private string _postSummary     = string.Empty;
-    private string _postCategory    = string.Empty;
-    private string _postTags        = string.Empty;
-    private int    _postReadMinutes = 5;
-    private string _postBody        = string.Empty;
-    private bool   _postIsPublished = true;
-    private DateTime? _postPublishedDate = DateTime.Today;
+    private string _postTitle          = string.Empty;
+    private string _postSlug           = string.Empty;
+    private string _postSummary        = string.Empty;
+    private string _postCategory       = string.Empty;
+    private string _postTags           = string.Empty;
+    private int    _postReadMinutes    = 5;
+    private bool   _postIsPublished    = true;
+    private string _postPublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    // SEO
+    private string? _postMetaTitle;
+    private string? _postMetaDescription;
+    private string? _postOgImage;
+    private string? _postCanonicalUrl;
 
     private void GenerateSlugFromTitle()
     {
@@ -674,32 +1009,42 @@
     private static string GenerateSlug(string title) =>
         System.Text.RegularExpressions.Regex.Replace(title.ToLowerInvariant().Trim(), @"[^a-z0-9]+", "-").Trim('-');
 
-    private void StartEditPost(Portfolio.Web.Data.BlogPost post)
+    private async Task StartEditPost(Portfolio.Web.Data.BlogPost post)
     {
-        _editingPost       = post;
-        _postTitle         = post.Title;
-        _postSlug          = post.Slug;
-        _postSummary       = post.Summary;
-        _postCategory      = post.Category;
-        _postTags          = post.Tags;
-        _postReadMinutes   = post.ReadMinutes;
-        _postBody          = post.Body;
-        _postIsPublished   = post.IsPublished;
-        _postPublishedDate = post.PublishedDate;
+        _editingPost          = post;
+        _postTitle            = post.Title;
+        _postSlug             = post.Slug;
+        _postSummary          = post.Summary;
+        _postCategory         = post.Category;
+        _postTags             = post.Tags;
+        _postReadMinutes      = post.ReadMinutes;
+        _postIsPublished      = post.IsPublished;
+        _postPublishedDateStr = post.PublishedDate.ToString("yyyy-MM-dd");
+        _postMetaTitle        = post.MetaTitle;
+        _postMetaDescription  = post.MetaDescription;
+        _postOgImage          = post.OgImage;
+        _postCanonicalUrl     = post.CanonicalUrl;
+        // Load body into WYSIWYG after state change re-renders editor
+        await InvokeAsync(StateHasChanged);
+        await _postBodyEditor.LoadAsync(post.Body);
     }
 
-    private void CancelEditPost()
+    private async Task CancelEditPost()
     {
-        _editingPost       = null;
-        _postTitle         = string.Empty;
-        _postSlug          = string.Empty;
-        _postSummary       = string.Empty;
-        _postCategory      = string.Empty;
-        _postTags          = string.Empty;
-        _postReadMinutes   = 5;
-        _postBody          = string.Empty;
-        _postIsPublished   = true;
-        _postPublishedDate = DateTime.Today;
+        _editingPost         = null;
+        _postTitle           = string.Empty;
+        _postSlug            = string.Empty;
+        _postSummary         = string.Empty;
+        _postCategory        = string.Empty;
+        _postTags            = string.Empty;
+        _postReadMinutes     = 5;
+        _postIsPublished     = true;
+        _postPublishedDateStr   = DateTime.Today.ToString("yyyy-MM-dd");
+        _postMetaTitle       = null;
+        _postMetaDescription = null;
+        _postOgImage         = null;
+        _postCanonicalUrl    = null;
+        await _postBodyEditor.LoadAsync(string.Empty);
     }
 
     private async Task SavePost()
@@ -709,19 +1054,24 @@
 
         _savingPost = true;
 
-        var publishedDate = DateTime.SpecifyKind(_postPublishedDate ?? DateTime.Today, DateTimeKind.Utc);
+        var body          = await _postBodyEditor.GetValueAsync();
+        var publishedDate = ParseDate(_postPublishedDateStr);
 
         if (_editingPost != null)
         {
-            _editingPost.Title         = _postTitle;
-            _editingPost.Slug          = _postSlug;
-            _editingPost.Summary       = _postSummary;
-            _editingPost.Category      = _postCategory;
-            _editingPost.Tags          = _postTags;
-            _editingPost.ReadMinutes   = _postReadMinutes;
-            _editingPost.Body          = _postBody;
-            _editingPost.IsPublished   = _postIsPublished;
-            _editingPost.PublishedDate = publishedDate;
+            _editingPost.Title            = _postTitle;
+            _editingPost.Slug             = _postSlug;
+            _editingPost.Summary          = _postSummary;
+            _editingPost.Category         = _postCategory;
+            _editingPost.Tags             = _postTags;
+            _editingPost.ReadMinutes      = _postReadMinutes;
+            _editingPost.Body             = body;
+            _editingPost.IsPublished      = _postIsPublished;
+            _editingPost.PublishedDate    = publishedDate;
+            _editingPost.MetaTitle        = NullIfEmpty(_postMetaTitle);
+            _editingPost.MetaDescription  = NullIfEmpty(_postMetaDescription);
+            _editingPost.OgImage          = NullIfEmpty(_postOgImage);
+            _editingPost.CanonicalUrl     = NullIfEmpty(_postCanonicalUrl);
             await BlogService.UpdateAsync(_editingPost);
             Snackbar.Add("Blog post updated.", Severity.Success);
         }
@@ -729,15 +1079,19 @@
         {
             var newPost = new Portfolio.Web.Data.BlogPost
             {
-                Title         = _postTitle,
-                Slug          = _postSlug,
-                Summary       = _postSummary,
-                Category      = _postCategory,
-                Tags          = _postTags,
-                ReadMinutes   = _postReadMinutes,
-                Body          = _postBody,
-                IsPublished   = _postIsPublished,
-                PublishedDate = publishedDate
+                Title            = _postTitle,
+                Slug             = _postSlug,
+                Summary          = _postSummary,
+                Category         = _postCategory,
+                Tags             = _postTags,
+                ReadMinutes      = _postReadMinutes,
+                Body             = body,
+                IsPublished      = _postIsPublished,
+                PublishedDate    = publishedDate,
+                MetaTitle        = NullIfEmpty(_postMetaTitle),
+                MetaDescription  = NullIfEmpty(_postMetaDescription),
+                OgImage          = NullIfEmpty(_postOgImage),
+                CanonicalUrl     = NullIfEmpty(_postCanonicalUrl)
             };
             await BlogService.CreateAsync(newPost);
             Snackbar.Add("Blog post created.", Severity.Success);
@@ -745,7 +1099,7 @@
 
         _blogPosts  = await BlogService.GetAllForAdminAsync();
         _savingPost = false;
-        CancelEditPost();
+        await CancelEditPost();
     }
 
     private async Task TogglePublishPost(Portfolio.Web.Data.BlogPost post)
@@ -770,6 +1124,218 @@
         ".NET"     => Color.Primary,
         _          => Color.Default
     };
+
+    // ── Pages CMS ───────────────────────────────────────────
+    private MudForm _pageForm = null!;
+    private bool _pageFormValid;
+    private bool _savingPage;
+    private List<Portfolio.Web.Data.CmsPage>? _cmsPages;
+    private Portfolio.Web.Data.CmsPage? _editingPage;
+    private RichTextEditor _pageBodyEditor = null!;
+
+    private string    _pageTitle            = string.Empty;
+    private string    _pageSlug             = string.Empty;
+    private bool      _pageIsPublished      = true;
+    private string    _pagePublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    // SEO
+    private string? _pageMetaTitle;
+    private string? _pageMetaDescription;
+    private string? _pageOgImage;
+    private string? _pageCanonicalUrl;
+
+    private void GeneratePageSlugFromTitle()
+    {
+        if (_editingPage == null && !string.IsNullOrWhiteSpace(_pageTitle) && string.IsNullOrWhiteSpace(_pageSlug))
+            _pageSlug = GenerateSlug(_pageTitle);
+    }
+
+    private async Task StartEditPage(Portfolio.Web.Data.CmsPage page)
+    {
+        _editingPage         = page;
+        _pageTitle           = page.Title;
+        _pageSlug            = page.Slug;
+        _pageIsPublished     = page.IsPublished;
+        _pagePublishedDateStr = page.PublishedDate.ToString("yyyy-MM-dd");
+        _pageMetaTitle       = page.MetaTitle;
+        _pageMetaDescription = page.MetaDescription;
+        _pageOgImage         = page.OgImage;
+        _pageCanonicalUrl    = page.CanonicalUrl;
+        await InvokeAsync(StateHasChanged);
+        await _pageBodyEditor.LoadAsync(page.Body);
+    }
+
+    private async Task CancelEditPage()
+    {
+        _editingPage         = null;
+        _pageTitle           = string.Empty;
+        _pageSlug            = string.Empty;
+        _pageIsPublished     = true;
+        _pagePublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+        _pageMetaTitle       = null;
+        _pageMetaDescription = null;
+        _pageOgImage         = null;
+        _pageCanonicalUrl    = null;
+        await _pageBodyEditor.LoadAsync(string.Empty);
+    }
+
+    private async Task SavePage()
+    {
+        await _pageForm.Validate();
+        if (!_pageFormValid) return;
+
+        _savingPage = true;
+
+        var body          = await _pageBodyEditor.GetValueAsync();
+        var publishedDate = ParseDate(_pagePublishedDateStr);
+
+        if (_editingPage != null)
+        {
+            _editingPage.Title           = _pageTitle;
+            _editingPage.Slug            = _pageSlug;
+            _editingPage.Body            = body;
+            _editingPage.IsPublished     = _pageIsPublished;
+            _editingPage.PublishedDate   = publishedDate;
+            _editingPage.MetaTitle       = NullIfEmpty(_pageMetaTitle);
+            _editingPage.MetaDescription = NullIfEmpty(_pageMetaDescription);
+            _editingPage.OgImage         = NullIfEmpty(_pageOgImage);
+            _editingPage.CanonicalUrl    = NullIfEmpty(_pageCanonicalUrl);
+            await CmsPageService.UpdateAsync(_editingPage);
+            Snackbar.Add("Page updated.", Severity.Success);
+        }
+        else
+        {
+            var newPage = new Portfolio.Web.Data.CmsPage
+            {
+                Title           = _pageTitle,
+                Slug            = _pageSlug,
+                Body            = body,
+                IsPublished     = _pageIsPublished,
+                PublishedDate   = publishedDate,
+                MetaTitle       = NullIfEmpty(_pageMetaTitle),
+                MetaDescription = NullIfEmpty(_pageMetaDescription),
+                OgImage         = NullIfEmpty(_pageOgImage),
+                CanonicalUrl    = NullIfEmpty(_pageCanonicalUrl)
+            };
+            await CmsPageService.CreateAsync(newPage);
+            Snackbar.Add("Page created.", Severity.Success);
+        }
+
+        _cmsPages  = await CmsPageService.GetAllForAdminAsync();
+        _savingPage = false;
+        await CancelEditPage();
+    }
+
+    private async Task TogglePublishPage(Portfolio.Web.Data.CmsPage page)
+    {
+        page.IsPublished = !page.IsPublished;
+        await CmsPageService.UpdateAsync(page);
+        _cmsPages = await CmsPageService.GetAllForAdminAsync();
+        Snackbar.Add(page.IsPublished ? "Page published." : "Page moved to draft.", Severity.Info);
+    }
+
+    private async Task DeletePage(int id)
+    {
+        await CmsPageService.DeleteAsync(id);
+        _cmsPages = await CmsPageService.GetAllForAdminAsync();
+        Snackbar.Add("Page deleted.", Severity.Info);
+    }
+
+    // ── Menu Management ──────────────────────────────────────
+    private MudForm _menuForm = null!;
+    private bool _menuFormValid;
+    private bool _savingMenuItem;
+    private List<Portfolio.Web.Data.MenuItem>? _menuItems;
+    private Portfolio.Web.Data.MenuItem? _editingMenuItem;
+
+    private string _menuLabel       = string.Empty;
+    private string _menuUrl         = string.Empty;
+    private string _menuIcon        = "NavigateNext";
+    private int    _menuSortOrder   = 10;
+    private bool   _menuIsVisible   = true;
+    private bool   _menuOpenInNewTab;
+
+    private void StartEditMenuItem(Portfolio.Web.Data.MenuItem item)
+    {
+        _editingMenuItem   = item;
+        _menuLabel         = item.Label;
+        _menuUrl           = item.Url;
+        _menuIcon          = item.Icon;
+        _menuSortOrder     = item.SortOrder;
+        _menuIsVisible     = item.IsVisible;
+        _menuOpenInNewTab  = item.OpenInNewTab;
+    }
+
+    private void CancelEditMenuItem()
+    {
+        _editingMenuItem  = null;
+        _menuLabel        = string.Empty;
+        _menuUrl          = string.Empty;
+        _menuIcon         = "NavigateNext";
+        _menuSortOrder    = 10;
+        _menuIsVisible    = true;
+        _menuOpenInNewTab = false;
+    }
+
+    private async Task SaveMenuItem()
+    {
+        await _menuForm.Validate();
+        if (!_menuFormValid) return;
+
+        _savingMenuItem = true;
+
+        if (_editingMenuItem != null)
+        {
+            _editingMenuItem.Label       = _menuLabel;
+            _editingMenuItem.Url         = _menuUrl;
+            _editingMenuItem.Icon        = _menuIcon;
+            _editingMenuItem.SortOrder   = _menuSortOrder;
+            _editingMenuItem.IsVisible   = _menuIsVisible;
+            _editingMenuItem.OpenInNewTab = _menuOpenInNewTab;
+            await MenuService.UpdateAsync(_editingMenuItem);
+            Snackbar.Add("Menu item updated.", Severity.Success);
+        }
+        else
+        {
+            var item = new Portfolio.Web.Data.MenuItem
+            {
+                Label       = _menuLabel,
+                Url         = _menuUrl,
+                Icon        = _menuIcon,
+                SortOrder   = _menuSortOrder,
+                IsVisible   = _menuIsVisible,
+                OpenInNewTab = _menuOpenInNewTab
+            };
+            await MenuService.CreateAsync(item);
+            Snackbar.Add("Menu item added.", Severity.Success);
+        }
+
+        _menuItems      = await MenuService.GetAllForAdminAsync();
+        _savingMenuItem = false;
+        CancelEditMenuItem();
+    }
+
+    private async Task ToggleMenuItemVisibility(Portfolio.Web.Data.MenuItem item)
+    {
+        item.IsVisible = !item.IsVisible;
+        await MenuService.UpdateAsync(item);
+        _menuItems = await MenuService.GetAllForAdminAsync();
+        Snackbar.Add(item.IsVisible ? "Menu item shown." : "Menu item hidden.", Severity.Info);
+    }
+
+    private async Task DeleteMenuItem(int id)
+    {
+        await MenuService.DeleteAsync(id);
+        _menuItems = await MenuService.GetAllForAdminAsync();
+        Snackbar.Add("Menu item deleted.", Severity.Info);
+    }
+
+    private static string? NullIfEmpty(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private static DateTime ParseDate(string dateStr) =>
+        DateTime.TryParse(dateStr, out var dt)
+            ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
+            : DateTime.UtcNow;
 
     // ── SMS Settings ────────────────────────────────────────
     private Portfolio.Web.Data.SmsSettings? _smsSettings;

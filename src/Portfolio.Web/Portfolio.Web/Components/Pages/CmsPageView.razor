@@ -1,0 +1,68 @@
+@page "/{**Slug}"
+@rendermode InteractiveServer
+@using Portfolio.Web.Data
+@inject Portfolio.Web.Services.CmsPageService CmsPageService
+@inject NavigationManager Navigation
+
+@if (_loading)
+{
+    <div class="page-content">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    </div>
+}
+else if (_page == null)
+{
+    <PageTitle>Page Not Found</PageTitle>
+    <div class="page-content">
+        <MudText Typo="Typo.h4" Class="mb-4">Page not found</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/"
+                   StartIcon="@Icons.Material.Filled.Home">Go Home</MudButton>
+    </div>
+}
+else
+{
+    <PageTitle>@(_page.MetaTitle ?? _page.Title)</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@(_page.MetaDescription ?? string.Empty)" />
+        @if (!string.IsNullOrWhiteSpace(_page.OgImage))
+        {
+            <meta property="og:image" content="@_page.OgImage" />
+        }
+        <meta property="og:title" content="@(_page.MetaTitle ?? _page.Title)" />
+        @if (!string.IsNullOrWhiteSpace(_page.MetaDescription))
+        {
+            <meta property="og:description" content="@_page.MetaDescription" />
+        }
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="@(_page.CanonicalUrl ?? Navigation.Uri)" />
+    </HeadContent>
+
+    <div class="page-banner">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            <MudText Typo="Typo.h3" Class="fw-bold mb-1">@_page.Title</MudText>
+        </MudContainer>
+    </div>
+
+    <div class="page-content">
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" md="9">
+                <div class="cms-body">
+                    @((MarkupString)_page.Body)
+                </div>
+            </MudItem>
+        </MudGrid>
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = string.Empty;
+    private CmsPage? _page;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _page = await CmsPageService.GetBySlugAsync(Slug);
+        _loading = false;
+    }
+}

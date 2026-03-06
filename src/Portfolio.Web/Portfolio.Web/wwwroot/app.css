@@ -214,3 +214,70 @@
     scrollbar-color: var(--mud-palette-primary) var(--mud-palette-background);
     scrollbar-width: thin;
 }
+
+/* ── CMS/WYSIWYG body content ─────────────────────────────── */
+.cms-body {
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.cms-body h1, .cms-body h2, .cms-body h3,
+.cms-body h4, .cms-body h5, .cms-body h6 {
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.cms-body h1 { font-size: 2rem; }
+.cms-body h2 { font-size: 1.6rem; }
+.cms-body h3 { font-size: 1.3rem; }
+
+.cms-body p {
+    margin-bottom: 1.2rem;
+}
+
+.cms-body ul, .cms-body ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.2rem;
+}
+
+.cms-body li {
+    margin-bottom: 0.4rem;
+}
+
+.cms-body blockquote {
+    border-left: 4px solid var(--mud-palette-primary);
+    padding-left: 1rem;
+    margin: 1.2rem 0;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.cms-body pre, .cms-body code {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+:root[data-mud-theme="dark"] .cms-body pre,
+:root[data-mud-theme="dark"] .cms-body code {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.cms-body pre {
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1.2rem;
+}
+
+.cms-body a {
+    color: var(--mud-palette-primary);
+    text-decoration: underline;
+}
+
+/* ── Quill editor min-height in admin ─────────────────────── */
+.ql-editor {
+    min-height: 200px;
+}
