@@ -35,12 +35,15 @@ Portfolio.slnx
     ├── Portfolio.Shared/              # Shared DTOs and models
     ├── Portfolio.Api/                 # REST Web API (.NET 10)
     │   └── Infrastructure/           # DatabaseProviderFactory
+    ├── Portfolio.Sms.Abstractions/    # ISmsService, SmsMessage, SmsResult (no dependencies)
+    ├── Portfolio.Sms.ClickSend/       # ClickSend REST API implementation
+    ├── Portfolio.Sms.Twilio/          # Twilio REST API implementation
     └── Portfolio.Web/
         ├── Portfolio.Web/             # Blazor Server App
         │   ├── Components/Pages/      # Blazor pages (Home, Projects, Skills, About, Blog, Contact)
         │   ├── Components/Layout/     # MainLayout, NavMenu
         │   ├── Infrastructure/        # DatabaseProviderFactory
-        │   └── Services/              # PortfolioApiService, BlogService
+        │   └── Services/              # PortfolioApiService, BlogService, SmsSender
         └── Portfolio.Web.Client/      # Blazor WASM Client
 ```
 
@@ -52,8 +55,9 @@ Portfolio.slnx
 - **Light and dark mode** — respects system preference, toggleable in the header
 - **REST API with fallback** — Blazor app works standalone when API is offline
 - **Configurable database provider** — SQL Server, SQLite, or PostgreSQL via one setting
-- **Admin area** — create accounts, list users; no public registration
+- **Admin area** — create accounts, manage hero stats, configure SMS provider
 - **Account lockout** — 5 failed attempts triggers a 15-minute lockout
+- **SMS notifications** — contact-form alerts sent to your number via Twilio or ClickSend (configured in admin)
 
 ## Tech Stack
 
@@ -66,6 +70,7 @@ Portfolio.slnx
 | Auth (API) | JWT Bearer tokens |
 | AI Skills | Semantic Kernel, Azure OpenAI, RAG, ML.NET |
 | Security | OWASP, OAuth2/OIDC, Threat Modelling |
+| SMS | Twilio / ClickSend (HTTP, no SDK) — provider-agnostic via `ISmsService` |
 
 ---
 
@@ -204,10 +209,73 @@ The development defaults (in `appsettings.Development.json`) are:
 
 Navigate to `/login` and sign in to access `/admin`. From the admin dashboard you can:
 
-- Create new user accounts
-- View all existing accounts
+- **Hero Stats** — add, edit or delete the stat cards shown in the hero section
+- **Users** — create new user accounts and view existing ones
+- **SMS Settings** — configure Twilio or ClickSend and set your receiver number
 
 There is no public registration page by design.
+
+---
+
+## SMS Notifications
+
+Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. No app restart needed — changes take effect immediately.
+
+### Architecture
+
+Three small, focused class libraries handle SMS:
+
+| Library | Role |
+|---|---|
+| `Portfolio.Sms.Abstractions` | `ISmsService`, `SmsMessage`, `SmsResult` — no external deps |
+| `Portfolio.Sms.Twilio` | Sends via Twilio REST API (Basic Auth, no SDK required) |
+| `Portfolio.Sms.ClickSend` | Sends via ClickSend REST API v3 (Basic Auth, no SDK required) |
+
+`SmsSender` (in `Portfolio.Web`) reads the active provider settings from the database on every call and delegates to the correct library.
+
+### Twilio Setup
+
+1. Create a free account at [twilio.com](https://www.twilio.com)
+2. From the Console dashboard copy your **Account SID** and **Auth Token**
+3. Add a verified phone number as the **From number** (E.164, e.g. `+447911123456`)
+4. In Admin → SMS Settings, set **Provider: Twilio**, fill in the credentials, and enter your **Admin receiver number**
+5. Click **Send Test SMS** to verify
+
+### ClickSend Setup
+
+1. Create an account at [clicksend.com](https://www.clicksend.com)
+2. Go to **Account → API Credentials** and generate an API key
+3. Your login email is the **username**
+4. In Admin → SMS Settings, set **Provider: ClickSend**, fill in the credentials
+5. The **Sender ID** can be up to 11 alphanumeric characters or a phone number
+6. Click **Send Test SMS** to verify
+
+### Reusing the SMS libraries in other projects
+
+```csharp
+// Static provider (Twilio)
+services.AddTwilioSms(o =>
+{
+    o.AccountSid = "ACxxxxxxxx";
+    o.AuthToken  = "your-auth-token";
+    o.From       = "+447911000000";
+});
+
+// Static provider (ClickSend)
+services.AddClickSendSms(o =>
+{
+    o.Username = "you@example.com";
+    o.ApiKey   = "your-api-key";
+    o.From     = "Portfolio";
+});
+
+// Then inject ISmsService wherever needed
+public class MyService(ISmsService sms)
+{
+    public Task AlertAsync(string phone) =>
+        sms.SendAsync(new SmsMessage(phone, "Hello from Portfolio!"));
+}
+```
 
 ---
 

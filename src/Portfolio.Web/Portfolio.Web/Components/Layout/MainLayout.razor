@@ -116,10 +116,8 @@
     {
         if (firstRender)
         {
-            // Respect the OS colour-scheme preference once the browser is available.
-            // _isDarkMode is already true so dark renders on the first paint;
-            // this then syncs to whatever the OS reports.
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            // Dark mode is the portfolio default; intentionally not syncing to OS preference.
+            await _mudThemeProvider.GetSystemPreference();
             StateHasChanged();
         }
     }

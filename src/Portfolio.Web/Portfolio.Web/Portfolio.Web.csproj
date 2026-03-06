@@ -26,6 +26,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Portfolio.Shared\Portfolio.Shared.csproj" />
+    <ProjectReference Include="..\..\Portfolio.Sms.Abstractions\Portfolio.Sms.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Portfolio.Sms.ClickSend\Portfolio.Sms.ClickSend.csproj" />
+    <ProjectReference Include="..\..\Portfolio.Sms.Twilio\Portfolio.Sms.Twilio.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,6 @@ using Portfolio.Web.Components;
 using Portfolio.Web.Data;
 using Portfolio.Web.Services;
 using Portfolio.Web.Infrastructure;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
@@ -44,6 +43,13 @@ builder.Services.AddHttpClient<PortfolioApiService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7002/");
 });
+
+// Named HTTP clients for SMS providers
+builder.Services.AddHttpClient("Twilio");
+builder.Services.AddHttpClient("ClickSend");
+
+// SmsSender reads provider settings from the DB on each call — no restart needed
+builder.Services.AddScoped<SmsSender>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();
@@ -98,33 +104,39 @@ app.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
     return Results.Redirect("/");
 }).RequireAuthorization();
 
-// Seed admin user for web app
-using (var scope = app.Services.CreateScope())
+// Seed admin user for web app — controlled by "SeedData": true in appsettings.json
+if (builder.Configuration.GetValue<bool>("SeedData"))
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    
-    await context.Database.EnsureCreatedAsync();
-    
-    if (!await roleManager.RoleExistsAsync("Admin"))
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
+    using var scope = app.Services.CreateScope();
+    var context  = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var userMgr  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    var adminEmail = builder.Configuration["DefaultAdmin:Email"] ?? "admin@portfolio.com";
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    await context.Database.EnsureCreatedAsync();
+
+    if (!await roleMgr.RoleExistsAsync("Admin"))
+        await roleMgr.CreateAsync(new IdentityRole("Admin"));
+
+    var adminEmail    = builder.Configuration["DefaultAdmin:Email"]    ?? "admin@portfolio.com";
+    var adminPassword = builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!";
+
+    if (await userMgr.FindByEmailAsync(adminEmail) == null)
     {
         var admin = new ApplicationUser
         {
-            UserName = adminEmail,
-            Email = adminEmail,
-            FirstName = "David",
-            LastName = "Buckley",
+            UserName       = adminEmail,
+            Email          = adminEmail,
+            FirstName      = "David",
+            LastName       = "Buckley",
             EmailConfirmed = true
         };
-        var result = await userManager.CreateAsync(admin, builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!");
+        var result = await userMgr.CreateAsync(admin, adminPassword);
         if (result.Succeeded)
-            await userManager.AddToRoleAsync(admin, "Admin");
+            await userMgr.AddToRoleAsync(admin, "Admin");
     }
+
+    logger.LogInformation("Web seed complete. Admin account: {Email}", adminEmail);
 }
 
 app.Run();

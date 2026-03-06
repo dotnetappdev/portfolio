@@ -1,8 +1,11 @@
 @page "/login"
 @using Microsoft.AspNetCore.Antiforgery
 @using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.Extensions.Configuration
 @inject NavigationManager NavigationManager
 @inject IAntiforgery Antiforgery
+@inject IConfiguration Config
+@inject IWebHostEnvironment Env
 
 <PageTitle>Login | David Buckley Portfolio</PageTitle>
 
@@ -14,6 +17,10 @@
     AntiforgeryTokenSet? tokens = null;
     if (HttpContext is not null)
         tokens = Antiforgery.GetAndStoreTokens(HttpContext);
+
+    var isDev          = Env.IsDevelopment();
+    var hintEmail      = isDev ? (Config["DefaultAdmin:Email"]    ?? "admin@portfolio.com") : string.Empty;
+    var hintPassword   = isDev ? (Config["DefaultAdmin:Password"] ?? "Admin@123456!")       : string.Empty;
 }
 
 @code {
@@ -44,6 +51,16 @@
                         Invalid email or password.
                     </MudAlert>
                 }
+
+                @if (isDev)
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-4" Icon="@Icons.Material.Filled.Info">
+                        <strong>Default credentials (development only)</strong><br />
+                        Email: <code>@hintEmail</code><br />
+                        Password: <code>@hintPassword</code>
+                    </MudAlert>
+                }
+
                 <form method="post" action="/account/login">
                     @if (tokens is not null)
                     {
@@ -53,6 +70,7 @@
                     <div class="mb-4">
                         <label style="display:block;font-size:0.875rem;color:var(--mud-palette-text-secondary);margin-bottom:4px;">Email</label>
                         <input type="email" name="email" required autocomplete="username"
+                               value="@hintEmail"
                                style="width:100%;padding:16px 14px;border:1px solid var(--mud-palette-lines-inputs);border-radius:4px;font-size:1rem;background:transparent;color:var(--mud-palette-text-primary);box-sizing:border-box;" />
                     </div>
                     <div class="mb-4">

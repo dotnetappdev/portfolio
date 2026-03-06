@@ -3,6 +3,11 @@
     <Project Path="src/Portfolio.Api/Portfolio.Api.csproj" />
     <Project Path="src/Portfolio.Shared/Portfolio.Shared.csproj" />
   </Folder>
+  <Folder Name="/src/Portfolio.Sms/">
+    <Project Path="src/Portfolio.Sms.Abstractions/Portfolio.Sms.Abstractions.csproj" />
+    <Project Path="src/Portfolio.Sms.ClickSend/Portfolio.Sms.ClickSend.csproj" />
+    <Project Path="src/Portfolio.Sms.Twilio/Portfolio.Sms.Twilio.csproj" />
+  </Folder>
   <Folder Name="/src/Portfolio.Web/">
     <Project Path="src/Portfolio.Web/Portfolio.Web.Client/Portfolio.Web.Client.csproj" />
     <Project Path="src/Portfolio.Web/Portfolio.Web/Portfolio.Web.csproj" />
