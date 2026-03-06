@@ -6,6 +6,7 @@
 @inject UserManager<Portfolio.Web.Data.ApplicationUser> UserManager
 @inject Portfolio.Web.Data.ApplicationDbContext DbContext
 @inject Portfolio.Web.Services.SmsSender SmsSender
+@inject Portfolio.Web.Services.BlogService BlogService
 @inject ISnackbar Snackbar
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
@@ -343,6 +344,167 @@
         }
     </MudTabPanel>
 
+    <!-- ── Blog Posts tab ─────────────────────────────────── -->
+    <MudTabPanel Text="Blog Posts" Icon="@Icons.Material.Filled.Article">
+        <MudGrid Class="mt-4">
+
+            <!-- Form: create / edit -->
+            <MudItem xs="12">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@(_editingPost == null ? Icons.Material.Filled.PostAdd : Icons.Material.Filled.Edit)" Class="mr-2" />
+                                @(_editingPost == null ? "New Blog Post" : "Edit Blog Post")
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudForm @ref="_postForm" @bind-IsValid="_postFormValid">
+                            <MudGrid>
+                                <MudItem xs="12" md="8">
+                                    <MudTextField @bind-Value="_postTitle" Label="Title" Required="true"
+                                                  RequiredError="Title is required"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  OnBlur="@GenerateSlugFromTitle" />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_postSlug" Label="Slug (URL)" Required="true"
+                                                  RequiredError="Slug is required"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="e.g. my-post-title" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_postSummary" Label="Summary" Required="true"
+                                                  RequiredError="Summary is required"
+                                                  Variant="Variant.Outlined" Class="mb-3" Lines="2" />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_postCategory" Label="Category" Required="true"
+                                                  RequiredError="Category is required"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="e.g. AI, Security, .NET" />
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudTextField @bind-Value="_postTags" Label="Tags (comma-separated)"
+                                                  Variant="Variant.Outlined" Class="mb-3"
+                                                  HelperText="e.g. AI, .NET, C#" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <MudNumericField @bind-Value="_postReadMinutes" Label="Read (min)"
+                                                     Variant="Variant.Outlined" Class="mb-3" Min="1" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <MudDatePicker @bind-Date="_postPublishedDate" Label="Published Date"
+                                                   Variant="Variant.Outlined" Class="mb-3" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_postBody" Label="Body" Required="true"
+                                                  RequiredError="Body is required"
+                                                  Variant="Variant.Outlined" Lines="12" Class="mb-3"
+                                                  HelperText="Each blank-line-separated paragraph will be rendered as its own block." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudSwitch @bind-Value="_postIsPublished" Label="Published"
+                                               Color="Color.Success" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudForm>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@SavePost" Disabled="@_savingPost"
+                                   StartIcon="@Icons.Material.Filled.Save">
+                            @(_savingPost ? "Saving..." : (_editingPost == null ? "Create Post" : "Save Changes"))
+                        </MudButton>
+                        @if (_editingPost != null)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Default"
+                                       OnClick="@CancelEditPost" Class="ml-2">Cancel</MudButton>
+                        }
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <!-- Post list -->
+            <MudItem xs="12">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
+                                All Blog Posts
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_blogPosts == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else if (_blogPosts.Count == 0)
+                        {
+                            <MudText Color="Color.Secondary">No blog posts yet. Create one using the form above.</MudText>
+                        }
+                        else
+                        {
+                            <MudTable Items="@_blogPosts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                                <HeaderContent>
+                                    <MudTh>Title</MudTh>
+                                    <MudTh>Category</MudTh>
+                                    <MudTh>Published</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Title">
+                                        <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">/@context.Slug</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Category">
+                                        <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(context.Category)" Variant="Variant.Filled">
+                                            @context.Category
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd DataLabel="Published">
+                                        <MudText Typo="Typo.body2">@context.PublishedDate.ToString("d MMM yyyy")</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Status">
+                                        @if (context.IsPublished)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Published</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Draft</MudChip>
+                                        }
+                                    </MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="0">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Size="Size.Small" Color="Color.Primary"
+                                                           OnClick="@(() => StartEditPost(context))"
+                                                           aria-label="Edit post" />
+                                            <MudIconButton Icon="@(context.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                                           Size="Size.Small" Color="Color.Secondary"
+                                                           OnClick="@(() => TogglePublishPost(context))"
+                                                           aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                           Size="Size.Small" Color="Color.Error"
+                                                           OnClick="@(() => DeletePost(context.Id))"
+                                                           aria-label="Delete post" />
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+        </MudGrid>
+    </MudTabPanel>
+
 </MudTabs>
 </div>
 
@@ -374,6 +536,7 @@
         _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
         _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
                        ?? new Portfolio.Web.Data.SmsSettings();
+        _blogPosts = await BlogService.GetAllForAdminAsync();
     }
 
     // ── User management ─────────────────────────────────────
@@ -483,6 +646,129 @@
         "Success"   => Color.Success,
         "Warning"   => Color.Warning,
         _           => Color.Primary
+    };
+
+    // ── Blog CMS ────────────────────────────────────────────
+    private MudForm _postForm = null!;
+    private bool _postFormValid;
+    private bool _savingPost;
+    private List<Portfolio.Web.Data.BlogPost>? _blogPosts;
+    private Portfolio.Web.Data.BlogPost? _editingPost;
+
+    private string _postTitle       = string.Empty;
+    private string _postSlug        = string.Empty;
+    private string _postSummary     = string.Empty;
+    private string _postCategory    = string.Empty;
+    private string _postTags        = string.Empty;
+    private int    _postReadMinutes = 5;
+    private string _postBody        = string.Empty;
+    private bool   _postIsPublished = true;
+    private DateTime? _postPublishedDate = DateTime.Today;
+
+    private void GenerateSlugFromTitle()
+    {
+        if (_editingPost == null && !string.IsNullOrWhiteSpace(_postTitle) && string.IsNullOrWhiteSpace(_postSlug))
+            _postSlug = GenerateSlug(_postTitle);
+    }
+
+    private static string GenerateSlug(string title) =>
+        System.Text.RegularExpressions.Regex.Replace(title.ToLowerInvariant().Trim(), @"[^a-z0-9]+", "-").Trim('-');
+
+    private void StartEditPost(Portfolio.Web.Data.BlogPost post)
+    {
+        _editingPost       = post;
+        _postTitle         = post.Title;
+        _postSlug          = post.Slug;
+        _postSummary       = post.Summary;
+        _postCategory      = post.Category;
+        _postTags          = post.Tags;
+        _postReadMinutes   = post.ReadMinutes;
+        _postBody          = post.Body;
+        _postIsPublished   = post.IsPublished;
+        _postPublishedDate = post.PublishedDate;
+    }
+
+    private void CancelEditPost()
+    {
+        _editingPost       = null;
+        _postTitle         = string.Empty;
+        _postSlug          = string.Empty;
+        _postSummary       = string.Empty;
+        _postCategory      = string.Empty;
+        _postTags          = string.Empty;
+        _postReadMinutes   = 5;
+        _postBody          = string.Empty;
+        _postIsPublished   = true;
+        _postPublishedDate = DateTime.Today;
+    }
+
+    private async Task SavePost()
+    {
+        await _postForm.Validate();
+        if (!_postFormValid) return;
+
+        _savingPost = true;
+
+        var publishedDate = DateTime.SpecifyKind(_postPublishedDate ?? DateTime.Today, DateTimeKind.Utc);
+
+        if (_editingPost != null)
+        {
+            _editingPost.Title         = _postTitle;
+            _editingPost.Slug          = _postSlug;
+            _editingPost.Summary       = _postSummary;
+            _editingPost.Category      = _postCategory;
+            _editingPost.Tags          = _postTags;
+            _editingPost.ReadMinutes   = _postReadMinutes;
+            _editingPost.Body          = _postBody;
+            _editingPost.IsPublished   = _postIsPublished;
+            _editingPost.PublishedDate = publishedDate;
+            await BlogService.UpdateAsync(_editingPost);
+            Snackbar.Add("Blog post updated.", Severity.Success);
+        }
+        else
+        {
+            var newPost = new Portfolio.Web.Data.BlogPost
+            {
+                Title         = _postTitle,
+                Slug          = _postSlug,
+                Summary       = _postSummary,
+                Category      = _postCategory,
+                Tags          = _postTags,
+                ReadMinutes   = _postReadMinutes,
+                Body          = _postBody,
+                IsPublished   = _postIsPublished,
+                PublishedDate = publishedDate
+            };
+            await BlogService.CreateAsync(newPost);
+            Snackbar.Add("Blog post created.", Severity.Success);
+        }
+
+        _blogPosts  = await BlogService.GetAllForAdminAsync();
+        _savingPost = false;
+        CancelEditPost();
+    }
+
+    private async Task TogglePublishPost(Portfolio.Web.Data.BlogPost post)
+    {
+        post.IsPublished = !post.IsPublished;
+        await BlogService.UpdateAsync(post);
+        _blogPosts = await BlogService.GetAllForAdminAsync();
+        Snackbar.Add(post.IsPublished ? "Post published." : "Post moved to draft.", Severity.Info);
+    }
+
+    private async Task DeletePost(int id)
+    {
+        await BlogService.DeleteAsync(id);
+        _blogPosts = await BlogService.GetAllForAdminAsync();
+        Snackbar.Add("Blog post deleted.", Severity.Info);
+    }
+
+    private Color GetCategoryColor(string category) => category switch
+    {
+        "AI"       => Color.Tertiary,
+        "Security" => Color.Error,
+        ".NET"     => Color.Primary,
+        _          => Color.Default
     };
 
     // ── SMS Settings ────────────────────────────────────────

@@ -1,5 +1,7 @@
 @page "/blog"
-@using Portfolio.Web.Services
+@rendermode InteractiveServer
+@using Portfolio.Web.Data
+@inject Portfolio.Web.Services.BlogService BlogService
 
 <PageTitle>Blog | David Buckley</PageTitle>
 
@@ -11,8 +13,14 @@
 </div>
 
 <div class="page-content">
+@if (_posts == null)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-4" />
+}
+else
+{
 <MudGrid>
-    @foreach (var post in BlogService.GetAllPosts())
+    @foreach (var post in _posts)
     {
         <MudItem xs="12">
             <MudCard Elevation="2" Class="mb-2">
@@ -22,7 +30,7 @@
                             <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2" Spacing="1">
                                 <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(post.Category)"
                                          Variant="Variant.Filled">@post.Category</MudChip>
-                                @foreach (var tag in post.Tags.Take(3))
+                                @foreach (var tag in post.TagList.Take(3))
                                 {
                                     <MudChip T="string" Size="Size.Small" Color="Color.Default"
                                              Variant="Variant.Outlined">@tag</MudChip>
@@ -38,7 +46,7 @@
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                     <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@post.PublishedDate</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@post.PublishedDate.ToString("d MMMM yyyy")</MudText>
                                 </MudStack>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                     <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
@@ -59,9 +67,17 @@
         </MudItem>
     }
 </MudGrid>
+}
 </div>
 
 @code {
+    private IReadOnlyList<BlogPost>? _posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _posts = await BlogService.GetAllPostsAsync();
+    }
+
     private Color GetCategoryColor(string category) => category switch
     {
         "AI" => Color.Tertiary,

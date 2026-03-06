@@ -50,6 +50,7 @@ builder.Services.AddHttpClient("ClickSend");
 
 // SmsSender reads provider settings from the DB on each call — no restart needed
 builder.Services.AddScoped<SmsSender>();
+builder.Services.AddScoped<Portfolio.Web.Services.BlogService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();
