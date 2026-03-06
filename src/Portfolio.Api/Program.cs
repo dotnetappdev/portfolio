@@ -31,7 +31,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrWhiteSpace(jwtKey))
-    throw new InvalidOperationException("JWT Key (Jwt:Key) is not configured. Set it via environment variable or user secrets.");
+    throw new InvalidOperationException(
+        "JWT Key (Jwt:Key) is not configured. " +
+        "Set it via environment variable, user secrets, or appsettings.json.");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,33 +77,39 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Seed database
-using (var scope = app.Services.CreateScope())
+// Seed database — controlled by "SeedData": true in appsettings.json
+if (builder.Configuration.GetValue<bool>("SeedData"))
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    
+    using var scope = app.Services.CreateScope();
+    var context  = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var userMgr  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
     await context.Database.EnsureCreatedAsync();
-    
-    if (!await roleManager.RoleExistsAsync("Admin"))
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-    
-    var adminEmail = builder.Configuration["DefaultAdmin:Email"] ?? "admin@portfolio.com";
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+
+    if (!await roleMgr.RoleExistsAsync("Admin"))
+        await roleMgr.CreateAsync(new IdentityRole("Admin"));
+
+    var adminEmail    = builder.Configuration["DefaultAdmin:Email"]    ?? "admin@portfolio.com";
+    var adminPassword = builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!";
+
+    if (await userMgr.FindByEmailAsync(adminEmail) == null)
     {
         var admin = new ApplicationUser
         {
-            UserName = adminEmail,
-            Email = adminEmail,
-            FirstName = "David",
-            LastName = "Buckley",
+            UserName       = adminEmail,
+            Email          = adminEmail,
+            FirstName      = "David",
+            LastName       = "Buckley",
             EmailConfirmed = true
         };
-        var result = await userManager.CreateAsync(admin, builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!");
+        var result = await userMgr.CreateAsync(admin, adminPassword);
         if (result.Succeeded)
-            await userManager.AddToRoleAsync(admin, "Admin");
+            await userMgr.AddToRoleAsync(admin, "Admin");
     }
+
+    logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
 }
 
 app.Run();

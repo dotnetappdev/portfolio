@@ -34,10 +34,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         base.OnModelCreating(builder);
 
         builder.Entity<HeroStat>().HasData(
-            new HeroStat { Id = 1, Value = "30+", Label = "Years in .NET", Color = "Primary", SortOrder = 1 },
-            new HeroStat { Id = 2, Value = "AI", Label = "First Approach", Color = "Secondary", SortOrder = 2 },
-            new HeroStat { Id = 3, Value = "SecOps", Label = "Security Built In", Color = "Error", SortOrder = 3 },
-            new HeroStat { Id = 4, Value = "£1M+", Label = "Enterprise Value Delivered", Color = "Tertiary", SortOrder = 4 }
+            new HeroStat { Id = 1, Value = "30+",    Label = "Years in .NET",          Color = "Primary",   SortOrder = 1 },
+            new HeroStat { Id = 2, Value = "AI",     Label = "First Approach",         Color = "Secondary", SortOrder = 2 },
+            new HeroStat { Id = 3, Value = "SecOps", Label = "Security Built In",      Color = "Error",     SortOrder = 3 },
+            new HeroStat { Id = 4, Value = "TDD/BDD",Label = "Test-Focused Developer", Color = "Success",   SortOrder = 4 }
         );
     }
 }
