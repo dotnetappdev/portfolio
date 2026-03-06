@@ -27,6 +27,7 @@ public class CmsPageService(ApplicationDbContext dbContext)
     /// <summary>Persists changes to an existing CMS page.</summary>
     public async Task UpdateAsync(CmsPage page)
     {
+        page.UpdatedAt = DateTime.UtcNow;
         dbContext.CmsPages.Update(page);
         await dbContext.SaveChangesAsync();
     }

@@ -10,9 +10,9 @@
 {
     <HeadContent>
         <meta name="description" content="@(_post.MetaDescription ?? _post.Summary)" />
-        @if (!string.IsNullOrWhiteSpace(_post.OgImage))
+        @if (!string.IsNullOrWhiteSpace(_post.OgImage ?? _post.FeaturedImage))
         {
-            <meta property="og:image" content="@_post.OgImage" />
+            <meta property="og:image" content="@(_post.OgImage ?? _post.FeaturedImage)" />
         }
         <meta property="og:title" content="@(_post.MetaTitle ?? _post.Title)" />
         <meta property="og:description" content="@(_post.MetaDescription ?? _post.Summary)" />
@@ -45,6 +45,12 @@ else
                        StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-4">
                 Back to Blog
             </MudButton>
+
+            @if (!string.IsNullOrWhiteSpace(_post.FeaturedImage))
+            {
+                <img src="@_post.FeaturedImage" alt="@_post.Title"
+                     style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:24px;" />
+            }
 
             <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="1">
                 <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(_post.Category)"

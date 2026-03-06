@@ -23,6 +23,9 @@ public class BlogPost
 
     public DateTime PublishedDate { get; set; } = DateTime.UtcNow;
 
+    /// <summary>Last time this post was saved/updated.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     public int ReadMinutes { get; set; } = 5;
 
     /// <summary>Comma-separated list of tags, e.g. "AI, .NET, C#".</summary>
@@ -33,6 +36,10 @@ public class BlogPost
     public string Body { get; set; } = string.Empty;
 
     public bool IsPublished { get; set; } = true;
+
+    /// <summary>URL of the featured/hero image shown at the top of the post and in listing cards.</summary>
+    [MaxLength(1000)]
+    public string? FeaturedImage { get; set; }
 
     /// <summary>Returns individual tag strings trimmed of whitespace.</summary>
     public string[] TagList =>
@@ -73,6 +80,13 @@ public class CmsPage
 
     public bool IsPublished { get; set; } = true;
     public DateTime PublishedDate { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Last time this page was saved/updated.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>URL of the featured/hero image for this page.</summary>
+    [MaxLength(1000)]
+    public string? FeaturedImage { get; set; }
 
     // ── SEO ──────────────────────────────────────────────────────────────────
     [MaxLength(300)]

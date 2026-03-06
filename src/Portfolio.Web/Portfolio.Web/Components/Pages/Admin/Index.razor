@@ -351,187 +351,305 @@
     <MudTabPanel Text="Blog Posts" Icon="@Icons.Material.Filled.Article">
         <MudGrid Class="mt-4">
 
-            <!-- Form: create / edit -->
-            <MudItem xs="12">
-                <MudCard Elevation="3">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">
-                                <MudIcon Icon="@(_editingPost == null ? Icons.Material.Filled.PostAdd : Icons.Material.Filled.Edit)" Class="mr-2" />
-                                @(_editingPost == null ? "New Blog Post" : "Edit Blog Post")
-                            </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudForm @ref="_postForm" @bind-IsValid="_postFormValid">
-                            <MudGrid>
-                                <MudItem xs="12" md="8">
-                                    <MudTextField @bind-Value="_postTitle" Label="Title" Required="true"
-                                                  RequiredError="Title is required"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  OnBlur="@GenerateSlugFromTitle" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_postSlug" Label="Slug (URL)" Required="true"
-                                                  RequiredError="Slug is required"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="e.g. my-post-title" />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudTextField @bind-Value="_postSummary" Label="Summary" Required="true"
-                                                  RequiredError="Summary is required"
-                                                  Variant="Variant.Outlined" Class="mb-3" Lines="2" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_postCategory" Label="Category" Required="true"
-                                                  RequiredError="Category is required"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="e.g. AI, Security, .NET" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_postTags" Label="Tags (comma-separated)"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="e.g. AI, .NET, C#" />
-                                </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudNumericField @bind-Value="_postReadMinutes" Label="Read (min)"
-                                                     Variant="Variant.Outlined" Class="mb-3" Min="1" />
-                                </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudTextField @bind-Value="_postPublishedDateStr" Label="Published Date"
-                                                  InputType="InputType.Date"
-                                                  Variant="Variant.Outlined" Class="mb-3" />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudText Typo="Typo.subtitle2" Class="mb-2">Post Body</MudText>
-                                    <RichTextEditor @ref="_postBodyEditor" Placeholder="Write your post here..." />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudSwitch @bind-Value="_postIsPublished" Label="Published"
-                                               Color="Color.Success" />
-                                </MudItem>
-
-                                <!-- SEO section -->
-                                <MudItem xs="12">
-                                    <MudDivider Class="my-2" />
-                                    <MudText Typo="Typo.subtitle2" Class="mb-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Size="Size.Small" Class="mr-1" />
-                                        SEO &amp; Social
+            @if (!_postShowEditor)
+            {
+                <!-- ── Posts: list view (like WP "All Posts") ── -->
+                <MudItem xs="12">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Article" Class="mr-2" />
+                                        Posts
+                                        @if (_blogPosts != null)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-2">(@_blogPosts.Count total)</MudText>
+                                        }
                                     </MudText>
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="_postMetaTitle" Label="Meta Title (overrides page title)"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="Leave blank to use the post title" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="_postOgImage" Label="OG Image URL"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="Social share image (1200×630 recommended)" />
-                                </MudItem>
-                                <MudItem xs="12" md="8">
-                                    <MudTextField @bind-Value="_postMetaDescription" Label="Meta Description"
-                                                  Variant="Variant.Outlined" Lines="2" Class="mb-3"
-                                                  HelperText="Shown in search results. Leave blank to use the summary." />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_postCanonicalUrl" Label="Canonical URL"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="Leave blank to use the current URL" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudForm>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                   OnClick="@SavePost" Disabled="@_savingPost"
-                                   StartIcon="@Icons.Material.Filled.Save">
-                            @(_savingPost ? "Saving..." : (_editingPost == null ? "Create Post" : "Save Changes"))
-                        </MudButton>
-                        @if (_editingPost != null)
-                        {
-                            <MudButton Variant="Variant.Text" Color="Color.Default"
-                                       OnClick="@CancelEditPost" Class="ml-2">Cancel</MudButton>
-                        }
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Add"
+                                               OnClick="@OpenNewPostEditor">
+                                        Add New Post
+                                    </MudButton>
+                                </MudStack>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <!-- Status filter tabs -->
+                            <MudStack Row="true" Spacing="1" Class="mb-3">
+                                @foreach (var label in new[] { "All", "Published", "Drafts" })
+                                {
+                                    var count = label switch {
+                                        "Published" => _blogPosts?.Count(p => p.IsPublished) ?? 0,
+                                        "Drafts"    => _blogPosts?.Count(p => !p.IsPublished) ?? 0,
+                                        _           => _blogPosts?.Count ?? 0
+                                    };
+                                    <MudChip T="string" Size="Size.Small" OnClick="@(() => _postStatusFilter = label)"
+                                             Color="@(_postStatusFilter == label ? Color.Primary : Color.Default)"
+                                             Variant="@(_postStatusFilter == label ? Variant.Filled : Variant.Outlined)">
+                                        @label (@count)
+                                    </MudChip>
+                                }
+                            </MudStack>
 
-            <!-- Post list -->
-            <MudItem xs="12">
-                <MudCard Elevation="3">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">
-                                <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
-                                All Blog Posts
-                            </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        @if (_blogPosts == null)
-                        {
-                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-                        }
-                        else if (_blogPosts.Count == 0)
-                        {
-                            <MudText Color="Color.Secondary">No blog posts yet. Create one using the form above.</MudText>
-                        }
-                        else
-                        {
-                            <MudTable Items="@_blogPosts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
-                                <HeaderContent>
-                                    <MudTh>Title</MudTh>
-                                    <MudTh>Category</MudTh>
-                                    <MudTh>Published</MudTh>
-                                    <MudTh>Status</MudTh>
-                                    <MudTh>Actions</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Title">
-                                        <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">/@context.Slug</MudText>
-                                    </MudTd>
-                                    <MudTd DataLabel="Category">
-                                        <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(context.Category)" Variant="Variant.Filled">
-                                            @context.Category
-                                        </MudChip>
-                                    </MudTd>
-                                    <MudTd DataLabel="Published">
-                                        <MudText Typo="Typo.body2">@context.PublishedDate.ToString("d MMM yyyy")</MudText>
-                                    </MudTd>
-                                    <MudTd DataLabel="Status">
-                                        @if (context.IsPublished)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Published</MudChip>
-                                        }
-                                        else
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Draft</MudChip>
-                                        }
-                                    </MudTd>
-                                    <MudTd DataLabel="Actions">
-                                        <MudStack Row="true" Spacing="0">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                           Size="Size.Small" Color="Color.Primary"
-                                                           OnClick="@(() => StartEditPost(context))"
-                                                           aria-label="Edit post" />
-                                            <MudIconButton Icon="@(context.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                                           Size="Size.Small" Color="Color.Secondary"
-                                                           OnClick="@(() => TogglePublishPost(context))"
-                                                           aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                           Size="Size.Small" Color="Color.Error"
-                                                           OnClick="@(() => DeletePost(context.Id))"
-                                                           aria-label="Delete post" />
-                                        </MudStack>
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                            @if (_blogPosts == null)
+                            {
+                                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                            }
+                            else
+                            {
+                                var filtered = _postStatusFilter switch {
+                                    "Published" => _blogPosts.Where(p => p.IsPublished).ToList(),
+                                    "Drafts"    => _blogPosts.Where(p => !p.IsPublished).ToList(),
+                                    _           => _blogPosts
+                                };
+
+                                @if (filtered.Count == 0)
+                                {
+                                    <MudText Color="Color.Secondary" Class="pa-4">No posts in this view.</MudText>
+                                }
+                                else
+                                {
+                                    <MudTable Items="@filtered" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                                        <HeaderContent>
+                                            <MudTh>Title</MudTh>
+                                            <MudTh>Category</MudTh>
+                                            <MudTh>Date</MudTh>
+                                            <MudTh>Status</MudTh>
+                                            <MudTh>Actions</MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="Title">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
+                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">/@context.Slug</MudText>
+                                                        @if (context.IsPublished)
+                                                        {
+                                                            <MudLink Href="@($"/blog/{context.Slug}")" Target="_blank"
+                                                                     Typo="Typo.caption" Color="Color.Primary" Style="font-size:0.7rem;">
+                                                                View ↗
+                                                            </MudLink>
+                                                        }
+                                                    </MudStack>
+                                                </MudStack>
+                                            </MudTd>
+                                            <MudTd DataLabel="Category">
+                                                <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(context.Category)" Variant="Variant.Filled">
+                                                    @context.Category
+                                                </MudChip>
+                                            </MudTd>
+                                            <MudTd DataLabel="Date">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2">@context.PublishedDate.ToString("d MMM yyyy")</MudText>
+                                                    @if (context.UpdatedAt.HasValue)
+                                                    {
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                            Updated @context.UpdatedAt.Value.ToString("d MMM yyyy")
+                                                        </MudText>
+                                                    }
+                                                </MudStack>
+                                            </MudTd>
+                                            <MudTd DataLabel="Status">
+                                                @if (context.IsPublished)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Published</MudChip>
+                                                }
+                                                else
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Draft</MudChip>
+                                                }
+                                            </MudTd>
+                                            <MudTd DataLabel="Actions">
+                                                <MudStack Row="true" Spacing="0">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                                   Size="Size.Small" Color="Color.Primary"
+                                                                   OnClick="@(() => StartEditPost(context))"
+                                                                   aria-label="Edit post" />
+                                                    <MudIconButton Icon="@(context.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                                                   Size="Size.Small" Color="Color.Secondary"
+                                                                   OnClick="@(() => TogglePublishPost(context))"
+                                                                   aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                                   Size="Size.Small" Color="Color.Error"
+                                                                   OnClick="@(() => DeletePost(context.Id))"
+                                                                   aria-label="Delete post" />
+                                                </MudStack>
+                                            </MudTd>
+                                        </RowTemplate>
+                                    </MudTable>
+                                }
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+            else
+            {
+                <!-- ── Posts: editor view (WordPress-style) ── -->
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="1">
+                        <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="@CancelEditPost">
+                            ← Posts
+                        </MudButton>
+                        <MudText Typo="Typo.h6">
+                            @(_editingPost == null ? "Add New Post" : "Edit Post")
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <!-- Editor: left content + right sidebar -->
+                <MudItem xs="12" md="8">
+                    <MudForm @ref="_postForm" @bind-IsValid="_postFormValid">
+                        <!-- Title -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent Class="pb-0">
+                                <MudTextField @bind-Value="_postTitle" Label="Post Title" Required="true"
+                                              RequiredError="Title is required"
+                                              Variant="Variant.Outlined"
+                                              Typo="Typo.h5"
+                                              OnBlur="@GenerateSlugFromTitle"
+                                              Style="font-size:1.4rem;font-weight:600;" />
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1 mb-2" Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Permalink:</MudText>
+                                    <MudTextField @bind-Value="_postSlug" Required="true"
+                                                  RequiredError="Slug is required"
+                                                  Variant="Variant.Text" Margin="Margin.Dense"
+                                                  Typo="Typo.caption"
+                                                  Style="max-width:320px;" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+
+                        <!-- Body -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Content</MudText>
+                                <RichTextEditor @ref="_postBodyEditor" Placeholder="Write your post here…" />
+                            </MudCardContent>
+                        </MudCard>
+
+                        <!-- Excerpt / Summary -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Excerpt</MudText>
+                                <MudTextField @bind-Value="_postSummary" Label="Excerpt" Required="true"
+                                              RequiredError="Excerpt is required"
+                                              Variant="Variant.Outlined" Lines="3"
+                                              HelperText="Used on blog listing cards and as the default meta description." />
+                            </MudCardContent>
+                        </MudCard>
+                    </MudForm>
+                </MudItem>
+
+                <!-- Sidebar -->
+                <MudItem xs="12" md="4">
+
+                    <!-- Publish card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Publish" Size="Size.Small" Class="mr-1" />
+                                    Publish
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Status</MudText>
+                                    <MudChip T="string" Size="Size.Small"
+                                             Color="@(_postIsPublished ? Color.Success : Color.Default)"
+                                             Variant="@(_postIsPublished ? Variant.Filled : Variant.Outlined)">
+                                        @(_postIsPublished ? "Published" : "Draft")
+                                    </MudChip>
+                                </MudStack>
+                                <MudSwitch @bind-Value="_postIsPublished" Label="@(_postIsPublished ? "Published" : "Save as Draft")"
+                                           Color="Color.Success" />
+                                <MudTextField @bind-Value="_postPublishedDateStr" Label="Publish Date"
+                                              InputType="InputType.Date" Variant="Variant.Outlined"
+                                              Margin="Margin.Dense" />
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                       OnClick="@SavePost" Disabled="@_savingPost"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingPost ? "Saving…" : (_editingPost == null ? (_postIsPublished ? "Publish" : "Save Draft") : "Update"))
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+
+                    <!-- Document settings card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Class="mr-1" />
+                                    Post Settings
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudTextField @bind-Value="_postCategory" Label="Category" Required="true"
+                                          RequiredError="Category is required"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          HelperText="e.g. AI, Security, .NET" />
+                            <MudTextField @bind-Value="_postTags" Label="Tags"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          HelperText="Comma-separated, e.g. AI, .NET, C#" />
+                            <MudNumericField @bind-Value="_postReadMinutes" Label="Read time (min)"
+                                             Variant="Variant.Outlined" Min="1" />
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Featured Image card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Small" Class="mr-1" />
+                                    Featured Image
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (!string.IsNullOrWhiteSpace(_postFeaturedImage))
+                            {
+                                <img src="@_postFeaturedImage" alt="Featured image preview"
+                                     style="width:100%;max-height:160px;object-fit:cover;border-radius:4px;margin-bottom:8px;" />
+                            }
+                            <MudTextField @bind-Value="_postFeaturedImage" Label="Featured Image URL"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Full URL to the hero image (recommended 1200×630)" />
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- SEO card -->
+                    <MudExpansionPanel Text="SEO & Social" Icon="@Icons.Material.Filled.TravelExplore"
+                                       Class="mb-4">
+                        <MudStack Spacing="3" Class="pa-2">
+                            <MudTextField @bind-Value="_postMetaTitle" Label="Meta Title"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Leave blank to use the post title" />
+                            <MudTextField @bind-Value="_postMetaDescription" Label="Meta Description"
+                                          Variant="Variant.Outlined" Lines="2"
+                                          HelperText="Leave blank to use the excerpt" />
+                            <MudTextField @bind-Value="_postOgImage" Label="OG Image URL"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Leave blank to use featured image" />
+                            <MudTextField @bind-Value="_postCanonicalUrl" Label="Canonical URL"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Leave blank to use the current URL" />
+                        </MudStack>
+                    </MudExpansionPanel>
+
+                </MudItem>
+            }
 
         </MudGrid>
     </MudTabPanel>
@@ -540,166 +658,265 @@
     <MudTabPanel Text="Pages" Icon="@Icons.Material.Filled.Pages">
         <MudGrid Class="mt-4">
 
-            <!-- Form: create / edit -->
-            <MudItem xs="12">
-                <MudCard Elevation="3">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">
-                                <MudIcon Icon="@(_editingPage == null ? Icons.Material.Filled.Add : Icons.Material.Filled.Edit)" Class="mr-2" />
-                                @(_editingPage == null ? "New Page" : "Edit Page")
-                            </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudForm @ref="_pageForm" @bind-IsValid="_pageFormValid">
-                            <MudGrid>
-                                <MudItem xs="12" md="8">
-                                    <MudTextField @bind-Value="_pageTitle" Label="Page Title" Required="true"
-                                                  RequiredError="Title is required"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  OnBlur="@GeneratePageSlugFromTitle" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_pageSlug" Label="Slug (URL path)" Required="true"
-                                                  RequiredError="Slug is required"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="e.g. my-custom-page → /my-custom-page" />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudText Typo="Typo.subtitle2" Class="mb-2">Page Content</MudText>
-                                    <RichTextEditor @ref="_pageBodyEditor" Placeholder="Write your page content here..." />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_pagePublishedDateStr" Label="Published Date"
-                                                  InputType="InputType.Date"
-                                                  Variant="Variant.Outlined" Class="mb-3 mt-3" />
-                                </MudItem>
-                                <MudItem xs="12" md="8" Class="d-flex align-end">
-                                    <MudSwitch @bind-Value="_pageIsPublished" Label="Published"
-                                               Color="Color.Success" Class="mb-3 mt-3" />
-                                </MudItem>
-
-                                <!-- SEO section -->
-                                <MudItem xs="12">
-                                    <MudDivider Class="my-2" />
-                                    <MudText Typo="Typo.subtitle2" Class="mb-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Size="Size.Small" Class="mr-1" />
-                                        SEO &amp; Social
+            @if (!_pageShowEditor)
+            {
+                <!-- ── Pages: list view ── -->
+                <MudItem xs="12">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Pages" Class="mr-2" />
+                                        Pages
+                                        @if (_cmsPages != null)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-2">(@_cmsPages.Count total)</MudText>
+                                        }
                                     </MudText>
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="_pageMetaTitle" Label="Meta Title"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="Leave blank to use the page title" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="_pageOgImage" Label="OG Image URL"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="Social share image (1200×630 recommended)" />
-                                </MudItem>
-                                <MudItem xs="12" md="8">
-                                    <MudTextField @bind-Value="_pageMetaDescription" Label="Meta Description"
-                                                  Variant="Variant.Outlined" Lines="2" Class="mb-3"
-                                                  HelperText="Shown in search results (150–160 characters)" />
-                                </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudTextField @bind-Value="_pageCanonicalUrl" Label="Canonical URL"
-                                                  Variant="Variant.Outlined" Class="mb-3"
-                                                  HelperText="Leave blank to use the current URL" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudForm>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                   OnClick="@SavePage" Disabled="@_savingPage"
-                                   StartIcon="@Icons.Material.Filled.Save">
-                            @(_savingPage ? "Saving..." : (_editingPage == null ? "Create Page" : "Save Changes"))
-                        </MudButton>
-                        @if (_editingPage != null)
-                        {
-                            <MudButton Variant="Variant.Text" Color="Color.Default"
-                                       OnClick="@CancelEditPage" Class="ml-2">Cancel</MudButton>
-                        }
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Add"
+                                               OnClick="@OpenNewPageEditor">
+                                        Add New Page
+                                    </MudButton>
+                                </MudStack>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <!-- Status filter -->
+                            <MudStack Row="true" Spacing="1" Class="mb-3">
+                                @foreach (var label in new[] { "All", "Published", "Drafts" })
+                                {
+                                    var count = label switch {
+                                        "Published" => _cmsPages?.Count(p => p.IsPublished) ?? 0,
+                                        "Drafts"    => _cmsPages?.Count(p => !p.IsPublished) ?? 0,
+                                        _           => _cmsPages?.Count ?? 0
+                                    };
+                                    <MudChip T="string" Size="Size.Small" OnClick="@(() => _pageStatusFilter = label)"
+                                             Color="@(_pageStatusFilter == label ? Color.Primary : Color.Default)"
+                                             Variant="@(_pageStatusFilter == label ? Variant.Filled : Variant.Outlined)">
+                                        @label (@count)
+                                    </MudChip>
+                                }
+                            </MudStack>
 
-            <!-- Page list -->
-            <MudItem xs="12">
-                <MudCard Elevation="3">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">
-                                <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
-                                All Pages
-                            </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        @if (_cmsPages == null)
-                        {
-                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-                        }
-                        else if (_cmsPages.Count == 0)
-                        {
-                            <MudText Color="Color.Secondary">No pages yet. Create one using the form above.</MudText>
-                        }
-                        else
-                        {
-                            <MudTable Items="@_cmsPages" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
-                                <HeaderContent>
-                                    <MudTh>Title</MudTh>
-                                    <MudTh>URL Slug</MudTh>
-                                    <MudTh>Published</MudTh>
-                                    <MudTh>Status</MudTh>
-                                    <MudTh>Actions</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Title">
-                                        <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
-                                    </MudTd>
-                                    <MudTd DataLabel="URL Slug">
-                                        <MudLink Href="@($"/{context.Slug}")"  Target="_blank" Typo="Typo.caption">
-                                            /@context.Slug
-                                        </MudLink>
-                                    </MudTd>
-                                    <MudTd DataLabel="Published">
-                                        <MudText Typo="Typo.body2">@context.PublishedDate.ToString("d MMM yyyy")</MudText>
-                                    </MudTd>
-                                    <MudTd DataLabel="Status">
-                                        @if (context.IsPublished)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Published</MudChip>
-                                        }
-                                        else
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Draft</MudChip>
-                                        }
-                                    </MudTd>
-                                    <MudTd DataLabel="Actions">
-                                        <MudStack Row="true" Spacing="0">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                           Size="Size.Small" Color="Color.Primary"
-                                                           OnClick="@(() => StartEditPage(context))"
-                                                           aria-label="Edit page" />
-                                            <MudIconButton Icon="@(context.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                                           Size="Size.Small" Color="Color.Secondary"
-                                                           OnClick="@(() => TogglePublishPage(context))"
-                                                           aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                           Size="Size.Small" Color="Color.Error"
-                                                           OnClick="@(() => DeletePage(context.Id))"
-                                                           aria-label="Delete page" />
-                                        </MudStack>
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                            @if (_cmsPages == null)
+                            {
+                                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                            }
+                            else
+                            {
+                                var filtered = _pageStatusFilter switch {
+                                    "Published" => _cmsPages.Where(p => p.IsPublished).ToList(),
+                                    "Drafts"    => _cmsPages.Where(p => !p.IsPublished).ToList(),
+                                    _           => _cmsPages
+                                };
+                                @if (filtered.Count == 0)
+                                {
+                                    <MudText Color="Color.Secondary" Class="pa-4">No pages in this view.</MudText>
+                                }
+                                else
+                                {
+                                    <MudTable Items="@filtered" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                                        <HeaderContent>
+                                            <MudTh>Title</MudTh>
+                                            <MudTh>URL</MudTh>
+                                            <MudTh>Date</MudTh>
+                                            <MudTh>Status</MudTh>
+                                            <MudTh>Actions</MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="Title">
+                                                <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="URL">
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">/@context.Slug</MudText>
+                                                    @if (context.IsPublished)
+                                                    {
+                                                        <MudLink Href="@($"/{context.Slug}")" Target="_blank"
+                                                                 Typo="Typo.caption" Color="Color.Primary" Style="font-size:0.7rem;">
+                                                            View ↗
+                                                        </MudLink>
+                                                    }
+                                                </MudStack>
+                                            </MudTd>
+                                            <MudTd DataLabel="Date">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2">@context.PublishedDate.ToString("d MMM yyyy")</MudText>
+                                                    @if (context.UpdatedAt.HasValue)
+                                                    {
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                            Updated @context.UpdatedAt.Value.ToString("d MMM yyyy")
+                                                        </MudText>
+                                                    }
+                                                </MudStack>
+                                            </MudTd>
+                                            <MudTd DataLabel="Status">
+                                                @if (context.IsPublished)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Published</MudChip>
+                                                }
+                                                else
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Draft</MudChip>
+                                                }
+                                            </MudTd>
+                                            <MudTd DataLabel="Actions">
+                                                <MudStack Row="true" Spacing="0">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                                   Size="Size.Small" Color="Color.Primary"
+                                                                   OnClick="@(() => StartEditPage(context))"
+                                                                   aria-label="Edit page" />
+                                                    <MudIconButton Icon="@(context.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                                                   Size="Size.Small" Color="Color.Secondary"
+                                                                   OnClick="@(() => TogglePublishPage(context))"
+                                                                   aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                                   Size="Size.Small" Color="Color.Error"
+                                                                   OnClick="@(() => DeletePage(context.Id))"
+                                                                   aria-label="Delete page" />
+                                                </MudStack>
+                                            </MudTd>
+                                        </RowTemplate>
+                                    </MudTable>
+                                }
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+            else
+            {
+                <!-- ── Pages: editor view (WordPress-style) ── -->
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="1">
+                        <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="@CancelEditPage">
+                            ← Pages
+                        </MudButton>
+                        <MudText Typo="Typo.h6">
+                            @(_editingPage == null ? "Add New Page" : "Edit Page")
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <!-- Editor: left content + right sidebar -->
+                <MudItem xs="12" md="8">
+                    <MudForm @ref="_pageForm" @bind-IsValid="_pageFormValid">
+                        <!-- Title -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent Class="pb-0">
+                                <MudTextField @bind-Value="_pageTitle" Label="Page Title" Required="true"
+                                              RequiredError="Title is required"
+                                              Variant="Variant.Outlined"
+                                              OnBlur="@GeneratePageSlugFromTitle"
+                                              Style="font-size:1.4rem;font-weight:600;" />
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1 mb-2" Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Permalink:</MudText>
+                                    <MudTextField @bind-Value="_pageSlug" Required="true"
+                                                  RequiredError="Slug is required"
+                                                  Variant="Variant.Text" Margin="Margin.Dense"
+                                                  Typo="Typo.caption"
+                                                  Style="max-width:320px;"
+                                                  HelperText="e.g. my-custom-page → /my-custom-page" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+
+                        <!-- Body -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Content</MudText>
+                                <RichTextEditor @ref="_pageBodyEditor" Placeholder="Write your page content here…" />
+                            </MudCardContent>
+                        </MudCard>
+                    </MudForm>
+                </MudItem>
+
+                <!-- Sidebar -->
+                <MudItem xs="12" md="4">
+
+                    <!-- Publish card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Publish" Size="Size.Small" Class="mr-1" />
+                                    Publish
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Status</MudText>
+                                    <MudChip T="string" Size="Size.Small"
+                                             Color="@(_pageIsPublished ? Color.Success : Color.Default)"
+                                             Variant="@(_pageIsPublished ? Variant.Filled : Variant.Outlined)">
+                                        @(_pageIsPublished ? "Published" : "Draft")
+                                    </MudChip>
+                                </MudStack>
+                                <MudSwitch @bind-Value="_pageIsPublished" Label="@(_pageIsPublished ? "Published" : "Save as Draft")"
+                                           Color="Color.Success" />
+                                <MudTextField @bind-Value="_pagePublishedDateStr" Label="Publish Date"
+                                              InputType="InputType.Date" Variant="Variant.Outlined"
+                                              Margin="Margin.Dense" />
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                       OnClick="@SavePage" Disabled="@_savingPage"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingPage ? "Saving…" : (_editingPage == null ? (_pageIsPublished ? "Publish" : "Save Draft") : "Update"))
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+
+                    <!-- Featured Image card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Small" Class="mr-1" />
+                                    Featured Image
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (!string.IsNullOrWhiteSpace(_pageFeaturedImage))
+                            {
+                                <img src="@_pageFeaturedImage" alt="Featured image preview"
+                                     style="width:100%;max-height:160px;object-fit:cover;border-radius:4px;margin-bottom:8px;" />
+                            }
+                            <MudTextField @bind-Value="_pageFeaturedImage" Label="Featured Image URL"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Full URL to the hero image" />
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- SEO card -->
+                    <MudExpansionPanel Text="SEO & Social" Icon="@Icons.Material.Filled.TravelExplore"
+                                       Class="mb-4">
+                        <MudStack Spacing="3" Class="pa-2">
+                            <MudTextField @bind-Value="_pageMetaTitle" Label="Meta Title"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Leave blank to use the page title" />
+                            <MudTextField @bind-Value="_pageMetaDescription" Label="Meta Description"
+                                          Variant="Variant.Outlined" Lines="2"
+                                          HelperText="Shown in search results (150–160 characters)" />
+                            <MudTextField @bind-Value="_pageOgImage" Label="OG Image URL"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Leave blank to use featured image" />
+                            <MudTextField @bind-Value="_pageCanonicalUrl" Label="Canonical URL"
+                                          Variant="Variant.Outlined"
+                                          HelperText="Leave blank to use the current URL" />
+                        </MudStack>
+                    </MudExpansionPanel>
+
+                </MudItem>
+            }
 
         </MudGrid>
     </MudTabPanel>
@@ -982,23 +1199,32 @@
     private MudForm _postForm = null!;
     private bool _postFormValid;
     private bool _savingPost;
+    private bool _postShowEditor;
+    private string _postStatusFilter = "All";
     private List<Portfolio.Web.Data.BlogPost>? _blogPosts;
     private Portfolio.Web.Data.BlogPost? _editingPost;
     private RichTextEditor _postBodyEditor = null!;
 
-    private string _postTitle          = string.Empty;
-    private string _postSlug           = string.Empty;
-    private string _postSummary        = string.Empty;
-    private string _postCategory       = string.Empty;
-    private string _postTags           = string.Empty;
-    private int    _postReadMinutes    = 5;
-    private bool   _postIsPublished    = true;
-    private string _postPublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    private string  _postTitle            = string.Empty;
+    private string  _postSlug             = string.Empty;
+    private string  _postSummary          = string.Empty;
+    private string  _postCategory         = string.Empty;
+    private string  _postTags             = string.Empty;
+    private int     _postReadMinutes      = 5;
+    private bool    _postIsPublished      = true;
+    private string  _postPublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    private string? _postFeaturedImage;
     // SEO
     private string? _postMetaTitle;
     private string? _postMetaDescription;
     private string? _postOgImage;
     private string? _postCanonicalUrl;
+
+    private void OpenNewPostEditor()
+    {
+        _editingPost     = null;
+        _postShowEditor  = true;
+    }
 
     private void GenerateSlugFromTitle()
     {
@@ -1020,10 +1246,12 @@
         _postReadMinutes      = post.ReadMinutes;
         _postIsPublished      = post.IsPublished;
         _postPublishedDateStr = post.PublishedDate.ToString("yyyy-MM-dd");
+        _postFeaturedImage    = post.FeaturedImage;
         _postMetaTitle        = post.MetaTitle;
         _postMetaDescription  = post.MetaDescription;
         _postOgImage          = post.OgImage;
         _postCanonicalUrl     = post.CanonicalUrl;
+        _postShowEditor       = true;
         // Load body into WYSIWYG after state change re-renders editor
         await InvokeAsync(StateHasChanged);
         await _postBodyEditor.LoadAsync(post.Body);
@@ -1031,6 +1259,9 @@
 
     private async Task CancelEditPost()
     {
+        // Setting _postShowEditor = false unmounts the RichTextEditor component, which
+        // automatically discards its content. No LoadAsync call is needed or safe here.
+        _postShowEditor      = false;
         _editingPost         = null;
         _postTitle           = string.Empty;
         _postSlug            = string.Empty;
@@ -1040,11 +1271,12 @@
         _postReadMinutes     = 5;
         _postIsPublished     = true;
         _postPublishedDateStr   = DateTime.Today.ToString("yyyy-MM-dd");
+        _postFeaturedImage   = null;
         _postMetaTitle       = null;
         _postMetaDescription = null;
         _postOgImage         = null;
         _postCanonicalUrl    = null;
-        await _postBodyEditor.LoadAsync(string.Empty);
+        await Task.CompletedTask;
     }
 
     private async Task SavePost()
@@ -1068,6 +1300,7 @@
             _editingPost.Body             = body;
             _editingPost.IsPublished      = _postIsPublished;
             _editingPost.PublishedDate    = publishedDate;
+            _editingPost.FeaturedImage    = NullIfEmpty(_postFeaturedImage);
             _editingPost.MetaTitle        = NullIfEmpty(_postMetaTitle);
             _editingPost.MetaDescription  = NullIfEmpty(_postMetaDescription);
             _editingPost.OgImage          = NullIfEmpty(_postOgImage);
@@ -1088,6 +1321,7 @@
                 Body             = body,
                 IsPublished      = _postIsPublished,
                 PublishedDate    = publishedDate,
+                FeaturedImage    = NullIfEmpty(_postFeaturedImage),
                 MetaTitle        = NullIfEmpty(_postMetaTitle),
                 MetaDescription  = NullIfEmpty(_postMetaDescription),
                 OgImage          = NullIfEmpty(_postOgImage),
@@ -1129,19 +1363,28 @@
     private MudForm _pageForm = null!;
     private bool _pageFormValid;
     private bool _savingPage;
+    private bool _pageShowEditor;
+    private string _pageStatusFilter = "All";
     private List<Portfolio.Web.Data.CmsPage>? _cmsPages;
     private Portfolio.Web.Data.CmsPage? _editingPage;
     private RichTextEditor _pageBodyEditor = null!;
 
-    private string    _pageTitle            = string.Empty;
-    private string    _pageSlug             = string.Empty;
-    private bool      _pageIsPublished      = true;
-    private string    _pagePublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    private string  _pageTitle            = string.Empty;
+    private string  _pageSlug             = string.Empty;
+    private bool    _pageIsPublished      = true;
+    private string  _pagePublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    private string? _pageFeaturedImage;
     // SEO
     private string? _pageMetaTitle;
     private string? _pageMetaDescription;
     private string? _pageOgImage;
     private string? _pageCanonicalUrl;
+
+    private void OpenNewPageEditor()
+    {
+        _editingPage    = null;
+        _pageShowEditor = true;
+    }
 
     private void GeneratePageSlugFromTitle()
     {
@@ -1156,26 +1399,32 @@
         _pageSlug            = page.Slug;
         _pageIsPublished     = page.IsPublished;
         _pagePublishedDateStr = page.PublishedDate.ToString("yyyy-MM-dd");
+        _pageFeaturedImage   = page.FeaturedImage;
         _pageMetaTitle       = page.MetaTitle;
         _pageMetaDescription = page.MetaDescription;
         _pageOgImage         = page.OgImage;
         _pageCanonicalUrl    = page.CanonicalUrl;
+        _pageShowEditor      = true;
         await InvokeAsync(StateHasChanged);
         await _pageBodyEditor.LoadAsync(page.Body);
     }
 
     private async Task CancelEditPage()
     {
+        // Setting _pageShowEditor = false unmounts the RichTextEditor component, which
+        // automatically discards its content. No LoadAsync call is needed or safe here.
+        _pageShowEditor      = false;
         _editingPage         = null;
         _pageTitle           = string.Empty;
         _pageSlug            = string.Empty;
         _pageIsPublished     = true;
         _pagePublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
+        _pageFeaturedImage   = null;
         _pageMetaTitle       = null;
         _pageMetaDescription = null;
         _pageOgImage         = null;
         _pageCanonicalUrl    = null;
-        await _pageBodyEditor.LoadAsync(string.Empty);
+        await Task.CompletedTask;
     }
 
     private async Task SavePage()
@@ -1195,6 +1444,7 @@
             _editingPage.Body            = body;
             _editingPage.IsPublished     = _pageIsPublished;
             _editingPage.PublishedDate   = publishedDate;
+            _editingPage.FeaturedImage   = NullIfEmpty(_pageFeaturedImage);
             _editingPage.MetaTitle       = NullIfEmpty(_pageMetaTitle);
             _editingPage.MetaDescription = NullIfEmpty(_pageMetaDescription);
             _editingPage.OgImage         = NullIfEmpty(_pageOgImage);
@@ -1211,6 +1461,7 @@
                 Body            = body,
                 IsPublished     = _pageIsPublished,
                 PublishedDate   = publishedDate,
+                FeaturedImage   = NullIfEmpty(_pageFeaturedImage),
                 MetaTitle       = NullIfEmpty(_pageMetaTitle),
                 MetaDescription = NullIfEmpty(_pageMetaDescription),
                 OgImage         = NullIfEmpty(_pageOgImage),

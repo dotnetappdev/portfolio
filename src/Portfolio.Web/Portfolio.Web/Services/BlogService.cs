@@ -34,6 +34,7 @@ public class BlogService(ApplicationDbContext dbContext)
     /// <summary>Persists changes to an existing blog post.</summary>
     public async Task UpdateAsync(BlogPost post)
     {
+        post.UpdatedAt = DateTime.UtcNow;
         dbContext.BlogPosts.Update(post);
         await dbContext.SaveChangesAsync();
     }

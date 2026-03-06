@@ -24,6 +24,10 @@ else
     {
         <MudItem xs="12">
             <MudCard Elevation="2" Class="mb-2">
+                @if (!string.IsNullOrWhiteSpace(post.FeaturedImage))
+                {
+                    <MudCardMedia Image="@post.FeaturedImage" Height="200" />
+                }
                 <MudCardContent>
                     <MudGrid>
                         <MudItem xs="12" md="9">
