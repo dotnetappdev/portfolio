@@ -5,6 +5,7 @@
 @using Microsoft.EntityFrameworkCore
 @inject UserManager<Portfolio.Web.Data.ApplicationUser> UserManager
 @inject Portfolio.Web.Data.ApplicationDbContext DbContext
+@inject Portfolio.Web.Services.SmsSender SmsSender
 @inject ISnackbar Snackbar
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
@@ -17,7 +18,7 @@
             </MudAvatar>
             <MudStack Spacing="0">
                 <MudText Typo="Typo.h4" Class="fw-bold">Admin Dashboard</MudText>
-                <MudText Typo="Typo.subtitle1">Manage users, hero stats and portfolio settings</MudText>
+                <MudText Typo="Typo.subtitle1">Manage users, hero stats, SMS settings and portfolio content</MudText>
             </MudStack>
         </MudStack>
     </MudContainer>
@@ -215,6 +216,132 @@
             </MudItem>
         </MudGrid>
     </MudTabPanel>
+    <!-- ── SMS Settings tab ───────────────────────────────── -->
+    <MudTabPanel Text="SMS Settings" Icon="@Icons.Material.Filled.Sms">
+        @if (_smsSettings == null)
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-4" />
+        }
+        else
+        {
+        <MudGrid Class="mt-4">
+            <!-- Provider & global settings -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.SettingsPhone" Class="mr-2" />
+                                SMS Provider
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSwitch @bind-Value="_smsSettings.IsEnabled" Label="Enable SMS sending"
+                                   Color="Color.Success" Class="mb-3" />
+
+                        <MudSelect @bind-Value="_smsSettings.Provider" Label="Provider"
+                                   Variant="Variant.Outlined" Class="mb-3">
+                            <MudSelectItem Value="@("None")">None (disabled)</MudSelectItem>
+                            <MudSelectItem Value="@("Twilio")">Twilio</MudSelectItem>
+                            <MudSelectItem Value="@("ClickSend")">ClickSend</MudSelectItem>
+                        </MudSelect>
+
+                        <MudTextField @bind-Value="_smsSettings.AdminReceiverNumber"
+                                      Label="Admin receiver number (E.164, e.g. +447911123456)"
+                                      Variant="Variant.Outlined" Class="mb-3"
+                                      HelperText="Contact-form alerts are sent to this number" />
+
+                        <!-- Twilio credentials -->
+                        @if (_smsSettings.Provider == "Twilio")
+                        {
+                            <MudDivider Class="my-3" />
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Twilio credentials</MudText>
+                            <MudTextField @bind-Value="_smsSettings.TwilioAccountSid"
+                                          Label="Account SID" Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_smsSettings.TwilioAuthToken"
+                                          Label="Auth Token"
+                                          InputType="@(_showTwilioToken ? InputType.Text : InputType.Password)"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(_showTwilioToken ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                          OnAdornmentClick="@(() => _showTwilioToken = !_showTwilioToken)" />
+                            <MudTextField @bind-Value="_smsSettings.TwilioFromNumber"
+                                          Label="From number (E.164 or Messaging Service SID)"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                        }
+
+                        <!-- ClickSend credentials -->
+                        @if (_smsSettings.Provider == "ClickSend")
+                        {
+                            <MudDivider Class="my-3" />
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">ClickSend credentials</MudText>
+                            <MudTextField @bind-Value="_smsSettings.ClickSendUsername"
+                                          Label="Username (email)" Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_smsSettings.ClickSendApiKey"
+                                          Label="API Key"
+                                          InputType="@(_showClickSendKey ? InputType.Text : InputType.Password)"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(_showClickSendKey ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                          OnAdornmentClick="@(() => _showClickSendKey = !_showClickSendKey)" />
+                            <MudTextField @bind-Value="_smsSettings.ClickSendFromName"
+                                          Label="Sender ID (up to 11 chars or phone number)"
+                                          Variant="Variant.Outlined" Class="mb-3" />
+                        }
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@SaveSmsSettings" Disabled="@_savingSms"
+                                   StartIcon="@Icons.Material.Filled.Save">
+                            @(_savingSms ? "Saving..." : "Save SMS Settings")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
+                                   OnClick="@SendTestSms" Disabled="@(!_smsSettings.IsEnabled || _sendingTestSms)"
+                                   StartIcon="@Icons.Material.Filled.Send" Class="ml-2">
+                            @(_sendingTestSms ? "Sending..." : "Send Test SMS")
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <!-- Info card -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                                Setup Guide
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">Twilio</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">
+                            Sign up at <strong>twilio.com</strong>. Copy your <em>Account SID</em> and
+                            <em>Auth Token</em> from the Console dashboard. Add a verified phone number as
+                            the From number.
+                        </MudText>
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">ClickSend</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2">
+                            Sign up at <strong>clicksend.com</strong>. Your login email is the username;
+                            generate an API key in <em>Account → API Credentials</em>.
+                            The Sender ID can be up to 11 alphanumeric characters.
+                        </MudText>
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">Admin receiver number</MudText>
+                        <MudText Typo="Typo.body2">
+                            Contact-form submissions send an SMS alert to this number.
+                            Must be in international E.164 format, e.g. <code>+447911123456</code>.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+        }
+    </MudTabPanel>
 
 </MudTabs>
 </div>
@@ -245,6 +372,8 @@
     {
         _users = await UserManager.Users.ToListAsync();
         _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
+                       ?? new Portfolio.Web.Data.SmsSettings();
     }
 
     // ── User management ─────────────────────────────────────
@@ -355,4 +484,47 @@
         "Warning"   => Color.Warning,
         _           => Color.Primary
     };
+
+    // ── SMS Settings ────────────────────────────────────────
+    private Portfolio.Web.Data.SmsSettings? _smsSettings;
+    private bool _savingSms;
+    private bool _sendingTestSms;
+    private bool _showTwilioToken;
+    private bool _showClickSendKey;
+
+    private async Task SaveSmsSettings()
+    {
+        if (_smsSettings == null) return;
+        _savingSms = true;
+
+        if (_smsSettings.Id == 0)
+            DbContext.SmsSettings.Add(_smsSettings);
+        else
+            DbContext.SmsSettings.Update(_smsSettings);
+
+        await DbContext.SaveChangesAsync();
+        _savingSms = false;
+        Snackbar.Add("SMS settings saved.", Severity.Success);
+    }
+
+    private async Task SendTestSms()
+    {
+        if (_smsSettings == null || string.IsNullOrWhiteSpace(_smsSettings.AdminReceiverNumber))
+        {
+            Snackbar.Add("Set an admin receiver number before sending a test.", Severity.Warning);
+            return;
+        }
+
+        _sendingTestSms = true;
+        // Persist first so SmsSender reads the latest values
+        await SaveSmsSettings();
+
+        var result = await SmsSender.SendToAdminAsync("Test SMS from Portfolio admin — everything is working!");
+        _sendingTestSms = false;
+
+        if (result.Succeeded)
+            Snackbar.Add($"Test SMS sent (id: {result.MessageId ?? "n/a"}).", Severity.Success);
+        else
+            Snackbar.Add($"Test SMS failed: {result.Error}", Severity.Error);
+    }
 }

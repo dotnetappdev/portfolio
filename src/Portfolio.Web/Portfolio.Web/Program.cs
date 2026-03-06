@@ -5,7 +5,6 @@ using Portfolio.Web.Components;
 using Portfolio.Web.Data;
 using Portfolio.Web.Services;
 using Portfolio.Web.Infrastructure;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
@@ -44,6 +43,13 @@ builder.Services.AddHttpClient<PortfolioApiService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7002/");
 });
+
+// Named HTTP clients for SMS providers
+builder.Services.AddHttpClient("Twilio");
+builder.Services.AddHttpClient("ClickSend");
+
+// SmsSender reads provider settings from the DB on each call — no restart needed
+builder.Services.AddScoped<SmsSender>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();
