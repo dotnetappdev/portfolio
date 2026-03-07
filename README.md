@@ -358,7 +358,7 @@ The database is seeded with eight posts on first run:
 - **Building Curo: A Healthcare Care Management Platform** — Blazor-based care management deployed to Azure with strict compliance (Projects category)
 - **Building BookIt: A Blazor Booking Management System** — real-time booking system with SMS notifications and dark/light mode (Projects category)
 - **Building AI into .NET Without Losing Your Mind** — production lessons from Semantic Kernel and Azure OpenAI
-- **The OWASP Top Ten Is Not a Checklist. It Is a Story.** — how to actually use OWASP in .NET
+- **The OWASP Top Ten Is Not a Checklist — It Is a Story** — how to actually use OWASP in .NET
 - **What Three Decades of Software Development Taught Me About Writing Code That Lasts** — personal reflection on writing durable code
 - **JWT Tokens Are Not Magic and That Matters** — authentication pitfalls in ASP.NET Core
 - **When AI Caught a Bug My Tests Missed** — real story from a healthcare AI project
