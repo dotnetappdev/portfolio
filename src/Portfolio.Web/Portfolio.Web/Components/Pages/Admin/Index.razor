@@ -11,7 +11,9 @@
 @inject Portfolio.Web.Services.CmsPageService CmsPageService
 @inject Portfolio.Web.Services.MenuService MenuService
 @inject Portfolio.Web.Services.AppSettingsService AppSettingsService
+@inject Portfolio.Web.Services.StaticSiteGeneratorService StaticSiteGenerator
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
 
@@ -1092,8 +1094,92 @@
         </MudGrid>
     </MudTabPanel>
 
+    <!-- ── Static Site tab ─────────────────────────────────── -->
+    <MudTabPanel Text="Static Site" Icon="@Icons.Material.Filled.Download">
+        <MudGrid Class="mt-4">
+            <MudItem xs="12" md="8">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.FolderZip" Class="mr-2" />
+                                Generate Static Site
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1" Class="mb-3">
+                            Generate a complete, self-contained static HTML snapshot of your portfolio — dark mode by default,
+                            with all blog posts, projects, skills, and CMS pages baked in. The result is a ZIP file ready
+                            to deploy to GitHub Pages, Netlify, Azure Static Web Apps, or any static host.
+                        </MudText>
+                        <MudList T="string" Dense="true" Class="mb-4">
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">Home, About, Projects, Skills, Contact pages</MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">Blog listing and individual post pages</MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">All custom CMS pages</MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">Dark mode by default with the portfolio brand theme</MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">Responsive navigation with mobile hamburger menu</MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">Technology chips on projects and blog posts</MudListItem>
+                            <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">Project images and featured images included</MudListItem>
+                        </MudList>
+                        @if (_generatingStaticSite)
+                        {
+                            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-3" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Generating static site — this may take a few seconds…</MudText>
+                        }
+                        else if (!string.IsNullOrEmpty(_staticSiteMessage))
+                        {
+                            <MudAlert Severity="@_staticSiteSeverity" Class="mb-3">@_staticSiteMessage</MudAlert>
+                        }
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@GenerateStaticSite"
+                                   Disabled="@_generatingStaticSite"
+                                   StartIcon="@Icons.Material.Filled.FolderZip">
+                            @(_generatingStaticSite ? "Generating…" : "Generate & Download ZIP")
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.subtitle2">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                                Deployment Tips
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Class="mb-2"><strong>GitHub Pages:</strong> Extract the ZIP into the <code>gh-pages</code> branch root or a <code>/docs</code> folder.</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2"><strong>Netlify / Vercel:</strong> Drag and drop the extracted folder into the Netlify deploy UI.</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-2"><strong>Azure Static Web Apps:</strong> Point the build output to the extracted folder path.</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">The static site is a point-in-time snapshot. Re-generate and re-deploy whenever you update content.</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
 </MudTabs>
 </div>
+
+<script>
+    window.downloadFileFromBase64 = function (fileName, contentType, base64) {
+        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+</script>
 
 @code {
     // ── Users ───────────────────────────────────────────────
@@ -1685,5 +1771,43 @@
             Snackbar.Add($"Test SMS sent (id: {result.MessageId ?? "n/a"}).", Severity.Success);
         else
             Snackbar.Add($"Test SMS failed: {result.Error}", Severity.Error);
+    }
+
+    // ── Static Site Generator ────────────────────────────────
+    private bool _generatingStaticSite;
+    private string _staticSiteMessage = string.Empty;
+    private Severity _staticSiteSeverity = Severity.Success;
+
+    private async Task GenerateStaticSite()
+    {
+        _generatingStaticSite = true;
+        _staticSiteMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var bytes = await StaticSiteGenerator.GenerateAsync();
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmm");
+            var fileName = $"portfolio-static-{timestamp}.zip";
+
+            // Trigger browser download via a data URI — avoids needing a separate HTTP round-trip
+            // while staying inside the Blazor Server circuit.
+            var base64 = Convert.ToBase64String(bytes);
+            await JSRuntime.InvokeVoidAsync("downloadFileFromBase64", fileName, "application/zip", base64);
+
+            _staticSiteMessage = $"Static site generated successfully ({bytes.Length / 1024:N0} KB). Your download should start automatically.";
+            _staticSiteSeverity = Severity.Success;
+            Snackbar.Add($"Static site ZIP downloaded ({bytes.Length / 1024:N0} KB).", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            _staticSiteMessage = $"Generation failed: {ex.Message}";
+            _staticSiteSeverity = Severity.Error;
+            Snackbar.Add("Static site generation failed. See the error message for details.", Severity.Error);
+        }
+        finally
+        {
+            _generatingStaticSite = false;
+        }
     }
 }

@@ -53,6 +53,7 @@ builder.Services.AddScoped<Portfolio.Web.Services.CmsPageService>();
 builder.Services.AddScoped<Portfolio.Web.Services.MenuService>();
 builder.Services.AddScoped<Portfolio.Web.Services.AppSettingsService>();
 builder.Services.AddScoped<Portfolio.Web.Services.PortfolioApiService>();
+builder.Services.AddScoped<Portfolio.Web.Services.StaticSiteGeneratorService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();
@@ -141,5 +142,19 @@ if (builder.Configuration.GetValue<bool>("SeedData"))
 
     logger.LogInformation("Web seed complete. Admin account: {Email}", adminEmail);
 }
+
+// Static site generator — auth-protected download endpoint.
+// The Blazor Server auth cookie is sent automatically by the browser when the
+// admin clicks the download link, so RequireAuthorization() is sufficient.
+app.MapGet("/admin/generate-static-site", async (
+    StaticSiteGeneratorService generator,
+    HttpContext ctx) =>
+{
+    var bytes = await generator.GenerateAsync();
+    var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmm");
+    ctx.Response.ContentType = "application/zip";
+    ctx.Response.Headers.ContentDisposition = $"attachment; filename=\"portfolio-static-{timestamp}.zip\"";
+    await ctx.Response.Body.WriteAsync(bytes);
+}).RequireAuthorization();
 
 app.Run();

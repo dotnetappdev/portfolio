@@ -5,44 +5,35 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ## Screenshots
 
 ### Home Page
-![Home Page](https://github.com/user-attachments/assets/38a7092c-c159-4027-a736-c51d6ad7c440)
+![Home Page](https://github.com/user-attachments/assets/b6d72e2d-44a9-4a14-b062-0af200165768)
 
-### Blog
-![Blog Listing](https://github.com/user-attachments/assets/76456491-fe5c-4ba7-b6e0-8ff9cefbb2de)
+### Projects (with Work Project category and tech chips)
+![Projects](https://github.com/user-attachments/assets/3116e651-665f-4efc-88cb-c4892bd25bbe)
 
-### Blog Post
-![Blog Post](https://github.com/user-attachments/assets/23245f18-0e8a-4308-a519-fdb824334c69)
+### Blog (with Projects category and featured SVG mockups)
+![Blog Listing](https://github.com/user-attachments/assets/074821e4-806d-434a-8048-2ad3636941b9)
 
-### Projects
-![Projects](https://github.com/user-attachments/assets/d3d560ed-999f-46c3-9964-2dcd2941204c)
+### Blog Post (BookIt — with tech chips)
+![Blog Post](https://github.com/user-attachments/assets/a0162a28-9b72-41db-9564-7d0c6fcf8b46)
 
 ### Skills (with AI and Security)
-![Skills](https://github.com/user-attachments/assets/4af6d3c5-d20a-4154-9749-c9455a9d03e8)
+![Skills](https://github.com/user-attachments/assets/8ab05d13-b393-4063-9a8e-a2e5733c3c91)
 
 ### About
-![About](https://github.com/user-attachments/assets/7577c3fb-521e-48b2-9a51-888f7d4ca262)
+![About](https://github.com/user-attachments/assets/5a13548e-39a0-4421-8902-9eb4c5283677)
 
-### Contact
-![Contact](https://github.com/user-attachments/assets/158c3d36-920b-4673-b336-fc2ef89cc783)
+### Contact (with math CAPTCHA)
+![Contact](https://github.com/user-attachments/assets/5cdd5ecd-51cf-4848-b019-54006a15796e)
 
 ---
 
 ## CMS Screenshots
 
 ### Admin Dashboard — Hero Stats
-![Admin Dashboard](https://github.com/user-attachments/assets/0dee2787-c532-4664-9ba7-fdb2d91939ea)
+![Admin Dashboard](https://github.com/user-attachments/assets/6b0b927f-6459-4ba4-97ee-cd9346156168)
 
-### Admin — Blog Posts List
-![Admin Blog Posts](https://github.com/user-attachments/assets/72cc27b3-0614-41d9-a41f-d8ba9c827791)
-
-### Admin — Pages
-![Admin Pages](https://github.com/user-attachments/assets/4775b5e3-a075-4a91-a320-6b1ca11e0097)
-
-### Admin — Navigation Menus
-![Admin Menus](https://github.com/user-attachments/assets/69e92357-8d79-4153-8ada-40fdfaac3205)
-
-### Admin — Settings (API + SMS)
-![Admin Settings](https://github.com/user-attachments/assets/c03ecac3-cd28-4895-9331-dd4b4f21d3cb)
+### Admin — Static Site Generator
+![Admin Static Site](https://github.com/user-attachments/assets/59c269e9-1e32-47b0-a9c4-3e41ebd12354)
 
 ---
 
@@ -69,7 +60,7 @@ Portfolio.slnx
         │   ├── Data/                  # ApplicationDbContext, BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings
         │   ├── Infrastructure/        # DatabaseProviderFactory
         │   └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
-        │                              #   PortfolioApiService, SmsSender
+        │                              #   PortfolioApiService, SmsSender, StaticSiteGeneratorService
         └── Portfolio.Web.Client/      # Blazor WASM Client
 ```
 
@@ -77,16 +68,20 @@ Portfolio.slnx
 
 - **AI Developer positioning** — hero section, skills, and projects lead with AI expertise
 - **Security focus** — dedicated Security skills category, OWASP/OAuth2/JWT projects
+- **Work Project showcase** — dedicated "Work Project" category for BookIt, Curo, and TalentConnect with SVG app-mockup images and tech chip badges
 - **WordPress-style CMS** — create, edit, publish and delete blog posts and custom pages entirely from the admin dashboard with no code deploy required
 - **WYSIWYG editor** — Quill rich-text editor (served locally, no CDN) for blog posts and pages; supports headings, bold/italic/lists/links/code blocks and more
 - **DB-driven navigation** — add, reorder, hide or delete menu items live from the Menus admin tab
 - **Custom CMS pages** — publish arbitrary pages at any slug (e.g. `/services`, `/hire-me`) with full SEO metadata
 - **SEO & Open Graph** — per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
-- **Featured images** — optional hero banner image on blog posts and card thumbnail on the blog listing
+- **Featured images** — optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
+- **Tech chip badges** — technology tags displayed as chips on project cards and blog posts
+- **Contact form CAPTCHA** — server-side math challenge blocks spam without any external service or API key
+- **Static site generator** — export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode** — respects system preference, toggleable in the header
 - **REST API with fallback** — Blazor app works standalone when API is offline
 - **Configurable database provider** — SQL Server, SQLite, or PostgreSQL via one setting
-- **Admin area** — create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages and menus
+- **Admin area** — create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, and generate static exports
 - **In-app settings** — API base URL and SMS provider configured through the admin Settings tab (stored in DB, no restart needed)
 - **Account lockout** — 5 failed attempts triggers a 15-minute lockout
 - **SMS notifications** — contact-form alerts sent to your number via Twilio or ClickSend (configured in admin)
@@ -240,7 +235,7 @@ The development defaults (in `appsettings.Development.json`) are:
 
 ## Admin Area
 
-Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into six tabs:
+Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into seven tabs:
 
 | Tab | What you can do |
 |---|---|
@@ -250,6 +245,7 @@ Navigate to `/login` and sign in to access `/admin`. The admin dashboard is orga
 | **Blog Posts** | Create, edit, publish/unpublish and delete blog posts using the Quill WYSIWYG editor; manage slug, excerpt, tags, read time, featured image and SEO metadata |
 | **Pages** | Create custom CMS pages at any slug (e.g. `/services`); same editor and SEO fields as blog posts |
 | **Menus** | Add, edit, reorder, show/hide and delete navigation menu items; changes appear immediately in the nav bar |
+| **Static Site** | Generate a complete dark-mode static HTML snapshot of the portfolio and download it as a deployable ZIP |
 
 There is no public registration page by design.
 
@@ -356,8 +352,11 @@ The blog lives at `/blog`. Posts are stored in the database and managed entirely
 
 ### Seeded posts
 
-The database is seeded with five existing posts on first run:
+The database is seeded with eight posts on first run:
 
+- **Building TalentConnect: A Modern Blazor Recruitment Platform** — building a full-stack recruitment platform with job pipelines and analytics (Projects category)
+- **Building Curo: A Healthcare Care Management Platform** — Blazor-based care management deployed to Azure with strict compliance (Projects category)
+- **Building BookIt: A Blazor Booking Management System** — real-time booking system with SMS notifications and dark/light mode (Projects category)
 - **Building AI into .NET Without Losing Your Mind** — production lessons from Semantic Kernel and Azure OpenAI
 - **The OWASP Top Ten Is Not a Checklist. It Is a Story.** — how to actually use OWASP in .NET
 - **What Three Decades of Software Development Taught Me About Writing Code That Lasts** — personal reflection on writing durable code
@@ -367,6 +366,51 @@ The database is seeded with five existing posts on first run:
 ### Custom CMS Pages
 
 Create arbitrary pages at any slug from Admin → **Pages**. Published pages are rendered automatically at `/{slug}` and include full SEO metadata. Useful for pages like `/services`, `/hire-me`, `/speaking`, etc.
+
+---
+
+## Static Site Generator
+
+The admin **Static Site** tab generates a complete, deployable, dark-mode HTML snapshot of the entire portfolio in one click.
+
+### What's included in the ZIP
+
+| Content | Details |
+|---|---|
+| Pages | Home, About, Projects, Skills, Blog (listing + all posts), Contact |
+| CMS pages | All published custom pages |
+| Stylesheet | Single `css/site.css` — dark mode, brand palette (`#0F0A1E` / `#C4B5FD`) |
+| Navigation | Responsive nav with mobile hamburger (pure CSS/JS, no dependencies) |
+| Tech chips | Technology badges on project cards and blog posts |
+| Images | All project SVGs and featured images bundled at correct relative paths |
+
+### Deployment
+
+| Host | Steps |
+|---|---|
+| **GitHub Pages** | Extract ZIP into `gh-pages` branch root or a `/docs` folder |
+| **Netlify / Vercel** | Drag and drop the extracted folder into the deploy UI |
+| **Azure Static Web Apps** | Point the build output to the extracted folder path |
+
+> The static site is a point-in-time snapshot. Re-generate and re-deploy whenever you update content.
+
+---
+
+## Contact Form CAPTCHA
+
+The contact form includes a simple server-side math challenge ("What is A + B?"). The correct answer is required before the message is sent. A wrong answer regenerates the challenge. No external service or API key needed — pure in-component arithmetic.
+
+---
+
+## Work Projects
+
+Three real-world applications are showcased under the **Work Project** category on the Projects and Home pages, each with an SVG app-mockup image, a detailed description, and a matching blog post:
+
+| Project | Description | Tech |
+|---|---|---|
+| **BookIt** | Full-featured booking management system with real-time availability, SMS notifications, light/dark mode | Blazor, ASP.NET Core, MudBlazor, SQL Server, EF Core |
+| **Curo** | Healthcare care management platform for coordinating patient care plans and clinical workflows | ASP.NET Core, Blazor, SQL Server, EF Core, Azure |
+| **TalentConnect** | Recruitment management platform with job postings, multi-stage candidate pipelines, and analytics | Blazor, ASP.NET Core, MudBlazor, SQL Server, EF Core |
 
 ---
 

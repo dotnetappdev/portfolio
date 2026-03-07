@@ -33,6 +33,23 @@
                     <MudTextField @bind-Value="_model.Message" Label="Message" Required="true"
                                   RequiredError="Message is required" Lines="6"
                                   Variant="Variant.Outlined" Class="mb-4" />
+
+                    <!-- Security check (math CAPTCHA) -->
+                    <MudPaper Class="pa-3 mb-4" Elevation="0" Style="border:1px solid var(--mud-palette-lines-inputs);border-radius:4px;">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                            <MudIcon Icon="@Icons.Material.Filled.Shield" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">Security check: What is <strong>@_captchaA + @_captchaB</strong>?</MudText>
+                            <MudTextField @bind-Value="_captchaAnswer"
+                                          Placeholder="Answer"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Style="max-width:100px;"
+                                          Error="@_captchaError"
+                                          ErrorText="Incorrect answer — please try again."
+                                          InputType="InputType.Number" />
+                        </MudStack>
+                    </MudPaper>
+
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
                                OnClick="@HandleSubmit" Disabled="@_sending"
                                StartIcon="@Icons.Material.Filled.Send">
@@ -51,10 +68,36 @@
     private bool _sending;
     private Portfolio.Shared.Models.ContactMessageDto _model = new();
 
+    // ── CAPTCHA ──────────────────────────────────────────────
+    private int _captchaA;
+    private int _captchaB;
+    private string _captchaAnswer = string.Empty;
+    private bool _captchaError;
+
+    protected override void OnInitialized() => RegenerateCaptcha();
+
+    private void RegenerateCaptcha()
+    {
+        var rng = Random.Shared;
+        _captchaA = rng.Next(1, 10);
+        _captchaB = rng.Next(1, 10);
+        _captchaAnswer = string.Empty;
+        _captchaError = false;
+    }
+
     private async Task HandleSubmit()
     {
         await _form.Validate();
         if (!_isValid) return;
+
+        // Validate CAPTCHA
+        if (!int.TryParse(_captchaAnswer, out var answer) || answer != _captchaA + _captchaB)
+        {
+            _captchaError = true;
+            RegenerateCaptcha();
+            Snackbar.Add("Incorrect answer to the security question. Please try again.", Severity.Warning);
+            return;
+        }
 
         _sending = true;
         var success = await ApiService.SendContactMessageAsync(_model);
@@ -71,10 +114,12 @@
             Snackbar.Add("Message sent successfully! I'll get back to you soon.", Severity.Success);
             _model = new Portfolio.Shared.Models.ContactMessageDto();
             await _form.ResetAsync();
+            RegenerateCaptcha();
         }
         else
         {
             Snackbar.Add("Unable to send message due to a connection issue. Please try again later or contact me directly.", Severity.Warning);
+            RegenerateCaptcha();
         }
     }
 }
