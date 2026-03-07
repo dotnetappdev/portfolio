@@ -1,10 +1,34 @@
 @page "/blog/{Slug}"
-@using Portfolio.Web.Services
+@rendermode InteractiveServer
+@using Portfolio.Web.Data
+@inject Portfolio.Web.Services.BlogService BlogService
 @inject NavigationManager Navigation
 
-<PageTitle>@(_post?.Title ?? "Post Not Found") | David Buckley Blog</PageTitle>
+<PageTitle>@(_post?.MetaTitle ?? _post?.Title ?? "Post Not Found") | David Buckley Blog</PageTitle>
 
-@if (_post == null)
+@if (!_loading && _post is not null)
+{
+    <HeadContent>
+        <meta name="description" content="@(_post.MetaDescription ?? _post.Summary)" />
+        @if (!string.IsNullOrWhiteSpace(_post.OgImage ?? _post.FeaturedImage))
+        {
+            <meta property="og:image" content="@(_post.OgImage ?? _post.FeaturedImage)" />
+        }
+        <meta property="og:title" content="@(_post.MetaTitle ?? _post.Title)" />
+        <meta property="og:description" content="@(_post.MetaDescription ?? _post.Summary)" />
+        <meta property="og:type" content="article" />
+        <meta property="article:published_time" content="@_post.PublishedDate.ToString("O")" />
+        <link rel="canonical" href="@(_post.CanonicalUrl ?? Navigation.Uri)" />
+    </HeadContent>
+}
+
+@if (_loading)
+{
+    <div class="page-content">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    </div>
+}
+else if (_post == null)
 {
     <div class="page-content">
         <MudText Typo="Typo.h4" Class="mb-4">Post not found</MudText>
@@ -22,10 +46,16 @@ else
                 Back to Blog
             </MudButton>
 
+            @if (!string.IsNullOrWhiteSpace(_post.FeaturedImage))
+            {
+                <img src="@_post.FeaturedImage" alt="@_post.Title"
+                     style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:24px;" />
+            }
+
             <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="1">
                 <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(_post.Category)"
                          Variant="Variant.Filled">@_post.Category</MudChip>
-                @foreach (var tag in _post.Tags)
+                @foreach (var tag in _post.TagList)
                 {
                     <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">@tag</MudChip>
                 }
@@ -40,7 +70,7 @@ else
                 </MudStack>
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                     <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">@_post.PublishedDate</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@_post.PublishedDate.ToString("d MMMM yyyy")</MudText>
                 </MudStack>
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                     <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
@@ -51,9 +81,16 @@ else
             <MudDivider Class="mb-6" />
 
             <MudPaper Elevation="0" Class="pa-2">
-                @foreach (var paragraph in GetParagraphs(_post.Body))
+                @if (IsHtmlBody(_post.Body))
                 {
-                    <MudText Typo="Typo.body1" Class="mb-5" Style="line-height:1.8;">@paragraph</MudText>
+                    <div class="cms-body">@((MarkupString)_post.Body)</div>
+                }
+                else
+                {
+                    @foreach (var paragraph in GetParagraphs(_post.Body))
+                    {
+                        <MudText Typo="Typo.body1" Class="mb-5" Style="line-height:1.8;">@paragraph</MudText>
+                    }
                 }
             </MudPaper>
 
@@ -82,7 +119,7 @@ else
             <MudDivider Class="mt-8 mb-4" />
             <MudText Typo="Typo.h5" Class="mb-4 fw-bold">More Posts</MudText>
             <MudGrid>
-                @foreach (var related in BlogService.GetAllPosts().Where(p => p.Slug != _post.Slug).Take(2))
+                @foreach (var related in _relatedPosts)
                 {
                     <MudItem xs="12" sm="6">
                         <MudCard Elevation="2">
@@ -108,11 +145,22 @@ else
 @code {
     [Parameter] public string Slug { get; set; } = string.Empty;
     private BlogPost? _post;
+    private IReadOnlyList<BlogPost> _relatedPosts = [];
+    private bool _loading = true;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        _post = BlogService.GetBySlug(Slug);
+        _loading = true;
+        _post = await BlogService.GetBySlugAsync(Slug);
+        if (_post is not null)
+        {
+            var all = await BlogService.GetAllPostsAsync();
+            _relatedPosts = all.Where(p => p.Slug != _post.Slug).Take(2).ToList();
+        }
+        _loading = false;
     }
+
+    private static bool IsHtmlBody(string body) => body.TrimStart().StartsWith('<');
 
     private static IEnumerable<string> GetParagraphs(string body) =>
         body.Split('\n', StringSplitOptions.RemoveEmptyEntries)

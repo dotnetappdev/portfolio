@@ -8,10 +8,10 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ![Home Page](https://github.com/user-attachments/assets/38a7092c-c159-4027-a736-c51d6ad7c440)
 
 ### Blog
-![Blog Listing](https://github.com/user-attachments/assets/813b52af-c1b1-445d-bf55-b01163ce1ea1)
+![Blog Listing](https://github.com/user-attachments/assets/76456491-fe5c-4ba7-b6e0-8ff9cefbb2de)
 
 ### Blog Post
-![Blog Post](https://github.com/user-attachments/assets/57d4c7e0-0103-4f8f-a567-fc1504b00e3c)
+![Blog Post](https://github.com/user-attachments/assets/23245f18-0e8a-4308-a519-fdb824334c69)
 
 ### Projects
 ![Projects](https://github.com/user-attachments/assets/d3d560ed-999f-46c3-9964-2dcd2941204c)
@@ -24,6 +24,25 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 
 ### Contact
 ![Contact](https://github.com/user-attachments/assets/158c3d36-920b-4673-b336-fc2ef89cc783)
+
+---
+
+## CMS Screenshots
+
+### Admin Dashboard — Hero Stats
+![Admin Dashboard](https://github.com/user-attachments/assets/0dee2787-c532-4664-9ba7-fdb2d91939ea)
+
+### Admin — Blog Posts List
+![Admin Blog Posts](https://github.com/user-attachments/assets/72cc27b3-0614-41d9-a41f-d8ba9c827791)
+
+### Admin — Pages
+![Admin Pages](https://github.com/user-attachments/assets/4775b5e3-a075-4a91-a320-6b1ca11e0097)
+
+### Admin — Navigation Menus
+![Admin Menus](https://github.com/user-attachments/assets/69e92357-8d79-4153-8ada-40fdfaac3205)
+
+### Admin — Settings (API + SMS)
+![Admin Settings](https://github.com/user-attachments/assets/c03ecac3-cd28-4895-9331-dd4b4f21d3cb)
 
 ---
 
@@ -40,10 +59,17 @@ Portfolio.slnx
     ├── Portfolio.Sms.Twilio/          # Twilio REST API implementation
     └── Portfolio.Web/
         ├── Portfolio.Web/             # Blazor Server App
-        │   ├── Components/Pages/      # Blazor pages (Home, Projects, Skills, About, Blog, Contact)
-        │   ├── Components/Layout/     # MainLayout, NavMenu
+        │   ├── Components/
+        │   │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
+        │   │   ├── Pages/
+        │   │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus)
+        │   │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
+        │   │   │   └── CmsPageView/   # Catch-all /{**slug} for custom CMS pages
+        │   │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
+        │   ├── Data/                  # ApplicationDbContext, BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings
         │   ├── Infrastructure/        # DatabaseProviderFactory
-        │   └── Services/              # PortfolioApiService, BlogService, SmsSender
+        │   └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
+        │                              #   PortfolioApiService, SmsSender
         └── Portfolio.Web.Client/      # Blazor WASM Client
 ```
 
@@ -51,11 +77,17 @@ Portfolio.slnx
 
 - **AI Developer positioning** — hero section, skills, and projects lead with AI expertise
 - **Security focus** — dedicated Security skills category, OWASP/OAuth2/JWT projects
-- **Blog** — five human-written posts on AI, .NET, and security (no CMS required)
+- **WordPress-style CMS** — create, edit, publish and delete blog posts and custom pages entirely from the admin dashboard with no code deploy required
+- **WYSIWYG editor** — Quill rich-text editor (served locally, no CDN) for blog posts and pages; supports headings, bold/italic/lists/links/code blocks and more
+- **DB-driven navigation** — add, reorder, hide or delete menu items live from the Menus admin tab
+- **Custom CMS pages** — publish arbitrary pages at any slug (e.g. `/services`, `/hire-me`) with full SEO metadata
+- **SEO & Open Graph** — per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
+- **Featured images** — optional hero banner image on blog posts and card thumbnail on the blog listing
 - **Light and dark mode** — respects system preference, toggleable in the header
 - **REST API with fallback** — Blazor app works standalone when API is offline
 - **Configurable database provider** — SQL Server, SQLite, or PostgreSQL via one setting
-- **Admin area** — create accounts, manage hero stats, configure SMS provider
+- **Admin area** — create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages and menus
+- **In-app settings** — API base URL and SMS provider configured through the admin Settings tab (stored in DB, no restart needed)
 - **Account lockout** — 5 failed attempts triggers a 15-minute lockout
 - **SMS notifications** — contact-form alerts sent to your number via Twilio or ClickSend (configured in admin)
 
@@ -163,9 +195,10 @@ Update `appsettings.Development.json` in both projects:
 |---|---|---|
 | `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql` |
 | `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `ApiBaseUrl` | URL of Portfolio.Api | `https://localhost:7002/` |
 | `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
 | `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
+
+> **API base URL** is now configured in the admin **Settings** tab (stored in the database) — no longer an `appsettings.json` key.
 
 ---
 
@@ -207,13 +240,35 @@ The development defaults (in `appsettings.Development.json`) are:
 
 ## Admin Area
 
-Navigate to `/login` and sign in to access `/admin`. From the admin dashboard you can:
+Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into six tabs:
 
-- **Hero Stats** — add, edit or delete the stat cards shown in the hero section
-- **Users** — create new user accounts and view existing ones
-- **SMS Settings** — configure Twilio or ClickSend and set your receiver number
+| Tab | What you can do |
+|---|---|
+| **Hero Stats** | Add, edit or delete the stat cards shown in the hero section |
+| **Users** | Create new user accounts and view existing ones |
+| **Settings** | Configure the Portfolio API base URL; set up Twilio or ClickSend SMS |
+| **Blog Posts** | Create, edit, publish/unpublish and delete blog posts using the Quill WYSIWYG editor; manage slug, excerpt, tags, read time, featured image and SEO metadata |
+| **Pages** | Create custom CMS pages at any slug (e.g. `/services`); same editor and SEO fields as blog posts |
+| **Menus** | Add, edit, reorder, show/hide and delete navigation menu items; changes appear immediately in the nav bar |
 
 There is no public registration page by design.
+
+### Blog Posts — WordPress-style editor
+
+The Blog Posts tab works like WordPress's post editor:
+
+- **List view** — shows all posts with title, slug, category, publish date, status chip (Published / Draft) and quick-action buttons (Edit, Publish/Unpublish, Delete)
+- **Status filters** — chip buttons to filter All / Published / Drafts
+- **Editor view** — left column: large title field, permalink slug, Quill WYSIWYG body, excerpt; right sidebar: Publish card (status, toggle, date, Save button), Post Settings (category, tags, read time), Featured Image (URL + live preview), SEO & Social (meta title, meta description, OG image, canonical URL — expandable panel)
+- **Back breadcrumb** — `← Posts` returns to the list without losing context
+
+### Custom Pages
+
+The Pages tab works identically to Blog Posts but creates stand-alone pages accessible at any custom slug. Published pages are rendered by the catch-all `/{**slug}` route and include full SEO head injection.
+
+### Navigation Menus
+
+The Menus tab lists all current nav items (label, URL, sort order, visibility). Changes — including adding new items or toggling visibility — are reflected live in the navigation bar without a page reload or restart.
 
 ---
 
@@ -238,7 +293,7 @@ Three small, focused class libraries handle SMS:
 1. Create a free account at [twilio.com](https://www.twilio.com)
 2. From the Console dashboard copy your **Account SID** and **Auth Token**
 3. Add a verified phone number as the **From number** (E.164, e.g. `+447911123456`)
-4. In Admin → SMS Settings, set **Provider: Twilio**, fill in the credentials, and enter your **Admin receiver number**
+4. In Admin → **Settings** → SMS Provider, set **Provider: Twilio**, fill in the credentials, and enter your **Admin receiver number**
 5. Click **Send Test SMS** to verify
 
 ### ClickSend Setup
@@ -246,7 +301,7 @@ Three small, focused class libraries handle SMS:
 1. Create an account at [clicksend.com](https://www.clicksend.com)
 2. Go to **Account → API Credentials** and generate an API key
 3. Your login email is the **username**
-4. In Admin → SMS Settings, set **Provider: ClickSend**, fill in the credentials
+4. In Admin → **Settings** → SMS Provider, set **Provider: ClickSend**, fill in the credentials
 5. The **Sender ID** can be up to 11 alphanumeric characters or a phone number
 6. Click **Send Test SMS** to verify
 
@@ -279,17 +334,39 @@ public class MyService(ISmsService sms)
 
 ---
 
-## Blog
+## Blog & CMS
 
-The blog lives at `/blog`. Posts are authored in `BlogService.cs` as plain C# strings, so no database or CMS is needed. Current posts:
+The blog lives at `/blog`. Posts are stored in the database and managed entirely through the admin **Blog Posts** tab — no code changes or deployments needed.
+
+### Creating a post
+
+1. Go to `/admin` → **Blog Posts** → **Add New Post**
+2. Enter a title (the slug is auto-generated but editable)
+3. Write the body using the Quill WYSIWYG editor
+4. Fill in the excerpt and any post settings (category, tags, read time)
+5. Optionally add a featured image URL and SEO/OG metadata in the right sidebar
+6. Click **Publish** to make it live, or **Save Draft** to keep it hidden
+
+### Post features
+
+- **Slug** — fully editable permalink (e.g. `/blog/my-post-title`)
+- **Featured image** — displayed as a full-width hero banner on the post page and as a card thumbnail on the blog listing
+- **SEO** — per-post `<title>`, `<meta name="description">`, `og:title`, `og:description`, `og:image`, and `<link rel="canonical">` injected automatically
+- **Status** — toggle between Published and Draft at any time without deleting
+
+### Seeded posts
+
+The database is seeded with five existing posts on first run:
 
 - **Building AI into .NET Without Losing Your Mind** — production lessons from Semantic Kernel and Azure OpenAI
 - **The OWASP Top Ten Is Not a Checklist. It Is a Story.** — how to actually use OWASP in .NET
-- **What Thirty Years of C# Taught Me About Code That Lasts** — personal reflection on writing durable code
+- **What Three Decades of Software Development Taught Me About Writing Code That Lasts** — personal reflection on writing durable code
 - **JWT Tokens Are Not Magic and That Matters** — authentication pitfalls in ASP.NET Core
 - **When AI Caught a Bug My Tests Missed** — real story from a healthcare AI project
 
-To add a post, append a new `BlogPost` record to the `_posts` array in `src/Portfolio.Web/Portfolio.Web/Services/BlogService.cs`.
+### Custom CMS Pages
+
+Create arbitrary pages at any slug from Admin → **Pages**. Published pages are rendered automatically at `/{slug}` and include full SEO metadata. Useful for pages like `/services`, `/hire-me`, `/speaking`, etc.
 
 ---
 

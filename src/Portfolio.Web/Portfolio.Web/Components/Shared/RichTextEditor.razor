@@ -1,0 +1,60 @@
+@using Blazored.TextEditor
+
+<BlazoredTextEditor @ref="_editor" Placeholder="@Placeholder">
+    <ToolbarContent>
+        <span class="ql-formats">
+            <select class="ql-header">
+                <option selected=""></option>
+                <option value="1">Heading 1</option>
+                <option value="2">Heading 2</option>
+                <option value="3">Heading 3</option>
+            </select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+            <select class="ql-color"></select>
+            <select class="ql-background"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+            <button class="ql-indent" value="-1"></button>
+            <button class="ql-indent" value="+1"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-link"></button>
+            <button class="ql-blockquote"></button>
+            <button class="ql-code-block"></button>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-clean"></button>
+        </span>
+    </ToolbarContent>
+    <EditorContent>
+    </EditorContent>
+</BlazoredTextEditor>
+
+@code {
+    [Parameter] public string Placeholder { get; set; } = "Enter content here...";
+
+    private BlazoredTextEditor _editor = null!;
+
+    /// <summary>Loads HTML content into the editor. Call after the component has rendered.</summary>
+    public async Task LoadAsync(string html)
+    {
+        if (_editor is not null)
+            await _editor.LoadHTMLContent(html);
+    }
+
+    /// <summary>Returns the current editor content as HTML.</summary>
+    public async Task<string> GetValueAsync()
+    {
+        if (_editor is null) return string.Empty;
+        return await _editor.GetHTML() ?? string.Empty;
+    }
+}
