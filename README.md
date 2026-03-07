@@ -1,48 +1,48 @@
-# David Buckley — AI Developer & Security Engineer Portfolio
+# David Buckley: AI Developer and Security Engineer Portfolio
 
 A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Entity Framework Core. Positions David as a senior software engineer specialising in AI development and application security with 30 years of .NET experience.
 
 ## Screenshots
 
 ### Home Page
-![Home Page](https://github.com/user-attachments/assets/f2d82059-c8c6-42cf-82b2-8ee5a55ebb32)
+![Home Page](https://github.com/user-attachments/assets/066d11be-7bb1-4fd8-8846-f4db81449dd8)
 
 ### Projects (with improved descriptions and tech chips)
-![Projects](https://github.com/user-attachments/assets/09197da2-e185-4fac-877e-c39f2c26aada)
+![Projects](https://github.com/user-attachments/assets/6c3d546d-9aae-473c-9d43-f1291d2a507f)
 
-### Blog (all 8 posts — each with a themed featured image)
-![Blog Listing](https://github.com/user-attachments/assets/9a27f75d-daa5-41fb-9036-713e75825369)
+### Blog (all 8 posts, each with a themed featured image)
+![Blog Listing](https://github.com/user-attachments/assets/ad473d52-f82a-4b8d-8daf-f113958f2045)
 
-### Blog Post — BookIt (product SVG mockup + newspaper-style H2 sections)
+### Blog Post: BookIt (product SVG mockup + newspaper-style H2 sections)
 ![Blog Post BookIt](https://github.com/user-attachments/assets/05454c04-bdde-4ff4-b670-b37d85236e6b)
 
-### Blog Post — AI in .NET (AI chat mockup featured image)
+### Blog Post: AI in .NET (AI chat mockup featured image)
 ![Blog Post AI](https://github.com/user-attachments/assets/e5cbaba8-2f22-47bd-99ea-6603dc2844cb)
 
-### Blog Post — OWASP (security dashboard featured image)
-![Blog Post OWASP](https://github.com/user-attachments/assets/b58865b2-6d00-4f17-8da6-15ed368c706f)
+### Blog Post: OWASP (security dashboard featured image)
+![Blog Post OWASP](https://github.com/user-attachments/assets/5aa434c2-a009-4e00-9752-e5c17bd3d8bb)
 
-### Blog Post — Three Decades (code editor featured image)
+### Blog Post: Three Decades (code editor featured image)
 ![Blog Post .NET](https://github.com/user-attachments/assets/e07ad50b-a977-4e0b-9800-aa7d65e70273)
 
 ### Skills (with AI and Security categories)
-![Skills](https://github.com/user-attachments/assets/114dece9-048e-4927-8875-c4457f80b967)
+![Skills](https://github.com/user-attachments/assets/81c0b73d-1544-4bed-83dc-e37934382beb)
 
 ### About
-![About](https://github.com/user-attachments/assets/dd02fe8a-1c4a-4687-9180-fb0e85f33f1a)
+![About](https://github.com/user-attachments/assets/fdfc3213-dd66-4399-997e-f507245af7b2)
 
 ### Contact (with math CAPTCHA)
-![Contact](https://github.com/user-attachments/assets/ea18acb7-28e3-49e5-b607-3cc0e62ee209)
+![Contact](https://github.com/user-attachments/assets/bed68ebf-d13e-42da-9c6e-d0a899062e9b)
 
 ---
 
 ## CMS Screenshots
 
-### Admin Dashboard — Hero Stats
-![Admin Dashboard](https://github.com/user-attachments/assets/c511bb0d-6e55-4f7c-adb4-7adb41c3e4cc)
+### Admin Dashboard: Hero Stats
+![Admin Dashboard](https://github.com/user-attachments/assets/8475c135-b188-4736-9978-d0ae288fb129)
 
-### Admin — Static Site Generator
-![Admin Static Site](https://github.com/user-attachments/assets/ce9e9bf4-b7ab-4758-a27d-ec07999f5ccf)
+### Admin: Static Site Generator
+![Admin Static Site](https://github.com/user-attachments/assets/c781f737-e6be-41d3-b93c-7b42823e240e)
 
 ---
 
@@ -75,25 +75,25 @@ Portfolio.slnx
 
 ## Features
 
-- **AI Developer positioning** — hero section, skills, and projects lead with AI expertise
-- **Security focus** — dedicated Security skills category, OWASP/OAuth2/JWT projects
-- **Work Project showcase** — dedicated "Work Project" category for BookIt, Curo, and TalentConnect with SVG app-mockup images and tech chip badges
-- **WordPress-style CMS** — create, edit, publish and delete blog posts and custom pages entirely from the admin dashboard with no code deploy required
-- **WYSIWYG editor** — Quill rich-text editor (served locally, no CDN) for blog posts and pages; supports headings, bold/italic/lists/links/code blocks and more
-- **DB-driven navigation** — add, reorder, hide or delete menu items live from the Menus admin tab
-- **Custom CMS pages** — publish arbitrary pages at any slug (e.g. `/services`, `/hire-me`) with full SEO metadata
-- **SEO & Open Graph** — per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
-- **Featured images** — optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
-- **Tech chip badges** — technology tags displayed as chips on project cards and blog posts
-- **Contact form CAPTCHA** — server-side math challenge blocks spam without any external service or API key
-- **Static site generator** — export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
-- **Light and dark mode** — respects system preference, toggleable in the header
-- **REST API with fallback** — Blazor app works standalone when API is offline
-- **Configurable database provider** — SQL Server, SQLite, or PostgreSQL via one setting
-- **Admin area** — create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, and generate static exports
-- **In-app settings** — API base URL and SMS provider configured through the admin Settings tab (stored in DB, no restart needed)
-- **Account lockout** — 5 failed attempts triggers a 15-minute lockout
-- **SMS notifications** — contact-form alerts sent to your number via Twilio or ClickSend (configured in admin)
+- **AI Developer positioning**: hero section, skills, and projects lead with AI expertise
+- **Security focus**: dedicated Security skills category, OWASP/OAuth2/JWT projects
+- **Work Project showcase**: dedicated "Work Project" category for BookIt, Curo, and TalentConnect with SVG app-mockup images and tech chip badges
+- **WordPress-style CMS**: create, edit, publish and delete blog posts and custom pages entirely from the admin dashboard with no code deploy required
+- **WYSIWYG editor**: Quill rich-text editor (served locally, no CDN) for blog posts and pages; supports headings, bold/italic/lists/links/code blocks and more
+- **DB-driven navigation**: add, reorder, hide or delete menu items live from the Menus admin tab
+- **Custom CMS pages**: publish arbitrary pages at any slug (e.g. `/services`, `/hire-me`) with full SEO metadata
+- **SEO and Open Graph**: per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
+- **Featured images**: optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
+- **Tech chip badges**: technology tags displayed as chips on project cards and blog posts
+- **Contact form CAPTCHA**: server-side math challenge blocks spam without any external service or API key
+- **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
+- **Light and dark mode**: respects system preference, toggleable in the header
+- **REST API with fallback**: Blazor app works standalone when API is offline
+- **Configurable database provider**: SQL Server, SQLite, or PostgreSQL via one setting
+- **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, and generate static exports
+- **In-app settings**: API base URL and SMS provider configured through the admin Settings tab (stored in DB, no restart needed)
+- **Account lockout**: 5 failed attempts triggers a 15-minute lockout
+- **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend (configured in admin)
 
 ## Tech Stack
 
@@ -106,7 +106,7 @@ Portfolio.slnx
 | Auth (API) | JWT Bearer tokens |
 | AI Skills | Semantic Kernel, Azure OpenAI, RAG, ML.NET |
 | Security | OWASP, OAuth2/OIDC, Threat Modelling |
-| SMS | Twilio / ClickSend (HTTP, no SDK) — provider-agnostic via `ISmsService` |
+| SMS | Twilio / ClickSend (HTTP, no SDK), provider-agnostic via `ISmsService` |
 
 ---
 
@@ -152,11 +152,11 @@ The database schema is created automatically on first run via `EnsureCreatedAsyn
 The development appsettings already configure SQLite so you can run immediately:
 
 ```bash
-# Terminal 1 — API
+# Terminal 1: API
 cd src/Portfolio.Api
 dotnet run
 
-# Terminal 2 — Blazor web app
+# Terminal 2: Blazor web app
 cd src/Portfolio.Web/Portfolio.Web
 dotnet run
 ```
@@ -180,7 +180,7 @@ Update `appsettings.Development.json` in both projects:
 
 ## Configuration Reference
 
-### Portfolio.Api — `appsettings.json`
+### Portfolio.Api: `appsettings.json`
 
 | Key | Description | Example |
 |---|---|---|
@@ -193,7 +193,7 @@ Update `appsettings.Development.json` in both projects:
 | `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
 | `AllowedOrigins` | CORS allowed origins | `https://yourdomain.com` |
 
-### Portfolio.Web — `appsettings.json`
+### Portfolio.Web: `appsettings.json`
 
 | Key | Description | Example |
 |---|---|---|
@@ -202,7 +202,7 @@ Update `appsettings.Development.json` in both projects:
 | `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
 | `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
 
-> **API base URL** is now configured in the admin **Settings** tab (stored in the database) — no longer an `appsettings.json` key.
+> **API base URL** is now configured in the admin **Settings** tab (stored in the database), no longer an `appsettings.json` key.
 
 ---
 
@@ -258,14 +258,14 @@ Navigate to `/login` and sign in to access `/admin`. The admin dashboard is orga
 
 There is no public registration page by design.
 
-### Blog Posts — WordPress-style editor
+### Blog Posts: WordPress-style editor
 
 The Blog Posts tab works like WordPress's post editor:
 
-- **List view** — shows all posts with title, slug, category, publish date, status chip (Published / Draft) and quick-action buttons (Edit, Publish/Unpublish, Delete)
-- **Status filters** — chip buttons to filter All / Published / Drafts
-- **Editor view** — left column: large title field, permalink slug, Quill WYSIWYG body, excerpt; right sidebar: Publish card (status, toggle, date, Save button), Post Settings (category, tags, read time), Featured Image (URL + live preview), SEO & Social (meta title, meta description, OG image, canonical URL — expandable panel)
-- **Back breadcrumb** — `← Posts` returns to the list without losing context
+- **List view**: shows all posts with title, slug, category, publish date, status chip (Published / Draft) and quick-action buttons (Edit, Publish/Unpublish, Delete)
+- **Status filters**: chip buttons to filter All / Published / Drafts
+- **Editor view**: left column: large title field, permalink slug, Quill WYSIWYG body, excerpt; right sidebar: Publish card (status, toggle, date, Save button), Post Settings (category, tags, read time), Featured Image (URL + live preview), SEO and Social (meta title, meta description, OG image, canonical URL, expandable panel)
+- **Back breadcrumb**: `← Posts` returns to the list without losing context
 
 ### Custom Pages
 
@@ -273,13 +273,13 @@ The Pages tab works identically to Blog Posts but creates stand-alone pages acce
 
 ### Navigation Menus
 
-The Menus tab lists all current nav items (label, URL, sort order, visibility). Changes — including adding new items or toggling visibility — are reflected live in the navigation bar without a page reload or restart.
+The Menus tab lists all current nav items (label, URL, sort order, visibility). Changes, including adding new items or toggling visibility, are reflected live in the navigation bar without a page reload or restart.
 
 ---
 
 ## SMS Notifications
 
-Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. No app restart needed — changes take effect immediately.
+Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. No app restart needed; changes take effect immediately.
 
 ### Architecture
 
@@ -287,7 +287,7 @@ Three small, focused class libraries handle SMS:
 
 | Library | Role |
 |---|---|
-| `Portfolio.Sms.Abstractions` | `ISmsService`, `SmsMessage`, `SmsResult` — no external deps |
+| `Portfolio.Sms.Abstractions` | `ISmsService`, `SmsMessage`, `SmsResult` (no external deps) |
 | `Portfolio.Sms.Twilio` | Sends via Twilio REST API (Basic Auth, no SDK required) |
 | `Portfolio.Sms.ClickSend` | Sends via ClickSend REST API v3 (Basic Auth, no SDK required) |
 
@@ -341,7 +341,7 @@ public class MyService(ISmsService sms)
 
 ## Blog & CMS
 
-The blog lives at `/blog`. Posts are stored in the database and managed entirely through the admin **Blog Posts** tab — no code changes or deployments needed.
+The blog lives at `/blog`. Posts are stored in the database and managed entirely through the admin **Blog Posts** tab, no code changes or deployments needed.
 
 ### Creating a post
 
@@ -354,23 +354,23 @@ The blog lives at `/blog`. Posts are stored in the database and managed entirely
 
 ### Post features
 
-- **Slug** — fully editable permalink (e.g. `/blog/my-post-title`)
-- **Featured image** — displayed as a full-width hero banner on the post page and as a card thumbnail on the blog listing
-- **SEO** — per-post `<title>`, `<meta name="description">`, `og:title`, `og:description`, `og:image`, and `<link rel="canonical">` injected automatically
-- **Status** — toggle between Published and Draft at any time without deleting
+- **Slug**: fully editable permalink (e.g. `/blog/my-post-title`)
+- **Featured image**: displayed as a full-width hero banner on the post page and as a card thumbnail on the blog listing
+- **SEO**: per-post `<title>`, `<meta name="description">`, `og:title`, `og:description`, `og:image`, and `<link rel="canonical">` injected automatically
+- **Status**: toggle between Published and Draft at any time without deleting
 
 ### Seeded posts
 
-The database is seeded with eight posts on first run:
+The database is seeded with eight posts on first run. Each post has a themed SVG featured image, newspaper-style HTML body with H2 section headings and key terms in bold, and a punchy summary:
 
-- **Building TalentConnect: A Modern Blazor Recruitment Platform** — building a full-stack recruitment platform with job pipelines and analytics (Projects category)
-- **Building Curo: A Healthcare Care Management Platform** — Blazor-based care management deployed to Azure with strict compliance (Projects category)
-- **Building BookIt: A Blazor Booking Management System** — real-time booking system with SMS notifications and dark/light mode (Projects category)
-- **Building AI into .NET Without Losing Your Mind** — production lessons from Semantic Kernel and Azure OpenAI
-- **The OWASP Top Ten Is Not a Checklist — It Is a Story** — how to actually use OWASP in .NET
-- **What Three Decades of Software Development Taught Me About Writing Code That Lasts** — personal reflection on writing durable code
-- **JWT Tokens Are Not Magic and That Matters** — authentication pitfalls in ASP.NET Core
-- **When AI Caught a Bug My Tests Missed** — real story from a healthcare AI project
+- **Building TalentConnect: A Modern Blazor Recruitment Platform**: building a full-stack recruitment platform with job pipelines and analytics (Projects category)
+- **Building Curo: A Healthcare Care Management Platform**: Blazor-based care management deployed to Azure with strict compliance (Projects category)
+- **Building BookIt: A Blazor Booking Management System**: real-time booking system with SMS notifications and dark/light mode (Projects category)
+- **Building AI into .NET Without Losing Your Mind**: production lessons from Semantic Kernel and Azure OpenAI
+- **The OWASP Top Ten Is Not a Checklist: It Is a Story**: how to actually use OWASP in .NET
+- **What Three Decades of Software Development Taught Me About Writing Code That Lasts**: personal reflection on writing durable code
+- **JWT Tokens Are Not Magic and That Matters**: authentication pitfalls in ASP.NET Core
+- **When AI Caught a Bug My Tests Missed**: real story from a healthcare AI project
 
 ### Custom CMS Pages
 
@@ -388,7 +388,7 @@ The admin **Static Site** tab generates a complete, deployable, dark-mode HTML s
 |---|---|
 | Pages | Home, About, Projects, Skills, Blog (listing + all posts), Contact |
 | CMS pages | All published custom pages |
-| Stylesheet | Single `css/site.css` — dark mode, brand palette (`#0F0A1E` / `#C4B5FD`) |
+| Stylesheet | Single `css/site.css`, dark mode, brand palette (`#0F0A1E` / `#C4B5FD`) |
 | Navigation | Responsive nav with mobile hamburger (pure CSS/JS, no dependencies) |
 | Tech chips | Technology badges on project cards and blog posts |
 | Images | All project SVGs and featured images bundled at correct relative paths |
@@ -407,7 +407,7 @@ The admin **Static Site** tab generates a complete, deployable, dark-mode HTML s
 
 ## Contact Form CAPTCHA
 
-The contact form includes a simple server-side math challenge ("What is A + B?"). The correct answer is required before the message is sent. A wrong answer regenerates the challenge. No external service or API key needed — pure in-component arithmetic.
+The contact form includes a simple server-side math challenge ("What is A + B?"). The correct answer is required before the message is sent. A wrong answer regenerates the challenge. No external service or API key needed, pure in-component arithmetic.
 
 ---
 
@@ -420,6 +420,15 @@ Three real-world applications are showcased under the **Work Project** category 
 | **BookIt** | Full-featured booking management system with real-time availability, SMS notifications, light/dark mode | Blazor, ASP.NET Core, MudBlazor, SQL Server, EF Core |
 | **Curo** | Healthcare care management platform for coordinating patient care plans and clinical workflows | ASP.NET Core, Blazor, SQL Server, EF Core, Azure |
 | **TalentConnect** | Recruitment management platform with job postings, multi-stage candidate pipelines, and analytics | Blazor, ASP.NET Core, MudBlazor, SQL Server, EF Core |
+
+The full project catalogue also includes:
+
+| Project | Category | Description |
+|---|---|---|
+| **MAUI Cross-Platform App** | Mobile Application | .NET MAUI app targeting iOS, Android, Windows and macOS from one codebase |
+| **Patient CRM** | Healthcare | Patient relationship management system (in development) |
+| **AI Diagnostic Assistant** | AI | AI-powered clinical decision support using Semantic Kernel and Azure OpenAI |
+| **SecureAPI Framework** | Security | Hardened API security baseline for .NET covering JWT, OWASP mitigations and rate limiting |
 
 ---
 

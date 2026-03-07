@@ -244,7 +244,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p>I spent a good chunk of last year integrating large language model features into a healthcare application. Not a side project, not a conference demo. A real system where a nurse practitioner would read the output and make decisions based on it. That context changes everything about how you approach AI.</p>
 
                     <h2>The Happy Path Is Not the Full Story</h2>
-                    <p>The tutorials all show you the happy path. You call the API, you get a smart-looking response, and you feel great about the future. What they do not show you is what happens when the model confidently returns something that sounds completely reasonable and is completely wrong. In a healthcare context that is not an embarrassing chatbot moment — it is a clinical risk.</p>
+                    <p>The tutorials all show you the happy path. You call the API, you get a smart-looking response, and you feel great about the future. What they do not show you is what happens when the model confidently returns something that sounds completely reasonable and is completely wrong. In a healthcare context that is not an embarrassing chatbot moment. It is a clinical risk.</p>
 
                     <h2>Build an Evaluation Layer First</h2>
                     <p>The first thing I learned is that you need an evaluation layer before you expose any AI output to users. For us that meant a confidence-scoring approach where low-confidence responses were flagged for human review rather than displayed directly. <strong>Semantic Kernel</strong> makes this fairly manageable because the plugin model lets you compose your own validation steps alongside the model calls.</p>
@@ -257,7 +257,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p><strong>Semantic Kernel</strong> has been a reliable foundation for this work. The ability to define typed functions that the kernel can call, log, and audit makes building responsible AI much more tractable than rolling everything by hand. The memory and vector search support is good enough for most RAG scenarios without needing to reach for separate infrastructure.</p>
 
                     <h2>Stream Everything</h2>
-                    <p>The third lesson — and probably the most important — is about latency expectations. Users who have never interacted with an LLM before will stare at a spinner for about three seconds before concluding the application is broken. <strong>Streaming responses</strong> change the experience completely.</p>
+                    <p>The third lesson, and probably the most important one, is about latency expectations. Users who have never interacted with an LLM before will stare at a spinner for about three seconds before concluding the application is broken. <strong>Streaming responses</strong> change the experience completely.</p>
                     <p>In C# the async enumerable pattern works beautifully for this. Tokens arrive at the client almost immediately and the perception of performance is transformed, even when the total time is the same.</p>
 
                     <h2>Four Things That Will Save You Pain</h2>
@@ -268,7 +268,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 2,
                 Slug = "the-owasp-top-ten-is-not-a-checklist-it-is-a-story",
-                Title = "The OWASP Top Ten Is Not a Checklist — It Is a Story",
+                Title = "The OWASP Top Ten Is Not a Checklist: It Is a Story",
                 Summary = "After working on systems that handle patient data and financial records, the OWASP list stopped being something I scan before a launch. It became a way of thinking about how software fails.",
                 Category = "Security",
                 PublishedDate = new DateTime(2025, 2, 14, 0, 0, 0, DateTimeKind.Utc),
@@ -288,7 +288,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p>In a modern .NET application that boundary is much larger than it used to be. You have user input, obviously. But you also have data coming back from third-party APIs, from uploaded files, from webhook payloads, from AI model outputs. When I started thinking about injection as a story about trust boundaries rather than a technique, I found three places in our application where we were trusting data we should not have been.</p>
 
                     <h2>Broken Access Control Is About What Happens After Login</h2>
-                    <p>Broken access control is the same thing. The list tells you to check authorisation — fine. But the story underneath that is about what happens when someone knows the shape of your URLs. In one of our early applications we had resource IDs that were sequential integers. You did not need to be a penetration tester to realise that incrementing the number in the URL gave you access to another user's records.</p>
+                    <p>Broken access control is the same thing. The list tells you to check authorisation. Fine. But the story underneath that is about what happens when someone knows the shape of your URLs. In one of our early applications we had resource IDs that were sequential integers. You did not need to be a penetration tester to realise that incrementing the number in the URL gave you access to another user's records.</p>
                     <p>We had authentication working perfectly. We had no authorisation on the actual resource. Two completely different things.</p>
                     <p>In .NET I now use a combination of resource-based authorisation via <strong>IAuthorizationService</strong> and opaque identifiers rather than sequential database IDs for anything that appears in a URL. Neither is complicated. Both would have caught the issues above.</p>
 
@@ -312,17 +312,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p>I wrote code in the late nineties that I had to maintain in the early two thousands. I wrote code in the early two thousands that I had to go back to in 2015. Each of those encounters with past me was educational in ways that no conference talk or book ever matched.</p>
 
                     <h2>Naming Is Not a Minor Detail</h2>
-                    <p>The first thing past me always got wrong was naming. Not catastrophically wrong — just slightly off in ways that compound. A class called <strong>DataHelper</strong>. A method called <strong>Process</strong>. A variable called <code>temp</code> that turned out to be a tax calculation result that several other things depended on.</p>
+                    <p>The first thing past me always got wrong was naming. Not catastrophically wrong, just slightly off in ways that compound. A class called <strong>DataHelper</strong>. A method called <strong>Process</strong>. A variable called <code>temp</code> that turned out to be a tax calculation result that several other things depended on.</p>
                     <p>I have spent real hours in old codebases trying to understand what something does before I dare change it. The cost of that time is invisible in the moment when you are rushing to ship, but very visible when you are the one paying it later.</p>
                     <p>Modern C# is genuinely excellent for expressing intent clearly. Record types, pattern matching, and the improvements to switch expressions since C# 8 have made it possible to write code that reads almost like a description of the business problem rather than a set of mechanical instructions. I use those features aggressively now because I know future me will be grateful.</p>
 
                     <h2>Coupling Is the Quiet Killer</h2>
                     <p>The second thing past me got wrong was coupling. Not always the obvious kind where everything calls everything else. More often the subtle kind where a bunch of things share a database table, or where a service class has seventeen methods that are really three different concepts that grew together because nobody stopped to separate them.</p>
                     <p>The single responsibility principle sounds like a rule imposed by someone who did not have deadlines. Having maintained code that violated it for years, it sounds like common sense.</p>
-                    <p>In C# terms this means being quite aggressive about keeping classes small and focused. When a class crosses about 200 lines I start asking whether it is actually two things. When a method needs more than three parameters I ask whether those parameters are describing a concept that deserves its own type. These are not hard rules — they are signals worth paying attention to.</p>
+                    <p>In C# terms this means being quite aggressive about keeping classes small and focused. When a class crosses about 200 lines I start asking whether it is actually two things. When a method needs more than three parameters I ask whether those parameters are describing a concept that deserves its own type. These are not hard rules; they are signals worth paying attention to.</p>
 
                     <h2>Make Invalid States Impossible</h2>
-                    <p>The third lesson is about making invalid states unrepresentable. C# has been getting better at this for years. <strong>Nullable reference types</strong>, discriminated union patterns via records and sealed hierarchies, required properties — all of these make it harder to construct an object in a state your system cannot handle.</p>
+                    <p>The third lesson is about making invalid states unrepresentable. C# has been getting better at this for years. <strong>Nullable reference types</strong>, discriminated union patterns via records and sealed hierarchies, required properties: all of these make it harder to construct an object in a state your system cannot handle.</p>
                     <p>The bugs that cause the worst incidents are almost always states the developer did not think were possible. Making them impossible at the type level is worth a lot.</p>
 
                     <h2>The Evidence Accumulates</h2>
@@ -346,19 +346,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
                     <h2>Algorithm Confusion</h2>
                     <p>The first issue is algorithm confusion. A JWT has a header that declares which algorithm was used to sign it. The algorithm <code>none</code> means no signature at all. Early libraries would happily accept this if you did not explicitly configure which algorithms you would accept.</p>
-                    <p><strong>ASP.NET Core</strong> does not have this problem by default if you use the standard JwtBearer middleware and configure <code>ValidAlgorithms</code>. But if you are rolling your own token validation or using a third-party library, check that it rejects unsigned tokens explicitly. This is not a theoretical concern — it has been exploited in real applications.</p>
+                    <p><strong>ASP.NET Core</strong> does not have this problem by default if you use the standard JwtBearer middleware and configure <code>ValidAlgorithms</code>. But if you are rolling your own token validation or using a third-party library, check that it rejects unsigned tokens explicitly. This is not a theoretical concern; it has been exploited in real applications.</p>
 
                     <h2>Key Length Matters More Than You Think</h2>
-                    <p>The second thing is key length. A symmetric HMAC key for HS256 should be at least 256 bits — that is 32 bytes. I have reviewed systems where the key was a short memorable string like a product name or a domain.</p>
+                    <p>The second thing is key length. A symmetric HMAC key for HS256 should be at least 256 bits, which is 32 bytes. I have reviewed systems where the key was a short memorable string like a product name or a domain.</p>
                     <p>Brute-forcing a weak key against a known JWT structure is not difficult. More importantly, if anyone can get hold of the signing key by any means, they can issue themselves any token they want. That key needs to be treated like a password and stored accordingly.</p>
 
                     <h2>Expiry and Revocation</h2>
-                    <p>The third thing is expiry and revocation. JWTs are stateless — which is part of their appeal — but that statelessness means you cannot revoke one once issued unless you maintain a denylist.</p>
+                    <p>The third thing is expiry and revocation. JWTs are stateless, which is part of their appeal, but that statelessness means you cannot revoke one once issued unless you maintain a denylist.</p>
                     <p>Short expiry times with a <strong>refresh token pattern</strong> are the standard answer. The refresh token lives server-side and can be revoked. Short access token expiry limits the damage window if one gets intercepted. A one-hour access token expiry is reasonable for most applications. Twenty-four hours is pushing it. No expiry is how you end up with tokens that are valid forever after an employee leaves.</p>
 
                     <h2>A Practical Configuration</h2>
                     <p>In ASP.NET Core I configure token validation like this: require issuer, require audience, validate lifetime, validate the signing key, reject tokens with no expiry, and specify the exact algorithm. That covers the common pitfalls.</p>
-                    <p>Then I make sure the key comes from a secrets store rather than a config file that ends up in source control — because I have seen that too, and it is a bad day when you notice it.</p>
+                    <p>Then I make sure the key comes from a secrets store rather than a config file that ends up in source control, because I have seen that too and it is a bad day when you notice it.</p>
                     <p>JWT done right is a solid foundation for stateless API authentication. JWT done casually is a set of vulnerabilities waiting to be found by someone who is looking.</p>
                     """
             },
@@ -389,7 +389,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <h2>What AI Review Is Actually Good At</h2>
                     <p>I do not think AI code review replaces human review. But I do think it catches different things. Humans are good at catching things that feel wrong, things that violate conventions, things that are structurally unusual. We are less good at the systematic comparison of whether every occurrence of a pattern in a file is using the right variable.</p>
                     <p>That systematic comparison is something a language model does without getting tired or distracted.</p>
-                    <p>I now use AI review as a second pass on anything that touches data access in sensitive domains. It is not perfect — it flags things that are fine. But the one time in ten where it finds something real is worth the noise.</p>
+                    <p>I now use AI review as a second pass on anything that touches data access in sensitive domains. It is not perfect; it flags things that are fine. But the one time in ten where it finds something real is worth the noise.</p>
                     """
             },
             new BlogPost
@@ -397,7 +397,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 Id = 6,
                 Slug = "building-bookit-a-blazor-booking-management-system",
                 Title = "Building BookIt: A Blazor Booking Management System",
-                Summary = "How I designed and built BookIt from scratch — a full-featured booking management system using Blazor, ASP.NET Core, and MudBlazor with dark and light mode support, real-time availability, and SMS notifications.",
+                Summary = "How I designed and built BookIt from scratch: a full-featured booking management system using Blazor, ASP.NET Core, and MudBlazor with dark and light mode support, real-time availability, and SMS notifications.",
                 Category = "Projects",
                 PublishedDate = new DateTime(2025, 4, 10, 0, 0, 0, DateTimeKind.Utc),
                 ReadMinutes = 8,
@@ -408,7 +408,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p>BookIt started as a client request for a simple online booking system. By the time it shipped it had become one of the most satisfying builds I have done in recent years, partly because of the technology choices and partly because of what those choices enabled at the UI layer.</p>
 
                     <h2>A Flexible Domain Model from the Start</h2>
-                    <p>The brief was straightforward: businesses needed to manage appointments, track resources, and let customers book online. The tricky part was that the businesses themselves were diverse — a hair salon, a physio clinic, a training room hire company — and each had slightly different ideas about what a booking even was.</p>
+                    <p>The brief was straightforward: businesses needed to manage appointments, track resources, and let customers book online. The tricky part was that the businesses themselves were diverse: a hair salon, a physio clinic, a training room hire company, and each had slightly different ideas about what a booking even was.</p>
                     <p>That diversity pushed me toward a flexible domain model early on rather than hardcoding assumptions about slot length, resource type, or cancellation policy.</p>
 
                     <h2>Why Blazor Server Was the Right Choice</h2>
@@ -418,7 +418,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p><strong>MudBlazor</strong> was the natural choice for the component library. The project needed a professional-grade UI with both light and dark mode, and MudBlazor's theming system handles that with almost no ceremony. The MudDataGrid component handled the admin booking list, MudCalendar handled the visual schedule view, and the chip system made tagging bookings with status and category feel polished without custom CSS.</p>
 
                     <h2>Clean Architecture Paid Off</h2>
-                    <p>The data layer uses <strong>Entity Framework Core 9</strong> with SQL Server. I applied a clean architecture pattern — domain entities, repository interfaces in the application layer, EF Core implementations in the infrastructure layer. This made unit testing the booking logic straightforward and kept the domain model free of EF Core attributes.</p>
+                    <p>The data layer uses <strong>Entity Framework Core 9</strong> with SQL Server. I applied a clean architecture pattern with domain entities, repository interfaces in the application layer, and EF Core implementations in the infrastructure layer. This made unit testing the booking logic straightforward and kept the domain model free of EF Core attributes.</p>
 
                     <h2>SMS Notifications: A Late Addition That Became Essential</h2>
                     <p>SMS notifications were a late addition that turned out to be heavily used. Customers get a confirmation text when they book, a reminder 24 hours before, and a follow-up after. I built a provider-agnostic SMS abstraction so the underlying provider could be swapped without touching the booking logic. In production we are using ClickSend, but Twilio support is also built in.</p>
@@ -433,7 +433,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 Id = 7,
                 Slug = "building-curo-a-healthcare-care-management-platform",
                 Title = "Building Curo: A Healthcare Care Management Platform",
-                Summary = "The story behind Curo — a Blazor-based care management system for coordinating patient care plans, clinical workflows, and carer task management, deployed to Azure with strict security and compliance requirements.",
+                Summary = "The story behind Curo: a Blazor-based care management system for coordinating patient care plans, clinical workflows, and carer task management, deployed to Azure with strict security and compliance requirements.",
                 Category = "Projects",
                 PublishedDate = new DateTime(2025, 5, 2, 0, 0, 0, DateTimeKind.Utc),
                 ReadMinutes = 9,
@@ -466,7 +466,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 Id = 8,
                 Slug = "building-talentconnect-a-blazor-recruitment-platform",
                 Title = "Building TalentConnect: A Modern Blazor Recruitment Platform",
-                Summary = "How I built TalentConnect — a full-stack Blazor recruitment management platform featuring job postings, multi-stage candidate pipelines, interview scheduling, and recruitment analytics — and what I learned along the way.",
+                Summary = "How I built TalentConnect: a full-stack Blazor recruitment management platform featuring job postings, multi-stage candidate pipelines, interview scheduling, and recruitment analytics, and what I learned along the way.",
                 Category = "Projects",
                 PublishedDate = new DateTime(2025, 6, 14, 0, 0, 0, DateTimeKind.Utc),
                 ReadMinutes = 8,
@@ -474,13 +474,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 IsPublished = true,
                 FeaturedImage = "/images/talentconnect.svg",
                 Body = """
-                    <p>Recruitment is one of those domains that seems simple until you are three weeks into building the software for it. The surface area is manageable — jobs, candidates, applications, interviews, offers — but the workflow complexity underneath is substantial and every organisation does it slightly differently.</p>
+                    <p>Recruitment is one of those domains that seems simple until you are three weeks into building the software for it. The surface area is manageable: jobs, candidates, applications, interviews and offers, but the workflow complexity underneath is substantial and every organisation does it slightly differently.</p>
 
                     <h2>From Spreadsheets to a Single Platform</h2>
                     <p>TalentConnect was built for a recruitment team who needed to move away from spreadsheets and shared inboxes. They were tracking candidates across multiple roles simultaneously, scheduling interviews via email chains, and producing monthly reports by hand from a dozen different sources. The brief was to consolidate all of that into a single <strong>Blazor</strong> application.</p>
 
                     <h2>The Candidate Pipeline as the Heart of the Design</h2>
-                    <p>The candidate pipeline was the heart of the design. Every candidate progresses through configurable stages — applied, screening, shortlisted, first interview, second interview, offer, hired or rejected. Each transition is timestamped and the history is preserved so the team can see how long candidates have been at each stage and where the bottlenecks in their process are. That audit trail also proved valuable for compliance purposes.</p>
+                    <p>The candidate pipeline was the heart of the design. Every candidate progresses through configurable stages: applied, screening, shortlisted, first interview, second interview, offer, hired or rejected. Each transition is timestamped and the history is preserved so the team can see how long candidates have been at each stage and where the bottlenecks in their process are. That audit trail also proved valuable for compliance purposes.</p>
 
                     <h2>Real-Time Updates via Blazor Server</h2>
                     <p><strong>Blazor Server</strong> was the right choice here for the same reasons it works well in other operational tools: the recruiter-facing pipeline board benefits from live updates when a colleague moves a candidate or adds a note, and the team is always working from current data without needing to refresh.</p>
@@ -489,7 +489,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p><strong>MudBlazor</strong>'s drag-and-drop support made the kanban-style pipeline board possible without writing a single line of custom JavaScript. The component library's data grid handled the tabular candidate list, filter chips made filtering by role, stage, and recruiter feel natural, and the stepper component guided new job posting creation through a structured flow that reduced data entry errors.</p>
 
                     <h2>Notifications Driven by Domain Events</h2>
-                    <p>The notification system was a significant piece of work in its own right. Candidates receive automated emails at key pipeline stages — application received, shortlisted, interview invitation, outcome. Recruiters get Blazor toast notifications when a candidate completes an online assessment or when an interview response comes in. The whole thing is driven by an event-based model where stage transitions publish domain events and notification handlers decide what to send to whom.</p>
+                    <p>The notification system was a significant piece of work in its own right. Candidates receive automated emails at key pipeline stages: application received, shortlisted, interview invitation and outcome. Recruiters get Blazor toast notifications when a candidate completes an online assessment or when an interview response comes in. The whole thing is driven by an event-based model where stage transitions publish domain events and notification handlers decide what to send to whom.</p>
 
                     <h2>Analytics That Required Careful Query Design</h2>
                     <p>One of the more interesting technical challenges was the analytics reporting. The team wanted to see time-to-hire by role, source channel conversion rates, and interviewer pass rates. These calculations involve aggregating across pipeline history and doing date arithmetic across potentially thousands of candidate journeys.</p>

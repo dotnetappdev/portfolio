@@ -248,7 +248,7 @@
                             <MudTextField @bind-Value="_appSettings.ApiBaseUrl"
                                           Label="Portfolio API Base URL"
                                           Variant="Variant.Outlined" Class="mb-3"
-                                          HelperText="Base URL of the Portfolio API, e.g. https://api.example.com/ — used by the Projects, Skills and Contact pages."
+                                          HelperText="Base URL of the Portfolio API, e.g. https://api.example.com/ (used by the Projects, Skills and Contact pages)"
                                           Placeholder="https://localhost:7002/" />
                         }
                     </MudCardContent>
@@ -1109,7 +1109,7 @@
                     </MudCardHeader>
                     <MudCardContent>
                         <MudText Typo="Typo.body1" Class="mb-3">
-                            Generate a complete, self-contained static HTML snapshot of your portfolio — dark mode by default,
+                            Generate a complete, self-contained static HTML snapshot of your portfolio, dark mode by default,
                             with all blog posts, projects, skills, and CMS pages baked in. The result is a ZIP file ready
                             to deploy to GitHub Pages, Netlify, Azure Static Web Apps, or any static host.
                         </MudText>
@@ -1125,7 +1125,7 @@
                         @if (_generatingStaticSite)
                         {
                             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-3" />
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Generating static site — this may take a few seconds…</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Generating static site, this may take a few seconds…</MudText>
                         }
                         else if (!string.IsNullOrEmpty(_staticSiteMessage))
                         {
@@ -1764,7 +1764,7 @@
         // Persist first so SmsSender reads the latest values
         await SaveSmsSettings();
 
-        var result = await SmsSender.SendToAdminAsync("Test SMS from Portfolio admin — everything is working!");
+        var result = await SmsSender.SendToAdminAsync("Test SMS from Portfolio admin: everything is working!");
         _sendingTestSms = false;
 
         if (result.Succeeded)
