@@ -117,6 +117,85 @@ Portfolio.slnx
 
 ---
 
+## Docker
+
+Both the Web API and the Blazor site have Dockerfiles. A `docker-compose.yml` at the repo root orchestrates both containers together using SQLite for zero-setup persistence.
+
+### Quick start with Docker Compose
+
+1. **Set the required JWT key** (minimum 32 characters). Copy the example env file and fill in your values:
+
+   ```bash
+   cp .env.example .env
+   # Edit .env and set JWT_KEY to a strong random string (32+ characters)
+   ```
+
+   Or export the variable directly in your shell:
+
+   ```bash
+   export JWT_KEY="your-secret-key-minimum-32-characters-long"
+   ```
+
+2. **Build and start both containers:**
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. **Access the apps:**
+   - Blazor Web App: `http://localhost:5072`
+   - REST API: `http://localhost:5008`
+
+4. **Stop the containers:**
+
+   ```bash
+   docker compose down
+   ```
+
+   Add `-v` to also remove the database volumes: `docker compose down -v`
+
+### Environment variables
+
+The following variables can be set in a `.env` file at the repo root or exported in your shell before running `docker compose up`:
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `JWT_KEY` | **Yes** | _(none)_ | JWT signing key — minimum 32 characters |
+| `ADMIN_EMAIL` | No | `admin@portfolio.com` | Seeded admin account email |
+| `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password |
+| `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for the API |
+
+> **Security:** change `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_KEY` before exposing containers publicly.
+
+### Building images individually
+
+```bash
+# API image only (build context is the src/ directory)
+docker build -t portfolio-api -f src/Portfolio.Api/Dockerfile ./src
+
+# Blazor Web image only
+docker build -t portfolio-web -f src/Portfolio.Web/Portfolio.Web/Dockerfile ./src
+```
+
+### Persistent data
+
+Each container stores its SQLite database in a named Docker volume (`api-data` and `web-data`). Data survives container restarts. To inspect or back up the volumes:
+
+```bash
+# List volumes
+docker volume ls
+
+# Copy a database file out of a volume
+docker cp portfolio-api:/app/data/portfolio-api.db ./backup-api.db
+docker cp portfolio-web:/app/data/portfolio-web.db ./backup-web.db
+```
+
+### Connecting Web to API inside Docker
+
+After starting the containers, sign in to the Blazor admin panel (`http://localhost:5072/login`) and navigate to **Settings**. Set the **Portfolio API Base URL** to `http://portfolio-api:8080` so the web container can reach the API over the internal Docker network.
+
+---
+
 ## Build
 
 ```bash
