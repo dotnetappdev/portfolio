@@ -5,35 +5,44 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ## Screenshots
 
 ### Home Page
-![Home Page](https://github.com/user-attachments/assets/b6d72e2d-44a9-4a14-b062-0af200165768)
+![Home Page](https://github.com/user-attachments/assets/f2d82059-c8c6-42cf-82b2-8ee5a55ebb32)
 
-### Projects (with Work Project category and tech chips)
-![Projects](https://github.com/user-attachments/assets/3116e651-665f-4efc-88cb-c4892bd25bbe)
+### Projects (with improved descriptions and tech chips)
+![Projects](https://github.com/user-attachments/assets/09197da2-e185-4fac-877e-c39f2c26aada)
 
-### Blog (with Projects category and featured SVG mockups)
-![Blog Listing](https://github.com/user-attachments/assets/074821e4-806d-434a-8048-2ad3636941b9)
+### Blog (all 8 posts — each with a themed featured image)
+![Blog Listing](https://github.com/user-attachments/assets/9a27f75d-daa5-41fb-9036-713e75825369)
 
-### Blog Post (BookIt — with tech chips)
-![Blog Post](https://github.com/user-attachments/assets/a0162a28-9b72-41db-9564-7d0c6fcf8b46)
+### Blog Post — BookIt (product SVG mockup + newspaper-style H2 sections)
+![Blog Post BookIt](https://github.com/user-attachments/assets/05454c04-bdde-4ff4-b670-b37d85236e6b)
 
-### Skills (with AI and Security)
-![Skills](https://github.com/user-attachments/assets/8ab05d13-b393-4063-9a8e-a2e5733c3c91)
+### Blog Post — AI in .NET (AI chat mockup featured image)
+![Blog Post AI](https://github.com/user-attachments/assets/e5cbaba8-2f22-47bd-99ea-6603dc2844cb)
+
+### Blog Post — OWASP (security dashboard featured image)
+![Blog Post OWASP](https://github.com/user-attachments/assets/b58865b2-6d00-4f17-8da6-15ed368c706f)
+
+### Blog Post — Three Decades (code editor featured image)
+![Blog Post .NET](https://github.com/user-attachments/assets/e07ad50b-a977-4e0b-9800-aa7d65e70273)
+
+### Skills (with AI and Security categories)
+![Skills](https://github.com/user-attachments/assets/114dece9-048e-4927-8875-c4457f80b967)
 
 ### About
-![About](https://github.com/user-attachments/assets/5a13548e-39a0-4421-8902-9eb4c5283677)
+![About](https://github.com/user-attachments/assets/dd02fe8a-1c4a-4687-9180-fb0e85f33f1a)
 
 ### Contact (with math CAPTCHA)
-![Contact](https://github.com/user-attachments/assets/5cdd5ecd-51cf-4848-b019-54006a15796e)
+![Contact](https://github.com/user-attachments/assets/ea18acb7-28e3-49e5-b607-3cc0e62ee209)
 
 ---
 
 ## CMS Screenshots
 
 ### Admin Dashboard — Hero Stats
-![Admin Dashboard](https://github.com/user-attachments/assets/6b0b927f-6459-4ba4-97ee-cd9346156168)
+![Admin Dashboard](https://github.com/user-attachments/assets/c511bb0d-6e55-4f7c-adb4-7adb41c3e4cc)
 
 ### Admin — Static Site Generator
-![Admin Static Site](https://github.com/user-attachments/assets/59c269e9-1e32-47b0-a9c4-3e41ebd12354)
+![Admin Static Site](https://github.com/user-attachments/assets/ce9e9bf4-b7ab-4758-a27d-ec07999f5ccf)
 
 ---
 
@@ -358,7 +367,7 @@ The database is seeded with eight posts on first run:
 - **Building Curo: A Healthcare Care Management Platform** — Blazor-based care management deployed to Azure with strict compliance (Projects category)
 - **Building BookIt: A Blazor Booking Management System** — real-time booking system with SMS notifications and dark/light mode (Projects category)
 - **Building AI into .NET Without Losing Your Mind** — production lessons from Semantic Kernel and Azure OpenAI
-- **The OWASP Top Ten Is Not a Checklist. It Is a Story.** — how to actually use OWASP in .NET
+- **The OWASP Top Ten Is Not a Checklist — It Is a Story** — how to actually use OWASP in .NET
 - **What Three Decades of Software Development Taught Me About Writing Code That Lasts** — personal reflection on writing durable code
 - **JWT Tokens Are Not Magic and That Matters** — authentication pitfalls in ASP.NET Core
 - **When AI Caught a Bug My Tests Missed** — real story from a healthcare AI project

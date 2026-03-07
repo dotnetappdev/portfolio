@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#004D40;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00695C;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bg)" />
+  <!-- Decorative circles -->
+  <circle cx="720" cy="60" r="120" fill="#00897B" opacity="0.3" />
+  <circle cx="80" cy="380" r="100" fill="#004D40" opacity="0.4" />
+  <!-- App window frame (code editor) -->
+  <rect x="60" y="60" width="500" height="330" rx="12" ry="12" fill="#FFFFFF" opacity="0.07" />
+  <!-- Window title bar -->
+  <rect x="60" y="60" width="500" height="40" rx="12" ry="12" fill="#FFFFFF" opacity="0.12" />
+  <circle cx="85" cy="80" r="6" fill="#FF5F57" />
+  <circle cx="105" cy="80" r="6" fill="#FEBC2E" />
+  <circle cx="125" cy="80" r="6" fill="#28C840" />
+  <text x="300" y="85" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#FFFFFF" opacity="0.7">BookingService.cs — 30 Years of .NET</text>
+  <!-- Line numbers column -->
+  <rect x="60" y="100" width="35" height="290" fill="#FFFFFF" opacity="0.04" />
+  <!-- Code lines -->
+  <text x="68" y="123" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">1</text>
+  <text x="68" y="141" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">2</text>
+  <text x="68" y="159" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">3</text>
+  <text x="68" y="177" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">4</text>
+  <text x="68" y="195" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">5</text>
+  <text x="68" y="213" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">6</text>
+  <text x="68" y="231" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">7</text>
+  <text x="68" y="249" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">8</text>
+  <text x="68" y="267" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">9</text>
+  <text x="68" y="285" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">10</text>
+  <text x="68" y="303" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">11</text>
+  <text x="68" y="321" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">12</text>
+  <text x="68" y="339" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.4">13</text>
+  <!-- Code content -->
+  <text x="103" y="123" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">public sealed record</text>
+  <text x="235" y="123" font-family="Consolas, monospace" font-size="10" fill="#FFCC80">BookingSlot</text>
+  <text x="320" y="123" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">(</text>
+  <text x="103" y="141" font-family="Consolas, monospace" font-size="10" fill="#B2EBF2">    Guid</text>
+  <text x="148" y="141" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">SlotId,</text>
+  <text x="103" y="159" font-family="Consolas, monospace" font-size="10" fill="#B2EBF2">    DateTimeOffset</text>
+  <text x="225" y="159" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">Start,</text>
+  <text x="103" y="177" font-family="Consolas, monospace" font-size="10" fill="#B2EBF2">    TimeSpan</text>
+  <text x="183" y="177" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">Duration);</text>
+  <text x="103" y="213" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">public async Task</text>
+  <text x="236" y="213" font-family="Consolas, monospace" font-size="10" fill="#FFCC80">&lt;Result&gt;</text>
+  <text x="103" y="231" font-family="Consolas, monospace" font-size="10" fill="#FFCC80">    CreateBookingAsync</text>
+  <text x="243" y="231" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">(BookingSlot slot)</text>
+  <text x="103" y="249" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">{</text>
+  <text x="103" y="267" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">    var</text>
+  <text x="132" y="267" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">existing =</text>
+  <text x="210" y="267" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">await</text>
+  <text x="245" y="267" font-family="Consolas, monospace" font-size="10" fill="#FFCC80">_repo</text>
+  <text x="103" y="285" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">        .FindConflictAsync(slot);</text>
+  <text x="103" y="303" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">    return</text>
+  <text x="148" y="303" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">existing</text>
+  <text x="208" y="303" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">is not</text>
+  <text x="245" y="303" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">null</text>
+  <text x="103" y="321" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">        ?</text>
+  <text x="123" y="321" font-family="Consolas, monospace" font-size="10" fill="#FFCC80">Result</text>
+  <text x="163" y="321" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">.Conflict()</text>
+  <text x="103" y="339" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">        :</text>
+  <text x="118" y="339" font-family="Consolas, monospace" font-size="10" fill="#80CBC4">await</text>
+  <text x="153" y="339" font-family="Consolas, monospace" font-size="10" fill="#FFCC80">_repo</text>
+  <text x="183" y="339" font-family="Consolas, monospace" font-size="10" fill="#FFFFFF" opacity="0.8">.CreateAsync(slot);</text>
+  <!-- Right panel -->
+  <text x="595" y="100" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF">30 Years</text>
+  <text x="595" y="125" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#80CBC4">of .NET Development</text>
+  <!-- Tech chips -->
+  <rect x="538" y="145" width="42" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="559" y="160" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">C# 13</text>
+  <rect x="590" y="145" width="55" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="617" y="160" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">.NET 10</text>
+  <rect x="655" y="145" width="55" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="682" y="160" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">Blazor</text>
+  <rect x="538" y="174" width="75" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="575" y="189" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">Clean Arch</text>
+  <rect x="622" y="174" width="45" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="644" y="189" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">TDD</text>
+  <!-- Features list -->
+  <text x="530" y="222" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#80CBC4" font-weight="bold">Key Lessons</text>
+  <circle cx="538" cy="240" r="3" fill="#4DB6AC" />
+  <text x="547" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Naming is not minor</text>
+  <circle cx="538" cy="258" r="3" fill="#4DB6AC" />
+  <text x="547" y="262" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Coupling is the killer</text>
+  <circle cx="538" cy="276" r="3" fill="#4DB6AC" />
+  <text x="547" y="280" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Impossible invalid states</text>
+  <circle cx="538" cy="294" r="3" fill="#4DB6AC" />
+  <text x="547" y="298" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Small focused classes</text>
+  <circle cx="538" cy="312" r="3" fill="#4DB6AC" />
+  <text x="547" y="316" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Future self will thank you</text>
+</svg>
