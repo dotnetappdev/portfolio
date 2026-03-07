@@ -194,6 +194,99 @@ docker cp portfolio-web:/app/data/portfolio-web.db ./backup-web.db
 
 After starting the containers, sign in to the Blazor admin panel (`http://localhost:5072/login`) and navigate to **Settings**. Set the **Portfolio API Base URL** to `http://portfolio-api:8080` so the web container can reach the API over the internal Docker network.
 
+### Changing the database provider in Docker
+
+The default `docker-compose.yml` uses SQLite for zero-setup persistence. To switch to **SQL Server** or **PostgreSQL**, update the environment variables for each service in `docker-compose.yml`.
+
+#### SQL Server
+
+Add a SQL Server service and update both app services:
+
+```yaml
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  portfolio-api:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=SqlServer
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=PortfolioApiDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
+      # ... other env vars ...
+    depends_on:
+      - sqlserver
+
+  portfolio-web:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=SqlServer
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=PortfolioWebDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
+      # ... other env vars ...
+    depends_on:
+      - sqlserver
+
+volumes:
+  sqlserver-data:
+```
+
+Add `SA_PASSWORD` to your `.env` file (must meet SQL Server complexity requirements).
+
+#### PostgreSQL
+
+> **Note:** PostgreSQL requires installing `Npgsql.EntityFrameworkCore.PostgreSQL` in both `Portfolio.Api` and `Portfolio.Web` and uncommenting `UseNpgsql` in each project's `Infrastructure/DatabaseProviderFactory.cs`. See [Database Configuration](#database-configuration) for full instructions.
+
+Once the packages are installed, add a PostgreSQL service and update the env vars:
+
+```yaml
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=portfolio
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=portfolio
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  portfolio-api:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=PostgreSql
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=portfolio_api;Username=portfolio;Password=${POSTGRES_PASSWORD}
+      # ... other env vars ...
+
+  portfolio-web:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=PostgreSql
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=portfolio_web;Username=portfolio;Password=${POSTGRES_PASSWORD}
+      # ... other env vars ...
+
+volumes:
+  postgres-data:
+```
+
+### Notification (SMS) settings in Docker
+
+The contact form sends an SMS alert to your phone when a visitor submits a message. These settings are **not** environment variables — they are stored in the database and managed entirely through the admin panel. No container restart is needed after changing them.
+
+To configure SMS notifications after the containers are running:
+
+1. Sign in at `http://localhost:5072/login`
+2. Go to **Admin → Settings → SMS Provider**
+3. Choose a provider (**Twilio** or **ClickSend**), fill in your credentials, and enter the **Admin receiver number** (E.164 format, e.g. `+447911123456`)
+4. Click **Save SMS Settings**
+5. Click **Send Test SMS** to verify delivery
+
+See the [SMS Notifications](#sms-notifications) section for provider-specific setup instructions.
+
 ---
 
 ## Build
