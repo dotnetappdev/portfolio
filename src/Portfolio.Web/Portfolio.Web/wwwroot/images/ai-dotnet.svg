@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A148C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#311B92;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6A1B9A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4A148C;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bg)" />
+  <!-- Decorative circles -->
+  <circle cx="720" cy="60" r="120" fill="#6A1B9A" opacity="0.3" />
+  <circle cx="80" cy="380" r="100" fill="#311B92" opacity="0.4" />
+  <!-- App window frame -->
+  <rect x="60" y="60" width="500" height="330" rx="12" ry="12" fill="#FFFFFF" opacity="0.08" />
+  <!-- Window title bar -->
+  <rect x="60" y="60" width="500" height="40" rx="12" ry="12" fill="#FFFFFF" opacity="0.12" />
+  <circle cx="85" cy="80" r="6" fill="#FF5F57" />
+  <circle cx="105" cy="80" r="6" fill="#FEBC2E" />
+  <circle cx="125" cy="80" r="6" fill="#28C840" />
+  <text x="300" y="85" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#FFFFFF" opacity="0.7">AI Assistant — Semantic Kernel</text>
+  <!-- Chat area -->
+  <rect x="80" y="115" width="460" height="260" rx="8" fill="#FFFFFF" opacity="0.05" />
+  <!-- User message bubble -->
+  <rect x="220" y="130" width="300" height="40" rx="12" fill="#7B1FA2" opacity="0.7" />
+  <text x="370" y="154" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF">Summarise the patient's latest test results</text>
+  <!-- AI response bubble -->
+  <rect x="90" y="185" width="350" height="70" rx="12" fill="#FFFFFF" opacity="0.12" />
+  <text x="265" y="206" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#CE93D8">AI Assistant</text>
+  <text x="105" y="224" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF" opacity="0.85">Haemoglobin: 11.2 g/dL (low). Flagged for</text>
+  <text x="105" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF" opacity="0.85">clinical review. Confidence: 94%</text>
+  <!-- Confidence badge -->
+  <rect x="90" y="270" width="115" height="22" rx="11" fill="#4CAF50" opacity="0.6" />
+  <text x="147" y="284" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">✓ High Confidence</text>
+  <!-- Second user message -->
+  <rect x="220" y="308" width="300" height="40" rx="12" fill="#7B1FA2" opacity="0.7" />
+  <text x="370" y="332" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF">Draft a care plan note for Dr. Ahmed</text>
+  <!-- Right panel -->
+  <text x="595" y="100" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF">AI in .NET</text>
+  <text x="595" y="125" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#CE93D8">Semantic Kernel + Azure OpenAI</text>
+  <!-- Tech chips -->
+  <rect x="530" y="145" width="100" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="580" y="160" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">Semantic Kernel</text>
+  <rect x="530" y="174" width="85" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="572" y="189" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">Azure OpenAI</text>
+  <rect x="530" y="203" width="75" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="567" y="218" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">RAG Pipelines</text>
+  <rect x="614" y="203" width="65" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="646" y="218" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">C# .NET 10</text>
+  <!-- Features list -->
+  <text x="530" y="250" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#CE93D8" font-weight="bold">Key Lessons</text>
+  <circle cx="538" cy="268" r="3" fill="#CE93D8" />
+  <text x="547" y="272" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Evaluation layer first</text>
+  <circle cx="538" cy="286" r="3" fill="#CE93D8" />
+  <text x="547" y="290" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Guard against injection</text>
+  <circle cx="538" cy="304" r="3" fill="#CE93D8" />
+  <text x="547" y="308" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Stream responses</text>
+  <circle cx="538" cy="322" r="3" fill="#CE93D8" />
+  <text x="547" y="326" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Audit all AI output</text>
+  <circle cx="538" cy="340" r="3" fill="#CE93D8" />
+  <text x="547" y="344" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Structured logging</text>
+</svg>

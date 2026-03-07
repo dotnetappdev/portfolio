@@ -10,11 +10,20 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ### Projects (with improved descriptions and tech chips)
 ![Projects](https://github.com/user-attachments/assets/09197da2-e185-4fac-877e-c39f2c26aada)
 
-### Blog (all 8 posts with newspaper-style titles)
-![Blog Listing](https://github.com/user-attachments/assets/96edaa37-88c3-4395-a64d-fd0fdfa19773)
+### Blog (all 8 posts — each with a themed featured image)
+![Blog Listing](https://github.com/user-attachments/assets/9a27f75d-daa5-41fb-9036-713e75825369)
 
-### Blog Post (BookIt — newspaper-style H2 sections)
-![Blog Post](https://github.com/user-attachments/assets/05454c04-bdde-4ff4-b670-b37d85236e6b)
+### Blog Post — BookIt (product SVG mockup + newspaper-style H2 sections)
+![Blog Post BookIt](https://github.com/user-attachments/assets/05454c04-bdde-4ff4-b670-b37d85236e6b)
+
+### Blog Post — AI in .NET (AI chat mockup featured image)
+![Blog Post AI](https://github.com/user-attachments/assets/e5cbaba8-2f22-47bd-99ea-6603dc2844cb)
+
+### Blog Post — OWASP (security dashboard featured image)
+![Blog Post OWASP](https://github.com/user-attachments/assets/b58865b2-6d00-4f17-8da6-15ed368c706f)
+
+### Blog Post — Three Decades (code editor featured image)
+![Blog Post .NET](https://github.com/user-attachments/assets/e07ad50b-a977-4e0b-9800-aa7d65e70273)
 
 ### Skills (with AI and Security categories)
 ![Skills](https://github.com/user-attachments/assets/114dece9-048e-4927-8875-c4457f80b967)

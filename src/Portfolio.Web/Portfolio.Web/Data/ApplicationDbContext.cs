@@ -239,6 +239,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 ReadMinutes = 8,
                 Tags = "AI, Semantic Kernel, Azure OpenAI, .NET, C#",
                 IsPublished = true,
+                FeaturedImage = "/images/ai-dotnet.svg",
                 Body = """
                     <p>I spent a good chunk of last year integrating large language model features into a healthcare application. Not a side project, not a conference demo. A real system where a nurse practitioner would read the output and make decisions based on it. That context changes everything about how you approach AI.</p>
 
@@ -274,6 +275,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 ReadMinutes = 7,
                 Tags = "Security, OWASP, ASP.NET Core, C#",
                 IsPublished = true,
+                FeaturedImage = "/images/secure-api.svg",
                 Body = """
                     <p>There is a version of security awareness that goes like this: you download the OWASP Top Ten PDF, read through it a few days before launch, tick off the obvious ones, and ship. I did that version for longer than I would like to admit.</p>
 
@@ -305,6 +307,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 ReadMinutes = 6,
                 Tags = ".NET, C#, Architecture, Clean Code",
                 IsPublished = true,
+                FeaturedImage = "/images/dotnet-dev.svg",
                 Body = """
                     <p>I wrote code in the late nineties that I had to maintain in the early two thousands. I wrote code in the early two thousands that I had to go back to in 2015. Each of those encounters with past me was educational in ways that no conference talk or book ever matched.</p>
 
@@ -337,6 +340,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 ReadMinutes = 7,
                 Tags = "Security, JWT, ASP.NET Core, Authentication, OAuth2",
                 IsPublished = true,
+                FeaturedImage = "/images/secure-api.svg",
                 Body = """
                     <p>JWT is everywhere in modern web APIs. It is also one of the things I see misunderstood most often when I review code. Not because people do not understand what a JWT is in general terms, but because there are a handful of details that look minor until they become the reason your authentication is compromised.</p>
 
@@ -369,6 +373,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 ReadMinutes = 5,
                 Tags = "AI, .NET, C#, Testing, Healthcare",
                 IsPublished = true,
+                FeaturedImage = "/images/ai-dotnet.svg",
                 Body = """
                     <p>I will be honest. When AI-assisted coding tools started appearing in my workflow I was fairly dismissive. I had good tests. I had code reviews. I had colleagues who would spot obvious problems. What was an autocomplete on steroids going to add?</p>
 
