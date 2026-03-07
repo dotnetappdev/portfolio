@@ -85,7 +85,7 @@ public class StaticSiteGeneratorService
             }
         }
 
-        _logger.LogInformation("Static site generation complete — {Bytes} bytes", ms.Length);
+        _logger.LogInformation("Static site generation complete: {Bytes} bytes", ms.Length);
         return ms.ToArray();
     }
 
@@ -154,7 +154,7 @@ public class StaticSiteGeneratorService
     {
         var r = Root(depth);
         var navLinks = BuildNavLinks(menuItems, r);
-        var desc = H(metaDescription ?? $"{title} | David Buckley — Senior .NET Engineer");
+        var desc = H(metaDescription ?? $"{title} | David Buckley, Senior .NET Engineer");
 
         return $$"""
 <!DOCTYPE html>
@@ -635,7 +635,7 @@ h2.section-title {
         <div class="hero-text">
           <div class="hero-badge">&#x1F680; SENIOR SOFTWARE ENGINEER</div>
           <h1>Your software,<br /><span class="hero-accent">always delivered.</span></h1>
-          <p class="hero-sub">The all-in-one .NET engineer for AI-driven apps, hardened APIs, and enterprise-grade Blazor solutions. 30 years shipping production software — built to last, secured from day one.</p>
+          <p class="hero-sub">The all-in-one .NET engineer for AI-driven apps, hardened APIs, and enterprise-grade Blazor solutions. 30 years shipping production software, built to last and secured from day one.</p>
           <div class="hero-ctas">
             <a class="btn btn-primary" href="{{r}}projects/">View My Work</a>
             <a class="btn btn-outline" href="{{r}}contact/">Get In Touch</a>
@@ -651,7 +651,7 @@ h2.section-title {
             <span class="dot dot-red"></span>
             <span class="dot dot-amber"></span>
             <span class="dot dot-green"></span>
-            <span>Portfolio — At a Glance</span>
+            <span>Portfolio at a Glance</span>
           </div>
           <div class="stats-grid">
 {{statCards}}
@@ -728,7 +728,7 @@ h2.section-title {
 """;
 
         return PageShell("Home", body, menuItems, depth,
-            "David Buckley — Senior .NET Engineer specialising in AI, Security and Blazor");
+            "David Buckley, Senior .NET Engineer specialising in AI, Security and Blazor");
     }
 
     // ─── About page ───────────────────────────────────────────────────────────
@@ -792,7 +792,7 @@ h2.section-title {
     </div>
 """;
         return PageShell("About Me", body, menuItems, depth,
-            "About David Buckley — 30 years building .NET software");
+            "About David Buckley: 30 years building .NET software");
     }
 
     // ─── Projects page ────────────────────────────────────────────────────────
@@ -851,7 +851,7 @@ h2.section-title {
     </div>
 """;
         return PageShell("Projects", body, menuItems, depth,
-            "Portfolio projects by David Buckley — Blazor, ASP.NET Core, AI and Security applications");
+            "Portfolio projects by David Buckley: Blazor, ASP.NET Core, AI and Security applications");
     }
 
     // ─── Skills page ──────────────────────────────────────────────────────────
@@ -899,7 +899,7 @@ h2.section-title {
     </div>
 """;
         return PageShell("Skills", body, menuItems, depth,
-            "Technical skills of David Buckley — C#, .NET, Blazor, AI, Security");
+            "Technical skills of David Buckley: C#, .NET, Blazor, AI, Security");
     }
 
     // ─── Blog list page ───────────────────────────────────────────────────────
@@ -953,7 +953,7 @@ h2.section-title {
     </div>
 """;
         return PageShell("Blog", body, menuItems, depth,
-            "Blog by David Buckley — AI, .NET, Security articles");
+            "Blog by David Buckley: AI, .NET, Security articles");
     }
 
     // ─── Blog post page ───────────────────────────────────────────────────────
@@ -1058,7 +1058,7 @@ h2.section-title {
           </div>
           <div style="display:flex;align-items:center;gap:0.75rem;">
             <span style="font-size:1.25rem;">&#128100;</span>
-            <span>David Buckley — Senior Software Engineer &amp; AI Developer</span>
+            <span>David Buckley, Senior Software Engineer &amp; AI Developer</span>
           </div>
         </div>
         <a class="btn btn-primary" href="../">View Portfolio</a>
@@ -1066,7 +1066,7 @@ h2.section-title {
     </div>
 """;
         return PageShell("Contact", body, menuItems, depth,
-            "Contact David Buckley — Senior .NET Engineer");
+            "Contact David Buckley, Senior .NET Engineer");
     }
 
     // ─── CMS page ─────────────────────────────────────────────────────────────
