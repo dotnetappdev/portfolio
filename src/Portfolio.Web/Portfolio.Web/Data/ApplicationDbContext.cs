@@ -479,6 +479,185 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     It is not perfect. It flags things that are fine. But the one time in ten where it finds
                     something real is worth the noise.
                     """
+            },
+            new BlogPost
+            {
+                Id = 6,
+                Slug = "building-bookit-a-blazor-booking-management-system",
+                Title = "Building BookIt: A Blazor Booking Management System",
+                Summary = "How I designed and built BookIt from scratch — a full-featured booking management system using Blazor, ASP.NET Core, and MudBlazor with dark and light mode support, real-time availability, and SMS notifications.",
+                Category = "Projects",
+                PublishedDate = new DateTime(2025, 4, 10, 0, 0, 0, DateTimeKind.Utc),
+                ReadMinutes = 8,
+                Tags = "Blazor, ASP.NET Core, MudBlazor, SQL Server, EF Core, .NET 10",
+                IsPublished = true,
+                FeaturedImage = "/images/bookit.svg",
+                Body = """
+                    BookIt started as a client request for a simple online booking system. By the time it shipped
+                    it had become one of the most satisfying builds I have done in recent years, partly because
+                    of the technology choices and partly because of what those choices enabled at the UI layer.
+
+                    The brief was straightforward: businesses needed to manage appointments, track resources,
+                    and let customers book online. The tricky part was that the businesses themselves were
+                    diverse — a hair salon, a physio clinic, a training room hire company — and each had
+                    slightly different ideas about what a booking even was. That diversity pushed me toward
+                    a flexible domain model early on rather than hardcoding assumptions about slot length,
+                    resource type, or cancellation policy.
+
+                    I chose Blazor Server for the frontend from the start. The real-time availability
+                    requirements meant that a traditional request/response cycle would create friction in
+                    the UI. With Blazor Server and SignalR underneath, I could push availability updates
+                    to connected clients the moment a slot was taken without the client polling. In
+                    practice this makes the booking experience feel instant in a way that a standard
+                    MVC form cannot match.
+
+                    MudBlazor was the natural choice for the component library. The project needed a
+                    professional-grade UI with both light and dark mode, and MudBlazor's theming system
+                    handles that with almost no ceremony. The MudDataGrid component handled the admin
+                    booking list, MudCalendar handled the visual schedule view, and the chip system made
+                    tagging bookings with status and category feel polished without custom CSS.
+
+                    The data layer uses Entity Framework Core 9 with SQL Server. I applied a clean
+                    architecture pattern — domain entities, repository interfaces in the application layer,
+                    EF Core implementations in the infrastructure layer. This made unit testing the booking
+                    logic straightforward and kept the domain model free of EF Core attributes.
+
+                    SMS notifications were a late addition that turned out to be heavily used. Customers
+                    get a confirmation text when they book, a reminder 24 hours before, and a follow-up
+                    after. I built a provider-agnostic SMS abstraction so the underlying provider could
+                    be swapped without touching the booking logic. In production we are using ClickSend
+                    but Twilio support is also built in.
+
+                    The one thing I would do differently is implement optimistic concurrency on slot
+                    reservations from the very first sprint. We had a brief window early in development
+                    where two simultaneous bookings for the same slot were both confirmed. The fix was
+                    a database-level check combined with a retry policy on the Blazor component, but
+                    it would have been simpler to design for that from the start.
+
+                    BookIt is now live and has processed thousands of bookings across multiple businesses.
+                    The Blazor real-time approach has aged well and I am still satisfied with the
+                    architectural decisions made at the outset.
+                    """
+            },
+            new BlogPost
+            {
+                Id = 7,
+                Slug = "building-curo-a-healthcare-care-management-platform",
+                Title = "Building Curo: A Healthcare Care Management Platform",
+                Summary = "The story behind Curo — a Blazor-based care management system for coordinating patient care plans, clinical workflows, and carer task management, deployed to Azure with strict security and compliance requirements.",
+                Category = "Projects",
+                PublishedDate = new DateTime(2025, 5, 2, 0, 0, 0, DateTimeKind.Utc),
+                ReadMinutes = 9,
+                Tags = "Blazor, ASP.NET Core, Azure, Healthcare, SQL Server, MudBlazor, .NET 10",
+                IsPublished = true,
+                FeaturedImage = "/images/curo.svg",
+                Body = """
+                    Building software for healthcare is different from building it for almost any other
+                    domain. The margin for error is smaller, the compliance requirements are real, and
+                    the people using the system are often under significant time and emotional pressure.
+                    Curo was built with all of that in mind.
+
+                    The platform was commissioned to replace a paper-based care plan system used by a
+                    team of community carers. Their workflow involved visiting patients at home, recording
+                    observations, completing tasks from a care plan, and escalating anything concerning
+                    to a care manager. On paper this meant a lot of phone calls, lost handover notes,
+                    and care managers who had no live visibility into what was happening in the field.
+
+                    Curo brings that workflow into a Blazor application accessible on any device. Carers
+                    use it on tablets during visits to check tasks, record vitals, and mark care plan
+                    steps complete. Care managers get a live dashboard showing which carers are active,
+                    which patients have been visited, and which tasks are overdue. The real-time updates
+                    come via SignalR, the same mechanism that makes Blazor Server so well suited to
+                    operational dashboards.
+
+                    The domain model for care plans was the hardest design problem. A care plan for one
+                    patient might have fifty tasks across medication, nutrition, mobility, and social
+                    engagement, each with different frequencies, assigned carers, and escalation
+                    thresholds. Getting that model right took several iterations and some very direct
+                    conversations with the clinical team about what they actually needed versus what
+                    they initially asked for.
+
+                    Security and data protection were non-negotiable. The application holds personal
+                    health information, which meant encryption at rest and in transit, role-based access
+                    control at every API endpoint, full audit logging of every data access, and a
+                    carefully scoped permission model so that a carer could only see the patients
+                    assigned to them. I used ASP.NET Core Identity with custom claims for the RBAC
+                    layer and a purpose-built audit middleware that writes to a separate audit log
+                    table rather than mixing audit records with application data.
+
+                    Azure hosting gave us the infrastructure story at reasonable cost. The application
+                    runs on Azure App Service with Azure SQL Database. Azure Active Directory handles
+                    the identity provider for the care management organisation. Deployment is automated
+                    through a GitHub Actions pipeline that builds, tests, runs OWASP dependency checks,
+                    and deploys to staging before production.
+
+                    The feedback from carers after go-live was genuinely moving. The care manager
+                    described being able to see her team's visits happening in real time as transformative.
+                    That is the kind of outcome that reminds me why building useful software matters.
+                    """
+            },
+            new BlogPost
+            {
+                Id = 8,
+                Slug = "building-talentconnect-a-blazor-recruitment-platform",
+                Title = "Building TalentConnect: A Modern Blazor Recruitment Platform",
+                Summary = "How I built TalentConnect — a full-stack Blazor recruitment management platform featuring job postings, multi-stage candidate pipelines, interview scheduling, and recruitment analytics — and what I learned along the way.",
+                Category = "Projects",
+                PublishedDate = new DateTime(2025, 6, 14, 0, 0, 0, DateTimeKind.Utc),
+                ReadMinutes = 8,
+                Tags = "Blazor, ASP.NET Core, MudBlazor, SQL Server, EF Core, REST API, .NET 10",
+                IsPublished = true,
+                FeaturedImage = "/images/talentconnect.svg",
+                Body = """
+                    Recruitment is one of those domains that seems simple until you are three weeks into
+                    building the software for it. The surface area is manageable — jobs, candidates,
+                    applications, interviews, offers — but the workflow complexity underneath is
+                    substantial and every organisation does it slightly differently.
+
+                    TalentConnect was built for a recruitment team who needed to move away from
+                    spreadsheets and shared inboxes. They were tracking candidates across multiple roles
+                    simultaneously, scheduling interviews via email chains, and producing monthly
+                    reports by hand from a dozen different sources. The brief was to consolidate all
+                    of that into a single Blazor application.
+
+                    The candidate pipeline was the heart of the design. Every candidate progresses
+                    through configurable stages — applied, screening, shortlisted, first interview,
+                    second interview, offer, hired or rejected. Each transition is timestamped and
+                    the history is preserved so the team can see how long candidates have been at
+                    each stage and where the bottlenecks in their process are. That audit trail also
+                    proved valuable for compliance purposes.
+
+                    Blazor Server was the right choice here for the same reasons it works well in
+                    other operational tools: the recruiter-facing pipeline board benefits from live
+                    updates when a colleague moves a candidate or adds a note, and the team is always
+                    working from current data without needing to refresh.
+
+                    MudBlazor's drag-and-drop support made the kanban-style pipeline board possible
+                    without writing a single line of custom JavaScript. The component library's data
+                    grid handled the tabular candidate list, filter chips made filtering by role,
+                    stage, and recruiter feel natural, and the stepper component guided new job posting
+                    creation through a structured flow that reduced data entry errors.
+
+                    The notification system was a significant piece of work in its own right. Candidates
+                    receive automated emails at key pipeline stages — application received, shortlisted,
+                    interview invitation, outcome. Recruiters get Blazor toast notifications when
+                    a candidate completes an online assessment or when an interview response comes in.
+                    The whole thing is driven by an event-based model where stage transitions publish
+                    domain events and notification handlers decide what to send to whom.
+
+                    One of the more interesting technical challenges was the analytics reporting.
+                    The team wanted to see time-to-hire by role, source channel conversion rates,
+                    and interviewer pass rates. These calculations involve aggregating across
+                    pipeline history and doing date arithmetic across potentially thousands of
+                    candidate journeys. Getting those queries right in EF Core without full table
+                    scans required some careful index design and a few projection-only queries
+                    that bypass change tracking entirely.
+
+                    TalentConnect is now the primary recruitment tool for the team that commissioned
+                    it. Spreadsheet use has dropped to zero and the monthly report now takes minutes
+                    rather than a working day. Building something that saves people real time is
+                    always satisfying.
+                    """
             }
         );
     }

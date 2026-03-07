@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1565C0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0D47A1;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1565C0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bg)" />
+  <!-- Decorative circles -->
+  <circle cx="720" cy="60" r="120" fill="#1976D2" opacity="0.3" />
+  <circle cx="80" cy="380" r="100" fill="#0D47A1" opacity="0.4" />
+  <!-- App window frame -->
+  <rect x="60" y="60" width="500" height="330" rx="12" ry="12" fill="#FFFFFF" opacity="0.08" />
+  <!-- Window title bar -->
+  <rect x="60" y="60" width="500" height="40" rx="12" ry="12" fill="#FFFFFF" opacity="0.12" />
+  <circle cx="85" cy="80" r="6" fill="#FF5F57" />
+  <circle cx="105" cy="80" r="6" fill="#FEBC2E" />
+  <circle cx="125" cy="80" r="6" fill="#28C840" />
+  <text x="300" y="85" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#FFFFFF" opacity="0.7">BookIt — Booking Management System</text>
+  <!-- Sidebar -->
+  <rect x="60" y="100" width="120" height="290" fill="#FFFFFF" opacity="0.05" />
+  <!-- Sidebar menu items -->
+  <rect x="75" y="120" width="90" height="28" rx="6" fill="#FFFFFF" opacity="0.15" />
+  <text x="120" y="138" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF">Dashboard</text>
+  <rect x="75" y="158" width="90" height="28" rx="6" fill="#FFFFFF" opacity="0.08" />
+  <text x="120" y="176" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Bookings</text>
+  <rect x="75" y="196" width="90" height="28" rx="6" fill="#FFFFFF" opacity="0.08" />
+  <text x="120" y="214" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Calendar</text>
+  <rect x="75" y="234" width="90" height="28" rx="6" fill="#FFFFFF" opacity="0.08" />
+  <text x="120" y="252" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Customers</text>
+  <!-- Main content area -->
+  <!-- Stats row -->
+  <rect x="195" y="112" width="110" height="60" rx="8" fill="#FFFFFF" opacity="0.12" />
+  <text x="250" y="135" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Today</text>
+  <text x="250" y="157" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="bold" fill="#FFFFFF">24</text>
+  <rect x="320" y="112" width="110" height="60" rx="8" fill="#FFFFFF" opacity="0.12" />
+  <text x="375" y="135" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Pending</text>
+  <text x="375" y="157" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="bold" fill="#64B5F6">8</text>
+  <rect x="445" y="112" width="100" height="60" rx="8" fill="#FFFFFF" opacity="0.12" />
+  <text x="495" y="135" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Revenue</text>
+  <text x="495" y="157" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="bold" fill="#81C784">£1.2k</text>
+  <!-- Table header -->
+  <rect x="195" y="188" width="350" height="30" rx="4" fill="#FFFFFF" opacity="0.1" />
+  <text x="215" y="207" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.6">Customer</text>
+  <text x="340" y="207" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.6">Date</text>
+  <text x="440" y="207" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.6">Status</text>
+  <!-- Table rows -->
+  <rect x="195" y="222" width="350" height="24" rx="3" fill="#FFFFFF" opacity="0.05" />
+  <text x="215" y="238" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF">John Smith</text>
+  <text x="340" y="238" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Today 09:00</text>
+  <rect x="440" y="225" width="55" height="16" rx="8" fill="#81C784" opacity="0.8" />
+  <text x="467" y="236" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFF">Confirmed</text>
+  <rect x="195" y="250" width="350" height="24" rx="3" fill="#FFFFFF" opacity="0.03" />
+  <text x="215" y="266" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF">Sarah Jones</text>
+  <text x="340" y="266" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Today 11:30</text>
+  <rect x="440" y="253" width="50" height="16" rx="8" fill="#FFB74D" opacity="0.8" />
+  <text x="465" y="264" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFF">Pending</text>
+  <rect x="195" y="278" width="350" height="24" rx="3" fill="#FFFFFF" opacity="0.05" />
+  <text x="215" y="294" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF">Mike Taylor</text>
+  <text x="340" y="294" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.7">Today 14:00</text>
+  <rect x="440" y="281" width="55" height="16" rx="8" fill="#81C784" opacity="0.8" />
+  <text x="467" y="292" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFF">Confirmed</text>
+  <!-- Right panel - Project info -->
+  <text x="595" y="100" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="bold" fill="#FFFFFF">BookIt</text>
+  <text x="595" y="125" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#90CAF9">Booking Management System</text>
+  <!-- Tech chips -->
+  <rect x="530" y="145" width="55" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="557" y="160" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">Blazor</text>
+  <rect x="594" y="145" width="75" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="631" y="160" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">ASP.NET Core</text>
+  <rect x="530" y="174" width="75" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="567" y="189" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">SQL Server</text>
+  <rect x="614" y="174" width="55" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="641" y="189" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">MudBlazor</text>
+  <rect x="530" y="203" width="65" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="562" y="218" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">EF Core</text>
+  <rect x="604" y="203" width="65" height="22" rx="11" fill="#FFFFFF" opacity="0.15" />
+  <text x="636" y="218" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#FFFFFF">C# .NET 10</text>
+  <!-- Features list -->
+  <text x="530" y="250" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#90CAF9" font-weight="bold">Key Features</text>
+  <circle cx="538" cy="268" r="3" fill="#64B5F6" />
+  <text x="547" y="272" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Online booking portal</text>
+  <circle cx="538" cy="286" r="3" fill="#64B5F6" />
+  <text x="547" y="290" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Real-time availability</text>
+  <circle cx="538" cy="304" r="3" fill="#64B5F6" />
+  <text x="547" y="308" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Dark / light mode</text>
+  <circle cx="538" cy="322" r="3" fill="#64B5F6" />
+  <text x="547" y="326" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">Customer management</text>
+  <circle cx="538" cy="340" r="3" fill="#64B5F6" />
+  <text x="547" y="344" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#FFFFFF" opacity="0.9">SMS notifications</text>
+</svg>
