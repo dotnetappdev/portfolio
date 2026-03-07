@@ -12,6 +12,25 @@ public class BlogService(ApplicationDbContext dbContext)
             .OrderByDescending(p => p.PublishedDate)
             .ToListAsync();
 
+    /// <summary>Returns a page of published posts and the total published post count.</summary>
+    public async Task<(IReadOnlyList<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int page, int pageSize)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+
+        var query = dbContext.BlogPosts
+            .Where(p => p.IsPublished)
+            .OrderByDescending(p => p.PublishedDate);
+
+        var total = await query.CountAsync();
+        var posts = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (posts, total);
+    }
+
     /// <summary>Returns a published post by its URL slug, or null if not found.</summary>
     public async Task<BlogPost?> GetBySlugAsync(string slug) =>
         await dbContext.BlogPosts
