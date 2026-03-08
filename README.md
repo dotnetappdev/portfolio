@@ -329,7 +329,9 @@ All providers are fully supported out of the box — no manual NuGet installs ne
 
 Each provider is isolated in its own class library (`Portfolio.Data.MySql`, `Portfolio.Data.CosmosDb`, `Portfolio.Data.PostgreSql`). SQL Server and SQLite are built into `Portfolio.Api` and `Portfolio.Web` via the standard EF Core packages already referenced.
 
-The database schema is created automatically on first run via `EnsureCreatedAsync`.
+The database schema is created and all pending migrations are applied automatically at startup via `MigrateAsync()`. Seed data (projects, skills, admin user) is inserted on first run when `SeedData: true` is set.
+
+See **[MIGRATIONS.md](./MIGRATIONS.md)** for the full guide on creating, applying, and rolling back migrations for each provider.
 
 ---
 

@@ -109,7 +109,7 @@ app.MapPost("/logout", async (HttpContext httpContext) =>
     return Results.Redirect("/");
 }).RequireAuthorization();
 
-// Ensure the local CMS database tables exist on first run.
+// Apply pending EF Core migrations and initialise the CMS database on first run.
 // Users and roles live in Portfolio.Api — only CMS / portfolio data is seeded here.
 if (builder.Configuration.GetValue<bool>("SeedData"))
 {
@@ -117,8 +117,8 @@ if (builder.Configuration.GetValue<bool>("SeedData"))
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var logger  = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    await context.Database.EnsureCreatedAsync();
-    logger.LogInformation("Web CMS database initialised.");
+    await context.Database.MigrateAsync();
+    logger.LogInformation("Web CMS database migrated and initialised.");
 }
 
 // Static site generator — auth-protected download endpoint.

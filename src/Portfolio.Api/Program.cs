@@ -77,7 +77,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Seed database — controlled by "SeedData": true in appsettings.json
+// Apply pending EF Core migrations and seed the database on startup.
+// Controlled by "SeedData": true in appsettings.json.
 if (builder.Configuration.GetValue<bool>("SeedData"))
 {
     using var scope = app.Services.CreateScope();
@@ -86,7 +87,7 @@ if (builder.Configuration.GetValue<bool>("SeedData"))
     var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    await context.Database.EnsureCreatedAsync();
+    await context.Database.MigrateAsync();
 
     if (!await roleMgr.RoleExistsAsync("Admin"))
         await roleMgr.CreateAsync(new IdentityRole("Admin"));
