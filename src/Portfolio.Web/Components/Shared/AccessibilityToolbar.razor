@@ -1,5 +1,9 @@
 @rendermode InteractiveServer
 @inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@* Invisible aria-live region so screen readers pick up state changes *@
+<div id="a11y-announce" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
 <div class="a11y-toolbar" role="toolbar" aria-label="Accessibility tools">
     <MudTooltip Text="@(_isSpeaking ? "Stop reading aloud" : "Read page aloud")" Placement="Placement.Right">
@@ -34,6 +38,7 @@
 @code {
     private bool _isSpeaking;
     private string _fontScale = "default";
+    private DotNetObjectReference<AccessibilityToolbar>? _dotNetRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -41,6 +46,9 @@
         {
             try
             {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("registerA11yCallback", _dotNetRef);
+
                 _fontScale = await JS.InvokeAsync<string>("getSavedFontScale");
                 await JS.InvokeVoidAsync("setFontScale", _fontScale);
             }
@@ -52,6 +60,14 @@
         }
     }
 
+    /// <summary>Called from JS when speech synthesis ends naturally or errors out.</summary>
+    [JSInvokable]
+    public void OnSpeechEnded()
+    {
+        _isSpeaking = false;
+        InvokeAsync(StateHasChanged);
+    }
+
     private async Task ToggleReadAloud()
     {
         try
@@ -60,11 +76,16 @@
             {
                 await JS.InvokeVoidAsync("stopReadingAloud");
                 _isSpeaking = false;
+                await JS.InvokeVoidAsync("announceToScreenReader", "Stopped reading.");
             }
             else
             {
                 var started = await JS.InvokeAsync<bool>("readPageAloud", "main-content");
                 _isSpeaking = started;
+                if (started)
+                    await JS.InvokeVoidAsync("announceToScreenReader", "Reading page aloud. Press the stop button to stop.");
+                else
+                    await JS.InvokeVoidAsync("announceToScreenReader", "Speech synthesis is not supported in this browser.");
             }
         }
         catch (Exception ex)
@@ -81,14 +102,29 @@
             "large"   => "xlarge",
             _         => "xlarge"
         };
-        try { await JS.InvokeVoidAsync("setFontScale", _fontScale); }
+        try
+        {
+            await JS.InvokeVoidAsync("setFontScale", _fontScale);
+            var label = _fontScale == "large" ? "Text size increased to large." : "Text size increased to extra large.";
+            await JS.InvokeVoidAsync("announceToScreenReader", label);
+        }
         catch (Exception ex) { Console.WriteLine($"[AccessibilityToolbar] Font scale error: {ex.Message}"); }
     }
 
     private async Task ResetFontSize()
     {
         _fontScale = "default";
-        try { await JS.InvokeVoidAsync("setFontScale", _fontScale); }
+        try
+        {
+            await JS.InvokeVoidAsync("setFontScale", _fontScale);
+            await JS.InvokeVoidAsync("announceToScreenReader", "Text size reset to default.");
+        }
         catch (Exception ex) { Console.WriteLine($"[AccessibilityToolbar] Font scale error: {ex.Message}"); }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("registerA11yCallback", (object?)null); } catch { /* ignore */ }
+        _dotNetRef?.Dispose();
     }
 }

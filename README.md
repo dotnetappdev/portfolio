@@ -34,6 +34,16 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ### Contact (with math CAPTCHA)
 ![Contact](https://github.com/user-attachments/assets/bed68ebf-d13e-42da-9c6e-d0a899062e9b)
 
+### Accessibility toolbar (floating, bottom-left — Read Aloud + font-size controls)
+
+The accessibility toolbar appears on every public page in the bottom-left corner. It provides three buttons:
+
+- **Read Aloud** (voice icon) — starts the Web Speech API reading the page content in document order; changes to a red Stop button while speaking
+- **A+** (text-increase icon) — steps font size up: default → 18 px → 20 px
+- **Aa** (format-size icon) — resets font size to default
+
+All buttons carry ARIA labels and the toolbar region has `role="toolbar"`. A hidden `aria-live="polite"` region announces each action to screen readers (e.g. "Reading page aloud. Press the stop button to stop.").
+
 ---
 
 ## CMS Screenshots
@@ -97,12 +107,12 @@ Portfolio.slnx
 - **Custom CMS pages**: publish arbitrary pages at any slug (e.g. `/services`, `/hire-me`) with full SEO metadata
 - **SEO and Open Graph**: per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
 - **Featured images**: optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
-- **Tech chip badges**: technology tags displayed as chips on project cards and blog posts
+- **Tech chip badges**: technology tags displayed as outlined chips on project cards and blog posts — consistent styling across all public pages
 - **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set — editable via the admin Projects tab with a built-in URL validate button
 - **SEO-friendly project detail pages**: every project has an individual page at `/projects/{slug}` with full `<head>` injection (meta description, OG tags, canonical URL); slugs are auto-generated from the project title in the admin form and editable
 - **Contact form CAPTCHA**: server-side math challenge blocks spam without any external service or API key
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
-- **Light and dark mode**: respects system preference, toggleable in the header
+- **Light and dark mode**: respects system preference, toggleable in the header; blog content readable in both modes
 - **REST API with fallback**: Blazor app works standalone when API is offline
 - **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library
 - **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
@@ -112,6 +122,42 @@ Portfolio.slnx
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
 - **Account lockout**: 5 failed attempts triggers a 15-minute lockout
 - **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend — all credentials (Account SID, Auth Token, API Key, etc.) stored in DB and managed in Admin → Settings
+- **Accessibility (WCAG AA)**: skip-to-content link, landmark roles, floating toolbar with Read Aloud (Web Speech API) and font-size scaling — see [Accessibility](#accessibility) below
+
+## Accessibility
+
+The site is built to WCAG 2.1 AA standards and includes a **floating accessibility toolbar** (bottom-left corner) on every page.
+
+### Accessibility toolbar
+
+| Button | What it does |
+|---|---|
+| 🔊 **Read Aloud** | Speaks the page content aloud using the browser's built-in Web Speech API (no third-party service required). Reads headings, paragraphs, lists, and table cells in document order with natural pauses. Press again to stop. |
+| **A+** (Text Increase) | Increases the base font size: default → large (18 px) → extra-large (20 px). Persisted across page loads via `localStorage`. |
+| **Aa** (Text Reset) | Resets font size back to default. |
+
+Each action is announced to screen readers via an `aria-live="polite"` region so assistive technology picks up the state change without interrupting the current reading position.
+
+### Other accessibility features
+
+| Feature | Standard | Detail |
+|---|---|---|
+| Skip-to-content link | WCAG 2.4.1 | Hidden `<a href="#main-content">` becomes visible on keyboard focus — lets keyboard and screen-reader users jump straight to the page body |
+| Landmark regions | WCAG 1.3.1 | `<main id="main-content">` wraps all page body content; `<nav>` via MudDrawer; `role="toolbar"` on the accessibility widget |
+| Dark / light theme | WCAG 1.4.3 | Both modes provide sufficient contrast; blog post body text always uses the theme's primary text colour regardless of Quill-saved inline styles |
+| Keyboard navigation | WCAG 2.1.1 | All interactive controls reachable by Tab; focus order follows visual reading order |
+| ARIA labels | WCAG 4.1.2 | Icon-only buttons (theme toggle, accessibility toolbar) carry descriptive `aria-label` attributes; Read Aloud uses `aria-pressed` to convey toggle state |
+| Font scaling | WCAG 1.4.4 | Text scales to 18 px and 20 px without loss of content; selection persisted in `localStorage` |
+
+### Screen reader compatibility
+
+The site has been designed to work with common screen readers:
+
+- **NVDA / JAWS** (Windows) — skip link and landmark structure compatible
+- **VoiceOver** (macOS / iOS) — `<main>` landmark and skip link verified
+- **TalkBack** (Android) — responsive layout keeps touch targets ≥ 44 × 44 px
+
+The **Read Aloud** feature uses the browser's built-in [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) — the same underlying engine used by BrowseAloud-style services — and requires no third-party account or script. Supported in Chrome, Edge, Safari 14+, and Firefox 49+.
 
 ## Tech Stack
 
