@@ -1,0 +1,94 @@
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<div class="a11y-toolbar" role="toolbar" aria-label="Accessibility tools">
+    <MudTooltip Text="@(_isSpeaking ? "Stop reading aloud" : "Read page aloud")" Placement="Placement.Right">
+        <MudFab Color="@(_isSpeaking ? Color.Error : Color.Secondary)"
+                StartIcon="@(_isSpeaking ? Icons.Material.Filled.StopCircle : Icons.Material.Filled.RecordVoiceOver)"
+                Size="Size.Small"
+                OnClick="ToggleReadAloud"
+                aria-label="@(_isSpeaking ? "Stop reading page aloud" : "Read page aloud")"
+                aria-pressed="@_isSpeaking.ToString().ToLower()"
+                Class="mb-2 d-block" />
+    </MudTooltip>
+
+    <MudTooltip Text="Increase text size" Placement="Placement.Right">
+        <MudFab Color="Color.Default"
+                StartIcon="@Icons.Material.Filled.TextIncrease"
+                Size="Size.Small"
+                OnClick="IncreaseFontSize"
+                aria-label="Increase text size"
+                Class="mb-2 d-block" />
+    </MudTooltip>
+
+    <MudTooltip Text="Reset text size" Placement="Placement.Right">
+        <MudFab Color="Color.Default"
+                StartIcon="@Icons.Material.Filled.FormatSize"
+                Size="Size.Small"
+                OnClick="ResetFontSize"
+                aria-label="Reset text size to default"
+                Class="d-block" />
+    </MudTooltip>
+</div>
+
+@code {
+    private bool _isSpeaking;
+    private string _fontScale = "default";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _fontScale = await JS.InvokeAsync<string>("getSavedFontScale");
+                await JS.InvokeVoidAsync("setFontScale", _fontScale);
+            }
+            catch (Exception ex)
+            {
+                // JS interop is not available during pre-render; safe to ignore
+                Console.WriteLine($"[AccessibilityToolbar] Could not restore font scale: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task ToggleReadAloud()
+    {
+        try
+        {
+            if (_isSpeaking)
+            {
+                await JS.InvokeVoidAsync("stopReadingAloud");
+                _isSpeaking = false;
+            }
+            else
+            {
+                var started = await JS.InvokeAsync<bool>("readPageAloud", "main-content");
+                _isSpeaking = started;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[AccessibilityToolbar] Read aloud error: {ex.Message}");
+        }
+    }
+
+    private async Task IncreaseFontSize()
+    {
+        _fontScale = _fontScale switch
+        {
+            "default" => "large",
+            "large"   => "xlarge",
+            _         => "xlarge"
+        };
+        try { await JS.InvokeVoidAsync("setFontScale", _fontScale); }
+        catch (Exception ex) { Console.WriteLine($"[AccessibilityToolbar] Font scale error: {ex.Message}"); }
+    }
+
+    private async Task ResetFontSize()
+    {
+        _fontScale = "default";
+        try { await JS.InvokeVoidAsync("setFontScale", _fontScale); }
+        catch (Exception ex) { Console.WriteLine($"[AccessibilityToolbar] Font scale error: {ex.Message}"); }
+    }
+}
