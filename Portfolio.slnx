@@ -14,6 +14,6 @@
     <Project Path="src/Portfolio.Sms.Twilio/Portfolio.Sms.Twilio.csproj" />
   </Folder>
   <Folder Name="/src/Portfolio.Web/">
-    <Project Path="src/Portfolio.Web/Portfolio.Web/Portfolio.Web.csproj" />
+    <Project Path="src/Portfolio.Web/Portfolio.Web.csproj" />
   </Folder>
 </Solution>

@@ -2,7 +2,7 @@
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Portfolio.Web", "Portfolio.Web\Portfolio.Web.csproj", "{BF958780-16B2-4ACB-B582-988175EE3ACC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Portfolio.Web", "Portfolio.Web.csproj", "{BF958780-16B2-4ACB-B582-988175EE3ACC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Portfolio.Data.MySql", "..\Portfolio.Data.MySql\Portfolio.Data.MySql.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}"
 EndProject

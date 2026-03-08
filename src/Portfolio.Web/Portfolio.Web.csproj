@@ -23,13 +23,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Portfolio.Data.CosmosDb\Portfolio.Data.CosmosDb.csproj" />
-    <ProjectReference Include="..\..\Portfolio.Data.MySql\Portfolio.Data.MySql.csproj" />
-    <ProjectReference Include="..\..\Portfolio.Data.PostgreSql\Portfolio.Data.PostgreSql.csproj" />
-    <ProjectReference Include="..\..\Portfolio.Shared\Portfolio.Shared.csproj" />
-    <ProjectReference Include="..\..\Portfolio.Sms.Abstractions\Portfolio.Sms.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Portfolio.Sms.ClickSend\Portfolio.Sms.ClickSend.csproj" />
-    <ProjectReference Include="..\..\Portfolio.Sms.Twilio\Portfolio.Sms.Twilio.csproj" />
+    <ProjectReference Include="..\Portfolio.Data.CosmosDb\Portfolio.Data.CosmosDb.csproj" />
+    <ProjectReference Include="..\Portfolio.Data.MySql\Portfolio.Data.MySql.csproj" />
+    <ProjectReference Include="..\Portfolio.Data.PostgreSql\Portfolio.Data.PostgreSql.csproj" />
+    <ProjectReference Include="..\Portfolio.Shared\Portfolio.Shared.csproj" />
+    <ProjectReference Include="..\Portfolio.Sms.Abstractions\Portfolio.Sms.Abstractions.csproj" />
+    <ProjectReference Include="..\Portfolio.Sms.ClickSend\Portfolio.Sms.ClickSend.csproj" />
+    <ProjectReference Include="..\Portfolio.Sms.Twilio\Portfolio.Sms.Twilio.csproj" />
   </ItemGroup>
 
 </Project>

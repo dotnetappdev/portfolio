@@ -23,7 +23,7 @@ services:
   portfolio-web:
     build:
       context: ./src
-      dockerfile: Portfolio.Web/Portfolio.Web/Dockerfile
+      dockerfile: Portfolio.Web/Dockerfile
     container_name: portfolio-web
     ports:
       - "5072:8080"

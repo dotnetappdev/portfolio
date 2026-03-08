@@ -64,27 +64,26 @@ Portfolio.slnx
     ├── Portfolio.Sms.Abstractions/    # ISmsService, SmsMessage, SmsResult (no dependencies)
     ├── Portfolio.Sms.ClickSend/       # ClickSend REST API implementation
     ├── Portfolio.Sms.Twilio/          # Twilio REST API implementation
-    └── Portfolio.Web/
-        └── Portfolio.Web/             # Blazor Web App (server-side, single project)
-            ├── Components/
-            │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
-            │   ├── Pages/
-            │   │   ├── About/         # About page
-            │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
-            │   │   ├── Auth/          # Login and AccessDenied pages
-            │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
-            │   │   ├── Contact/       # Contact form with CAPTCHA
-            │   │   ├── Error/         # Error and NotFound pages
-            │   │   ├── Home/          # Home/landing page
-            │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
-            │   │   ├── Skills/        # Skills page
-            │   │   └── CmsPageView.razor  # Catch-all /{**slug} for custom CMS pages
-            │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
-            ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
-            ├── Infrastructure/        # DatabaseProviderFactory
-            └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
-                                       #   PortfolioApiService, PortfolioApiAuthService, SmsSender,
-                                       #   StaticSiteGeneratorService, ProjectService
+    └── Portfolio.Web/                 # Blazor Web App (server-side, single project)
+        ├── Components/
+        │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
+        │   ├── Pages/
+        │   │   ├── About/         # About page
+        │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
+        │   │   ├── Auth/          # Login and AccessDenied pages
+        │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
+        │   │   ├── Contact/       # Contact form with CAPTCHA
+        │   │   ├── Error/         # Error and NotFound pages
+        │   │   ├── Home/          # Home/landing page
+        │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
+        │   │   ├── Skills/        # Skills page
+        │   │   └── CmsPageView.razor  # Catch-all /{**slug} for custom CMS pages
+        │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
+        ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
+        ├── Infrastructure/        # DatabaseProviderFactory
+        └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
+                                   #   PortfolioApiService, PortfolioApiAuthService, SmsSender,
+                                   #   StaticSiteGeneratorService, ProjectService
 ```
 
 ## Features
@@ -192,7 +191,7 @@ The following variables can be set in a `.env` file at the repo root or exported
 docker build -t portfolio-api -f src/Portfolio.Api/Dockerfile ./src
 
 # Blazor Web image only
-docker build -t portfolio-web -f src/Portfolio.Web/Portfolio.Web/Dockerfile ./src
+docker build -t portfolio-web -f src/Portfolio.Web/Dockerfile ./src
 ```
 
 ### Persistent data
@@ -346,7 +345,7 @@ cd src/Portfolio.Api
 dotnet run
 
 # Terminal 2: Blazor web app
-cd src/Portfolio.Web/Portfolio.Web
+cd src/Portfolio.Web
 dotnet run
 ```
 
@@ -405,7 +404,7 @@ dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
 dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 
 # Web secrets
-cd src/Portfolio.Web/Portfolio.Web
+cd src/Portfolio.Web
 dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
 dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 ```
