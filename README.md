@@ -64,6 +64,19 @@ All buttons carry ARIA labels and the toolbar region has `role="toolbar"`. A hid
 
 ![Accessibility toolbar — floating bottom-left with Read Aloud and font-size controls](https://github.com/user-attachments/assets/c126eda1-e800-4c30-9da0-722bf64c2271)
 
+### GDS-compliant focus and active-element states
+
+All interactive elements follow UK Government Design System (GDS) accessibility guidelines:
+
+- **Focus ring** — 3 px solid yellow (`#ffdd00`) on every focusable element via `:focus-visible` (keyboard/AT only; not shown on mouse click)
+- **Active nav item** — current page button gets `aria-current="page"`, inset 3 px white bottom-bar, and a slightly lighter background so the current location is visible without relying on colour alone
+- **Skip link** — GDS yellow background (`#ffdd00`) + dark text (`#0b0c0c`) + inset underline shadow on focus (WCAG 2.4.1)
+- **Toggle buttons** — `aria-pressed="true"` on the Read Aloud and font-scale toolbar buttons; a persistent yellow ring makes the pressed/on state visible independently of colour
+- **CMS/blog links** — full GDS text-link highlight (yellow background, dark text, dark inset bottom border) on keyboard focus
+- **Pressed state** — buttons shift down 1 px on `:active` with a dark inset shadow for tactile feedback
+
+![GDS focus and active element states](docs/screenshots/gds-focus-active-states.png)
+
 ---
 
 ## CMS Screenshots

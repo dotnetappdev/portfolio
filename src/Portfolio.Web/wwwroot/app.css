@@ -317,7 +317,64 @@
     background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* ── Skip navigation link (WCAG 2.4.1) ────────────────────── */
+/* ── GDS current-page indicator ──────────────────────────────── */
+/* aria-current="page" is set by Blazor on the active AppBar nav button.
+   GDS pattern: inset 3px bottom bar + slightly lighter background. */
+.mud-appbar a.mud-button-root[aria-current="page"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 -3px 0 white !important;
+    font-weight: 700;
+}
+
+/* ── GDS-compliant focus states (WCAG 2.4.11) ────────────────── */
+/* GDS: all focusable elements must show a 3 px solid yellow (#ffdd00)
+   focus ring. :focus-visible ensures it only appears for keyboard/AT
+   users, not on mouse click — matching GDS best practice. */
+*:focus-visible {
+    outline: 3px solid #ffdd00;
+    outline-offset: 0;
+}
+
+/* MudBlazor interactive components: yellow ring with 2 px gap so the
+   button's own edge acts as the dark inner border (GDS double-ring effect). */
+.mud-button-root:focus-visible,
+.mud-fab:focus-visible,
+.mud-icon-button:focus-visible,
+.mud-nav-link:focus-visible {
+    outline: 3px solid #ffdd00 !important;
+    outline-offset: 2px !important;
+}
+
+/* CMS / blog body links: full GDS text-link highlight (yellow bg, dark text,
+   dark inset underline). Applied on the light card background. */
+.cms-body a:focus-visible {
+    background-color: #ffdd00 !important;
+    color: #0b0c0c !important;
+    outline: 3px solid #ffdd00;
+    outline-offset: 0;
+    box-shadow: inset 0 -2px #0b0c0c;
+    text-decoration: none;
+}
+
+/* ── GDS active / pressed element states ─────────────────────── */
+/* Buttons: slight down-shift on press provides tactile feedback. */
+.mud-button-root:active:not([disabled]),
+.mud-fab:active:not([disabled]),
+.mud-icon-button:active:not([disabled]) {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Toggle buttons with aria-pressed="true" get a persistent yellow ring
+   so the pressed/on state is visible without relying on colour alone. */
+button.mud-fab[aria-pressed="true"] {
+    outline: 3px solid #ffdd00 !important;
+    outline-offset: 2px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ── GDS skip navigation link (WCAG 2.4.1) ─────────────────── */
+/* Hidden off-screen until focused; GDS yellow highlight on focus. */
 .skip-link {
     position: absolute;
     top: -100%;
@@ -333,10 +390,16 @@
     transition: top 0.15s ease;
 }
 
-.skip-link:focus {
+/* GDS focus style: yellow background with dark text and bottom border */
+.skip-link:focus,
+.skip-link:focus-visible {
     top: 0;
-    outline: 3px solid white;
-    outline-offset: 2px;
+    background: #ffdd00 !important;
+    color: #0b0c0c !important;
+    outline: 3px solid #ffdd00;
+    outline-offset: 0;
+    box-shadow: inset 0 -2px #0b0c0c;
+    text-decoration: none;
 }
 
 /* ── Screen-reader-only utility ─────────────────────────────── */

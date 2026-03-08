@@ -21,11 +21,13 @@
             {
                 @if (item.OpenInNewTab)
                 {
-                    <MudButton Color="Color.Inherit" Href="@item.Url" Target="_blank">@item.Label</MudButton>
+                    <MudButton Color="Color.Inherit" Href="@item.Url" Target="_blank"
+                               aria-current="@(IsCurrentPage(item.Url) ? "page" : null)">@item.Label</MudButton>
                 }
                 else
                 {
-                    <MudButton Color="Color.Inherit" Href="@item.Url">@item.Label</MudButton>
+                    <MudButton Color="Color.Inherit" Href="@item.Url"
+                               aria-current="@(IsCurrentPage(item.Url) ? "page" : null)">@item.Label</MudButton>
                 }
             }
         </MudHidden>
@@ -168,4 +170,22 @@
 
     private void ToggleDarkMode() => _isDarkMode = !_isDarkMode;
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    /// <summary>Returns true when the given href matches the current page path.</summary>
+    private bool IsCurrentPage(string? href)
+    {
+        if (string.IsNullOrEmpty(href)) return false;
+        // Cheap path extraction using string ops — avoids allocating a Uri object per call.
+        var raw   = Navigation.Uri;
+        var auth  = raw.IndexOf("://", StringComparison.Ordinal);
+        var start = auth >= 0 ? raw.IndexOf('/', auth + 3) : 0;
+        if (start < 0) start = 0;
+        var end     = raw.IndexOfAny(['?', '#'], start);
+        var rawPath = end >= 0 ? raw[start..end] : raw[start..];
+        var current = rawPath.TrimEnd('/').ToLowerInvariant();
+        var path    = "/" + href.TrimStart('/').TrimEnd('/').ToLowerInvariant();
+        if (path == "/") return current is "" or "/";
+        // Append "/" so "/about" never matches "/about-me" — full segment match only.
+        return current == path || current.StartsWith(path + "/");
+    }
 }
