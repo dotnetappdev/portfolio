@@ -106,6 +106,7 @@ Portfolio.slnx
 - **REST API with fallback**: Blazor app works standalone when API is offline
 - **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library
 - **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
+- **Swagger UI**: interactive API documentation available at `/swagger` on Portfolio.Api in all environments (including production); JWT auth wired in so you can test protected endpoints directly from the browser
 - **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, projects, and generate static exports
 - **In-app settings**: API base URL and SMS provider (with all API keys/tokens) configured through the admin Settings tab — stored in the database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
@@ -378,11 +379,14 @@ Update `appsettings.Development.json` in both projects:
 | Key | Description | Example |
 |---|---|---|
 | `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
+| `Jwt:Key` | JWT signing key — **never commit**; inject via env var or secret | _(empty in source — see below)_ |
 | `Jwt:Issuer` | JWT issuer claim | `Portfolio.Api` |
 | `Jwt:Audience` | JWT audience claim | `Portfolio.Web` |
 | `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
 | `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
 | `AllowedOrigins` | CORS allowed origins | `https://yourdomain.com` |
+
+> **`Jwt:Key` is intentionally blank in `appsettings.json`.** The app will throw `InvalidOperationException` at startup if the key is missing or empty — it will never silently run without a signing key. See [Secrets Management](#secrets-management) below for how to supply it per environment.
 
 ### Portfolio.Web: `appsettings.json`
 
@@ -390,11 +394,11 @@ Update `appsettings.Development.json` in both projects:
 |---|---|---|
 | `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
 | `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `BaseApiUrl` | Base URL of Portfolio.Api (deployment-time default) | `https://my-api.azurecontainerapps.io/` |
+| `BaseApiUrl` | Base URL of Portfolio.Api (production default already set) | `https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/` |
 | `DefaultAdmin:Email` | Seeded admin email | Unused — users are managed in Portfolio.Api |
 | `DefaultAdmin:Password` | Seeded admin password | Unused — users are managed in Portfolio.Api |
 
-`BaseApiUrl` is the primary way to point the web app at the API for any environment. Set it in `appsettings.json`, `appsettings.Development.json`, or as an environment variable (`BaseApiUrl=https://...`). The admin **Settings** panel (stored in the database) can override this at runtime if needed — the database value takes priority when non-empty.
+`BaseApiUrl` is the primary way to point the web app at the API for any environment. The production value (`https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/`) is already set in `appsettings.json`. `appsettings.Development.json` overrides this to `https://localhost:7002/` for local development. You can also override it via an environment variable (`BaseApiUrl=https://...`) or via the admin **Settings** panel (database value takes priority when non-empty).
 
 ---
 
@@ -415,7 +419,42 @@ dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
 dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 ```
 
-In production use environment variables or a secrets manager (Azure Key Vault, AWS Secrets Manager, etc.):
+### Azure App Service
+
+Set the JWT key and other secrets as **Application Settings** in the Azure portal — they are injected as environment variables at runtime. ASP.NET Core maps double-underscore (`__`) to nested config keys:
+
+1. Azure Portal → App Service (`portfolio-api-app`) → **Configuration** → **Application settings**
+2. Add the following settings:
+
+| App Setting name | Maps to config key | Value |
+|---|---|---|
+| `Jwt__Key` | `Jwt:Key` | A strong random string (32+ chars, see below) |
+| `DefaultAdmin__Email` | `DefaultAdmin:Email` | Your admin email |
+| `DefaultAdmin__Password` | `DefaultAdmin:Password` | A strong password |
+
+Generate a strong JWT key:
+```bash
+# Linux / macOS
+openssl rand -base64 32
+
+# PowerShell
+[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
+```
+
+3. Click **Save** — the app restarts automatically with the new key injected.
+
+> **Important:** `Jwt:Key` is intentionally blank in committed `appsettings.json`. The Portfolio.Api startup throws `InvalidOperationException` if the key is empty or missing — the app will refuse to start rather than run insecurely.
+
+### Docker Compose
+
+Set `JWT_KEY` in a `.env` file at the repo root (already wired in `docker-compose.yml`):
+
+```bash
+cp .env.example .env
+# Edit .env and replace the JWT_KEY placeholder with your own key
+```
+
+### Production environment variables (general)
 
 ```bash
 export Jwt__Key="your-production-secret"
@@ -427,10 +466,11 @@ The development defaults (in `appsettings.Development.json`) are:
 
 | Setting | Value |
 |---|---|
+| JWT key | `PortfolioJwtKey-Dev-MustBeChangedInProduction!!` |
 | Admin email | `admin@portfolio.com` |
 | Admin password | `Admin@123456!` |
 
-> Change these before going live.
+> **Change all of these before going live.**
 
 ---
 
@@ -684,4 +724,28 @@ The full project catalogue also includes:
 - HTTPS enforced in non-development environments
 - HSTS enabled in production
 - Sensitive config values are empty in committed `appsettings.json`; supply via secrets or environment variables
+- `Jwt:Key` is blank in source — app refuses to start if no key is injected (fail-fast at startup)
+
+---
+
+## Swagger UI (API Documentation)
+
+The Portfolio.Api exposes interactive Swagger documentation via Swashbuckle at `/swagger` in **all environments** (development and production).
+
+| Environment | Swagger URL |
+|---|---|
+| Local development | `https://localhost:7002/swagger` |
+| Azure (production) | `https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/swagger` |
+| Docker Compose | `http://localhost:5008/swagger` |
+
+### Using JWT auth in Swagger
+
+1. Call `POST /api/auth/login` with your admin credentials to obtain a JWT token
+2. Click **Authorize** (the padlock icon) at the top right of the Swagger UI
+3. Enter `Bearer <your-token>` in the Value field
+4. Click **Authorize** — all subsequent requests will include the `Authorization` header
+
+### Azure App Service — 500.30 fix
+
+Portfolio.Api is configured with `<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>` in `Portfolio.Api.csproj`. This runs the API on the Kestrel web server rather than inside the IIS in-process hosting module, which resolves HTTP 500.30 startup failures on Azure App Service caused by in-process hosting module incompatibilities.
 

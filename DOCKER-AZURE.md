@@ -2,6 +2,8 @@
 
 This guide covers building Docker images locally, running them with Docker Compose, and publishing both **Portfolio.Api** and **Portfolio.Web** to Azure using Azure Container Apps or Azure App Service.
 
+> **Swagger UI:** Once deployed, the interactive API documentation is available at `/swagger` on Portfolio.Api in all environments. For the current Azure App Service deployment: `https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/swagger`
+
 ---
 
 ## Local Docker
@@ -144,6 +146,11 @@ docker push $ACR_LOGIN_SERVER/portfolio-web:latest
 
 ### 4. Deploy Portfolio.Api Container App
 
+> **`Jwt__Key` is required.** Generate a strong key first:
+> ```bash
+> openssl rand -base64 32   # Linux / macOS
+> ```
+
 ```bash
 ACR_PASSWORD=$(az acr credential show --name $ACR_NAME --query passwords[0].value -o tsv)
 JWT_KEY="<your-long-random-jwt-secret>"
@@ -181,6 +188,7 @@ API_URL=$(az containerapp show \
     --query properties.configuration.ingress.fqdn -o tsv)
 
 echo "API URL: https://$API_URL"
+echo "Swagger UI: https://$API_URL/swagger"
 ```
 
 ### 5. Deploy Portfolio.Web Container App
@@ -290,6 +298,13 @@ done
 
 ### 4. Set app settings (environment variables)
 
+> **`Jwt__Key` is required.** Generate a strong key first:
+> ```bash
+> openssl rand -base64 32   # Linux / macOS
+> # PowerShell: [Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
+> ```
+> You can also set it via the Azure Portal: App Service → Configuration → Application settings → Add `Jwt__Key`.
+
 ```bash
 JWT_KEY="<your-long-random-jwt-secret>"
 
@@ -340,6 +355,10 @@ Get the URLs:
 az webapp show --name portfolio-api-app --resource-group $RESOURCE_GROUP --query defaultHostName -o tsv
 az webapp show --name portfolio-web-app --resource-group $RESOURCE_GROUP --query defaultHostName -o tsv
 ```
+
+> **Swagger UI** is available at `https://<api-hostname>/swagger` once the API app is running.
+
+> **500.30 note:** `Portfolio.Api.csproj` sets `<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>` so the API runs on Kestrel rather than the IIS in-process module. This resolves HTTP 500.30 startup failures on Azure App Service. No action required — it is already in the project file.
 
 ---
 
