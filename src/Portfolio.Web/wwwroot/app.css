@@ -216,11 +216,30 @@
 }
 
 /* ── CMS/WYSIWYG body content ─────────────────────────────── */
+/*
+ * Quill saves explicit inline colour values (e.g. color:rgb(0,0,0)) on every
+ * element it touches. Those inline styles have higher specificity than class
+ * rules, so we need !important here to ensure the theme text colour is used in
+ * both light and dark mode, not whatever the editor stored.
+ */
 .cms-body {
+    color: var(--mud-palette-text-primary);
     line-height: 1.8;
-    font-size: 1rem;
+    font-size: 1rem;   /* 16 px — WCAG AA minimum for normal text */
 }
 
+/* Override Quill's inline colour attributes so the theme text colour is always
+   respected in BOTH light and dark modes. var(--mud-palette-text-primary)
+   resolves to the correct hue for whichever theme is active. */
+.cms-body p,
+.cms-body li,
+.cms-body h1, .cms-body h2, .cms-body h3,
+.cms-body h4, .cms-body h5, .cms-body h6,
+.cms-body td, .cms-body th, .cms-body span {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Headings: weight and spacing (no colour — inherited from the rule above) */
 .cms-body h1, .cms-body h2, .cms-body h3,
 .cms-body h4, .cms-body h5, .cms-body h6 {
     font-weight: 700;
@@ -253,18 +272,17 @@
     opacity: 0.85;
 }
 
+/* Code blocks — light mode: subtle dark tint */
 .cms-body pre, .cms-body code {
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.06);
     border-radius: 4px;
     padding: 0.2em 0.4em;
     font-family: 'Courier New', monospace;
     font-size: 0.9em;
+    color: #1A1A3E !important; /* readable on the light-mode code tint */
 }
 
-:root[data-mud-theme="dark"] .cms-body pre,
-:root[data-mud-theme="dark"] .cms-body code {
-    background: rgba(255, 255, 255, 0.08);
-}
+/* Code blocks — dark mode override is in the dedicated block near the bottom of this file */
 
 .cms-body pre {
     padding: 1rem;
@@ -272,8 +290,9 @@
     margin-bottom: 1.2rem;
 }
 
+/* Links — use the theme primary colour so they stand out in both modes */
 .cms-body a {
-    color: var(--mud-palette-primary);
+    color: var(--mud-palette-primary) !important;
     text-decoration: underline;
 }
 
@@ -296,4 +315,149 @@
 .mud-appbar .mud-button-root:hover,
 .mud-appbar .mud-icon-button:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── GDS current-page indicator ──────────────────────────────── */
+/* aria-current="page" is set by Blazor on the active AppBar nav button.
+   GDS pattern: inset 3px bottom bar + slightly lighter background. */
+.mud-appbar a.mud-button-root[aria-current="page"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 -3px 0 white !important;
+    font-weight: 700;
+}
+
+/* ── GDS-compliant focus states (WCAG 2.4.11) ────────────────── */
+/* GDS: all focusable elements must show a 3 px solid yellow (#ffdd00)
+   focus ring. :focus-visible ensures it only appears for keyboard/AT
+   users, not on mouse click — matching GDS best practice. */
+*:focus-visible {
+    outline: 3px solid #ffdd00;
+    outline-offset: 0;
+}
+
+/* MudBlazor interactive components: yellow ring with 2 px gap so the
+   button's own edge acts as the dark inner border (GDS double-ring effect). */
+.mud-button-root:focus-visible,
+.mud-fab:focus-visible,
+.mud-icon-button:focus-visible,
+.mud-nav-link:focus-visible {
+    outline: 3px solid #ffdd00 !important;
+    outline-offset: 2px !important;
+}
+
+/* CMS / blog body links: full GDS text-link highlight (yellow bg, dark text,
+   dark inset underline). Applied on the light card background. */
+.cms-body a:focus-visible {
+    background-color: #ffdd00 !important;
+    color: #0b0c0c !important;
+    outline: 3px solid #ffdd00;
+    outline-offset: 0;
+    box-shadow: inset 0 -2px #0b0c0c;
+    text-decoration: none;
+}
+
+/* ── GDS active / pressed element states ─────────────────────── */
+/* Buttons: slight down-shift on press provides tactile feedback. */
+.mud-button-root:active:not([disabled]),
+.mud-fab:active:not([disabled]),
+.mud-icon-button:active:not([disabled]) {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Toggle buttons with aria-pressed="true" get a persistent yellow ring
+   so the pressed/on state is visible without relying on colour alone. */
+button.mud-fab[aria-pressed="true"] {
+    outline: 3px solid #ffdd00 !important;
+    outline-offset: 2px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ── GDS skip navigation link (WCAG 2.4.1) ─────────────────── */
+/* Hidden off-screen until focused; GDS yellow highlight on focus. */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    padding: 10px 18px;
+    background: var(--mud-palette-primary);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    z-index: 10001;
+    border-radius: 0 0 8px 0;
+    transition: top 0.15s ease;
+}
+
+/* GDS focus style: yellow background with dark text and bottom border */
+.skip-link:focus,
+.skip-link:focus-visible {
+    top: 0;
+    background: #ffdd00 !important;
+    color: #0b0c0c !important;
+    outline: 3px solid #ffdd00;
+    outline-offset: 0;
+    box-shadow: inset 0 -2px #0b0c0c;
+    text-decoration: none;
+}
+
+/* ── Screen-reader-only utility ─────────────────────────────── */
+/* Visually hidden but still read aloud by screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── Accessibility toolbar (floating, bottom-left) ─────────── */
+.a11y-toolbar {
+    position: fixed;
+    bottom: 80px;
+    left: 12px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ── Font-scale classes (applied to <body> by JS) ───────────── */
+/* WCAG AA: ensure readable font sizes at all scale levels */
+body.font-scale-large {
+    font-size: 112.5% !important; /* 18px base */
+}
+
+body.font-scale-large .mud-typography,
+body.font-scale-large p,
+body.font-scale-large li,
+body.font-scale-large td,
+body.font-scale-large .cms-body {
+    font-size: 1.125rem !important;
+}
+
+body.font-scale-xlarge {
+    font-size: 125% !important; /* 20px base */
+}
+
+body.font-scale-xlarge .mud-typography,
+body.font-scale-xlarge p,
+body.font-scale-xlarge li,
+body.font-scale-xlarge td,
+body.font-scale-xlarge .cms-body {
+    font-size: 1.25rem !important;
+}
+
+/* ── Blog / CMS content — dark mode code-block override ─────── */
+/* The base .cms-body rules above already cover text colours for both modes.
+   Only the code-block background differs between light and dark. */
+:root[data-mud-theme="dark"] .cms-body pre,
+:root[data-mud-theme="dark"] .cms-body code {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #E2E8F0 !important;
 }

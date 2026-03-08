@@ -33,7 +33,7 @@ else
                         <MudItem xs="12" md="9">
                             <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2" Spacing="1">
                                 <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(post.Category)"
-                                         Variant="Variant.Filled">@post.Category</MudChip>
+                                         Variant="Variant.Outlined">@post.Category</MudChip>
                                 @foreach (var tag in post.TagList.Take(3))
                                 {
                                     <MudChip T="string" Size="Size.Small" Color="Color.Default"

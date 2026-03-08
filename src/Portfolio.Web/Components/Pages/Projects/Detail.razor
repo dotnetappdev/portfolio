@@ -47,10 +47,10 @@ else
                 <MudStack Spacing="0">
                     <MudText Typo="Typo.h3" Class="fw-bold mb-1">@_project.Title</MudText>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudChip T="string" Color="@GetProjectColor(_project.Category)" Variant="Variant.Filled" Size="Size.Small">@_project.Category</MudChip>
+                        <MudChip T="string" Color="@GetProjectColor(_project.Category)" Variant="Variant.Outlined" Size="Size.Small">@_project.Category</MudChip>
                         @if (_project.IsFeatured)
                         {
-                            <MudChip T="string" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small">Featured</MudChip>
+                            <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Small">Featured</MudChip>
                         }
                     </MudStack>
                 </MudStack>
