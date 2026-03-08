@@ -34,6 +34,24 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ### Contact (with math CAPTCHA)
 ![Contact](https://github.com/user-attachments/assets/bed68ebf-d13e-42da-9c6e-d0a899062e9b)
 
+### Chip styling — Outlined across all public pages (light & dark)
+
+All public-facing chips (Core Technologies, blog category chips, project tags, "Featured" badges) use `Variant.Outlined` consistently across both themes:
+
+![Chip styling — outlined in light and dark mode](https://github.com/user-attachments/assets/14abc934-d154-4e32-a8d0-a9effa43bb15)
+
+### Blog post readability — light mode
+
+Quill saves inline `color` values on every element it writes. The CSS now uses `!important` on `var(--mud-palette-text-primary)` so the theme colour always wins over those inline attributes — giving crisp, readable text in light mode:
+
+![Blog post — light mode readable text](docs/screenshots/blog-post-light.png)
+
+### Blog post readability — dark mode
+
+The same theme-aware override keeps text readable on the dark `#1E1335` card background. Code blocks use a separate light-tint background so they remain visually distinct:
+
+![Blog post — dark mode readable text](docs/screenshots/blog-post-dark.png)
+
 ### Accessibility toolbar (floating, bottom-left — Read Aloud + font-size controls)
 
 The accessibility toolbar appears on every public page in the bottom-left corner. It provides three buttons:
@@ -43,6 +61,8 @@ The accessibility toolbar appears on every public page in the bottom-left corner
 - **Aa** (format-size icon) — resets font size to default
 
 All buttons carry ARIA labels and the toolbar region has `role="toolbar"`. A hidden `aria-live="polite"` region announces each action to screen readers (e.g. "Reading page aloud. Press the stop button to stop.").
+
+![Accessibility toolbar — floating bottom-left with Read Aloud and font-size controls](https://github.com/user-attachments/assets/c126eda1-e800-4c30-9da0-722bf64c2271)
 
 ---
 
