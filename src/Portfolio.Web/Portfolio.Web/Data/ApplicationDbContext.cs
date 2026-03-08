@@ -365,31 +365,36 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             new BlogPost
             {
                 Id = 5,
-                Slug = "when-ai-caught-a-bug-my-tests-missed",
-                Title = "When AI Caught a Bug My Tests Missed",
-                Summary = "I was sceptical about using AI for code review. Then it found a logic error in a patient record query that had been sitting unnoticed for months. That changed my thinking.",
-                Category = "AI",
+                Slug = "eight-seconds-to-eighty-milliseconds",
+                Title = "Eight Seconds to Eighty Milliseconds: Diagnosing a Production Performance Problem",
+                Summary = "A dashboard that took eight seconds to load in production but was instant on a developer laptop. Walking through the systematic process that found the root cause and reduced load time by 99%.",
+                Category = ".NET",
                 PublishedDate = new DateTime(2024, 12, 18, 0, 0, 0, DateTimeKind.Utc),
-                ReadMinutes = 5,
-                Tags = "AI, .NET, C#, Testing, Healthcare",
+                ReadMinutes = 7,
+                Tags = ".NET, EF Core, SQL, Performance, ASP.NET Core",
                 IsPublished = true,
-                FeaturedImage = "/images/ai-dotnet.svg",
+                FeaturedImage = "/images/dotnet-dev.svg",
                 Body = """
-                    <p>I will be honest. When AI-assisted coding tools started appearing in my workflow I was fairly dismissive. I had good tests. I had code reviews. I had colleagues who would spot obvious problems. What was an autocomplete on steroids going to add?</p>
+                    <p>The support ticket said the dashboard was slow. That was all the information I had when I started. By the time I had finished I had a 99% reduction in load time and a better understanding of why production and development environments lie to you about performance in different ways.</p>
 
-                    <h2>The Bug That Three Humans Missed</h2>
-                    <p>The answer turned out to be something I did not expect: it caught a class of error that humans are actually bad at catching. Specifically, logical errors that are consistent with the surrounding code and consistent with the tests but wrong in a way that matters.</p>
-                    <p>Here is what happened. We had a query in a patient record system that pulled upcoming appointments for a given patient. The query was filtering by patient ID and by a date range. The tests passed because the test data was structured in a way that made the wrong result indistinguishable from the correct result.</p>
-                    <p>The bug was that under certain conditions the query would include appointments belonging to a different patient if they shared a practitioner. The practitioner ID was being used where the patient ID should have been in one branch of a conditional.</p>
+                    <h2>Start With Measurement, Not Assumptions</h2>
+                    <p>The first instinct when something is slow is to open the code and look for the obvious problem. I have learned not to do this. The obvious problem is rarely the actual problem, and the time you spend fixing the obvious thing is time you are not spending measuring.</p>
+                    <p>I started by adding <strong>Application Insights</strong> telemetry to the API endpoint and attaching a SQL trace to the production database. Within ten minutes I had the data I needed. The dashboard query was issuing 847 SQL statements per request.</p>
 
-                    <h2>One Sentence That Made Me Go Cold</h2>
-                    <p>An AI review of that function flagged it by noting that the conditional branches were using different ID fields and asking whether that was intentional. It was one sentence in a list of minor comments. I almost scrolled past it. Then I read it twice and went cold.</p>
-                    <p>The root cause was a copy-paste from a practitioner schedule query earlier in the file. The shape of the code was right. The variable names were reasonable. The tests tested the right thing but with data that did not expose the edge case. Three humans had reviewed this code at various points, including me. None of us caught it.</p>
+                    <h2>The N+1 Query Hidden in Plain Sight</h2>
+                    <p>Eight hundred and forty-seven queries. On a developer laptop with a database containing twelve rows, this is imperceptible. In production with three thousand rows and a database server on a separate host, the round-trip latency alone adds up fast.</p>
+                    <p>The root cause was a classic <strong>N+1 query problem</strong> buried inside a service method that had grown organically over eighteen months. The outer query fetched a list of records. A foreach loop then called a second method for each record. That second method hit the database independently, once per item. Nobody had noticed because the test data was tiny and the database was local.</p>
+                    <p>In <strong>Entity Framework Core</strong> terms, the fix was straightforward: replace the loop with a single query using <code>Include</code> and <code>ThenInclude</code> for the related data, and add a projection to fetch only the columns the dashboard actually needed rather than materialising full entities. The resulting SQL was one statement joining four tables.</p>
 
-                    <h2>What AI Review Is Actually Good At</h2>
-                    <p>I do not think AI code review replaces human review. But I do think it catches different things. Humans are good at catching things that feel wrong, things that violate conventions, things that are structurally unusual. We are less good at the systematic comparison of whether every occurrence of a pattern in a file is using the right variable.</p>
-                    <p>That systematic comparison is something a language model does without getting tired or distracted.</p>
-                    <p>I now use AI review as a second pass on anything that touches data access in sensitive domains. It is not perfect; it flags things that are fine. But the one time in ten where it finds something real is worth the noise.</p>
+                    <h2>The Second Problem the First Problem Was Hiding</h2>
+                    <p>With the N+1 query fixed, load time dropped from eight seconds to about 900 milliseconds. Better, but still not good enough. The SQL trace showed a single query now, but it was doing a full table scan on a column that appeared in every WHERE clause.</p>
+                    <p>The column had no index. It had never had an index because in development the table had a handful of rows and a sequential scan was trivially fast. In production the table had grown to three hundred thousand rows and a sequential scan was taking 700 milliseconds on its own.</p>
+                    <p>Adding a composite index on the two most-used filter columns brought the query time to under 20 milliseconds. Combined with the N+1 fix, the total endpoint time measured at 80 milliseconds from the load test client.</p>
+
+                    <h2>What This Experience Reinforced</h2>
+                    <p>Performance problems are rarely where you think they are. Measure first with real production data and real production topology before touching a line of code. The investment in proper observability — structured logging, APM tooling, query tracing — pays back in hours, not weeks.</p>
+                    <p>The other thing this reinforced is that code review catches logical problems but usually not performance problems. Performance testing against production-scale data is a separate discipline, and it is worth building into your delivery process rather than treating as an emergency response when something goes wrong in production.</p>
+                    <p>The fix itself took about two hours. Finding it took about thirty minutes with the right tools. Getting the right tools in place took most of the afternoon of the day I joined the team. That was the best afternoon I spent on that project.</p>
                     """
             },
             new BlogPost

@@ -10,7 +10,7 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ### Projects (with improved descriptions and tech chips)
 ![Projects](https://github.com/user-attachments/assets/6c3d546d-9aae-473c-9d43-f1291d2a507f)
 
-### Blog (all 8 posts, each with a themed featured image)
+### Blog listing (8 posts, paginated — 5 per page — each with a themed featured image)
 ![Blog Listing](https://github.com/user-attachments/assets/ad473d52-f82a-4b8d-8daf-f113958f2045)
 
 ### Blog Post: BookIt (product SVG mockup + newspaper-style H2 sections)
@@ -40,6 +40,10 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 
 ### Admin Dashboard: Hero Stats
 ![Admin Dashboard](https://github.com/user-attachments/assets/8475c135-b188-4736-9978-d0ae288fb129)
+
+### Admin: SMS Provider Settings (Twilio / ClickSend credentials stored in the database, managed entirely in-app)
+
+The Settings tab shows a two-column layout: on the left, the SMS Provider form with an Enable toggle, provider selector, Admin receiver number, and provider-specific credential fields (Account SID, Auth Token, From number for Twilio; Username, API Key, Sender ID for ClickSend). On the right, a concise Setup Guide card with links to each provider's console. A **Save SMS Settings** button and a **Send Test SMS** button sit at the bottom of the form.
 
 ### Admin: Static Site Generator
 ![Admin Static Site](https://github.com/user-attachments/assets/c781f737-e6be-41d3-b93c-7b42823e240e)
@@ -91,9 +95,10 @@ Portfolio.slnx
 - **REST API with fallback**: Blazor app works standalone when API is offline
 - **Configurable database provider**: SQL Server, SQLite, or PostgreSQL via one setting
 - **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, and generate static exports
-- **In-app settings**: API base URL and SMS provider configured through the admin Settings tab (stored in DB, no restart needed)
+- **In-app settings**: API base URL and SMS provider (with all API keys/tokens) configured through the admin Settings tab — stored in the database, no environment variables or app restart needed
+- **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
 - **Account lockout**: 5 failed attempts triggers a 15-minute lockout
-- **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend (configured in admin)
+- **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend — all credentials (Account SID, Auth Token, API Key, etc.) stored in DB and managed in Admin → Settings
 
 ## Tech Stack
 
@@ -114,6 +119,178 @@ Portfolio.slnx
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - One of: SQL Server (LocalDB works), SQLite (zero config), or PostgreSQL
+
+---
+
+## Docker
+
+Both the Web API and the Blazor site have Dockerfiles. A `docker-compose.yml` at the repo root orchestrates both containers together using SQLite for zero-setup persistence.
+
+### Quick start with Docker Compose
+
+1. **Set the required JWT key** (minimum 32 characters). Copy the example env file and fill in your values:
+
+   ```bash
+   cp .env.example .env
+   # Edit .env and set JWT_KEY to a strong random string (32+ characters)
+   ```
+
+   Or export the variable directly in your shell:
+
+   ```bash
+   export JWT_KEY="your-secret-key-minimum-32-characters-long"
+   ```
+
+2. **Build and start both containers:**
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. **Access the apps:**
+   - Blazor Web App: `http://localhost:5072`
+   - REST API: `http://localhost:5008`
+
+4. **Stop the containers:**
+
+   ```bash
+   docker compose down
+   ```
+
+   Add `-v` to also remove the database volumes: `docker compose down -v`
+
+### Environment variables
+
+The following variables can be set in a `.env` file at the repo root or exported in your shell before running `docker compose up`:
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `JWT_KEY` | **Yes** | _(none)_ | JWT signing key — minimum 32 characters |
+| `ADMIN_EMAIL` | No | `admin@portfolio.com` | Seeded admin account email |
+| `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password |
+| `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for the API |
+
+> **Security:** change `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_KEY` before exposing containers publicly.
+
+### Building images individually
+
+```bash
+# API image only (build context is the src/ directory)
+docker build -t portfolio-api -f src/Portfolio.Api/Dockerfile ./src
+
+# Blazor Web image only
+docker build -t portfolio-web -f src/Portfolio.Web/Portfolio.Web/Dockerfile ./src
+```
+
+### Persistent data
+
+Each container stores its SQLite database in a named Docker volume (`api-data` and `web-data`). Data survives container restarts. To inspect or back up the volumes:
+
+```bash
+# List volumes
+docker volume ls
+
+# Copy a database file out of a volume
+docker cp portfolio-api:/app/data/portfolio-api.db ./backup-api.db
+docker cp portfolio-web:/app/data/portfolio-web.db ./backup-web.db
+```
+
+### Connecting Web to API inside Docker
+
+After starting the containers, sign in to the Blazor admin panel (`http://localhost:5072/login`) and navigate to **Settings**. Set the **Portfolio API Base URL** to `http://portfolio-api:8080` so the web container can reach the API over the internal Docker network.
+
+### Changing the database provider in Docker
+
+The default `docker-compose.yml` uses SQLite for zero-setup persistence. To switch to **SQL Server** or **PostgreSQL**, update the environment variables for each service in `docker-compose.yml`.
+
+#### SQL Server
+
+Add a SQL Server service and update both app services:
+
+```yaml
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  portfolio-api:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=SqlServer
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=PortfolioApiDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
+      # ... other env vars ...
+    depends_on:
+      - sqlserver
+
+  portfolio-web:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=SqlServer
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=PortfolioWebDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
+      # ... other env vars ...
+    depends_on:
+      - sqlserver
+
+volumes:
+  sqlserver-data:
+```
+
+Add `SA_PASSWORD` to your `.env` file (must meet SQL Server complexity requirements).
+
+#### PostgreSQL
+
+> **Note:** PostgreSQL requires installing `Npgsql.EntityFrameworkCore.PostgreSQL` in both `Portfolio.Api` and `Portfolio.Web` and uncommenting `UseNpgsql` in each project's `Infrastructure/DatabaseProviderFactory.cs`. See [Database Configuration](#database-configuration) for full instructions.
+
+Once the packages are installed, add a PostgreSQL service and update the env vars:
+
+```yaml
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=portfolio
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=portfolio
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  portfolio-api:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=PostgreSql
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=portfolio_api;Username=portfolio;Password=${POSTGRES_PASSWORD}
+      # ... other env vars ...
+
+  portfolio-web:
+    # ... existing config ...
+    environment:
+      - DatabaseProvider=PostgreSql
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=portfolio_web;Username=portfolio;Password=${POSTGRES_PASSWORD}
+      # ... other env vars ...
+
+volumes:
+  postgres-data:
+```
+
+### Notification (SMS) settings in Docker
+
+The contact form sends an SMS alert to your phone when a visitor submits a message. These settings are **not** environment variables — they are stored in the database and managed entirely through the admin panel. No container restart is needed after changing them.
+
+To configure SMS notifications after the containers are running:
+
+1. Sign in at `http://localhost:5072/login`
+2. Go to **Admin → Settings → SMS Provider**
+3. Choose a provider (**Twilio** or **ClickSend**), fill in your API credentials, and enter the **Admin receiver number** (E.164 format, e.g. `+447911123456`)
+4. Click **Save SMS Settings**
+5. Click **Send Test SMS** to verify delivery
+
+See the [SMS Notifications → Admin credentials fields](#admin--settings-sms-provider-fields) table for the full list of fields and where to obtain each value for Twilio and ClickSend.
 
 ---
 
@@ -262,7 +439,7 @@ There is no public registration page by design.
 
 The Blog Posts tab works like WordPress's post editor:
 
-- **List view**: shows all posts with title, slug, category, publish date, status chip (Published / Draft) and quick-action buttons (Edit, Publish/Unpublish, Delete)
+- **List view**: shows all posts with title, slug, category, publish date, status chip (Published / Draft) and quick-action buttons (Edit, Publish/Unpublish, Delete); paginated (10 rows per page, options: 5 / 10 / 25)
 - **Status filters**: chip buttons to filter All / Published / Drafts
 - **Editor view**: left column: large title field, permalink slug, Quill WYSIWYG body, excerpt; right sidebar: Publish card (status, toggle, date, Save button), Post Settings (category, tags, read time), Featured Image (URL + live preview), SEO and Social (meta title, meta description, OG image, canonical URL, expandable panel)
 - **Back breadcrumb**: `← Posts` returns to the list without losing context
@@ -279,7 +456,35 @@ The Menus tab lists all current nav items (label, URL, sort order, visibility). 
 
 ## SMS Notifications
 
-Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. No app restart needed; changes take effect immediately.
+Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. **All SMS credentials (API keys, tokens, phone numbers) are stored in the database and managed entirely through Admin → Settings — no config files, environment variables, or app restart required.**
+
+### Admin → Settings: SMS Provider fields
+
+Navigate to `/admin` → **Settings** tab → **SMS Provider** card. All fields are stored encrypted in the database and take effect immediately on Save.
+
+#### Common fields (both providers)
+
+| Field | Description |
+|---|---|
+| **Enable SMS sending** | Toggle to turn notifications on or off without losing your credentials |
+| **Provider** | Select **Twilio**, **ClickSend**, or **None** |
+| **Admin receiver number** | Your phone number in E.164 format (e.g. `+447911123456`) — contact-form alerts go here |
+
+#### Twilio credential fields
+
+| Field | Where to find it |
+|---|---|
+| **Account SID** | [Twilio Console](https://console.twilio.com) dashboard, starts with `AC` |
+| **Auth Token** | Twilio Console dashboard (click to reveal) |
+| **From number** | A verified Twilio phone number or Messaging Service SID (E.164, e.g. `+14155552671`) |
+
+#### ClickSend credential fields
+
+| Field | Where to find it |
+|---|---|
+| **Username** | Your ClickSend login email address |
+| **API Key** | [ClickSend dashboard](https://dashboard.clicksend.com) → Account → API Credentials → Generate Key |
+| **Sender ID** | Optional — up to 11 alphanumeric characters shown as the sender name (e.g. `Portfolio`); leave blank to use your account number |
 
 ### Architecture
 
@@ -299,7 +504,7 @@ Three small, focused class libraries handle SMS:
 2. From the Console dashboard copy your **Account SID** and **Auth Token**
 3. Add a verified phone number as the **From number** (E.164, e.g. `+447911123456`)
 4. In Admin → **Settings** → SMS Provider, set **Provider: Twilio**, fill in the credentials, and enter your **Admin receiver number**
-5. Click **Send Test SMS** to verify
+5. Click **Save SMS Settings**, then **Send Test SMS** to verify
 
 ### ClickSend Setup
 
@@ -308,7 +513,7 @@ Three small, focused class libraries handle SMS:
 3. Your login email is the **username**
 4. In Admin → **Settings** → SMS Provider, set **Provider: ClickSend**, fill in the credentials
 5. The **Sender ID** can be up to 11 alphanumeric characters or a phone number
-6. Click **Send Test SMS** to verify
+6. Click **Save SMS Settings**, then **Send Test SMS** to verify
 
 ### Reusing the SMS libraries in other projects
 
@@ -370,7 +575,7 @@ The database is seeded with eight posts on first run. Each post has a themed SVG
 - **The OWASP Top Ten Is Not a Checklist: It Is a Story**: how to actually use OWASP in .NET
 - **What Three Decades of Software Development Taught Me About Writing Code That Lasts**: personal reflection on writing durable code
 - **JWT Tokens Are Not Magic and That Matters**: authentication pitfalls in ASP.NET Core
-- **When AI Caught a Bug My Tests Missed**: real story from a healthcare AI project
+- **Eight Seconds to Eighty Milliseconds: Diagnosing a Production Performance Problem**: tracking down an N+1 query and a missing index to cut API response time from 8 s to 80 ms
 
 ### Custom CMS Pages
 

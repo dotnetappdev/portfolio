@@ -71,15 +71,41 @@ else
         </MudItem>
     }
 </MudGrid>
+
+@if (_totalPages > 1)
+{
+    <MudStack Row="true" Justify="Justify.Center" Class="mt-4">
+        <MudPagination Count="@_totalPages" Selected="@_currentPage"
+                       SelectedChanged="@OnPageChanged"
+                       Color="Color.Primary" />
+    </MudStack>
+}
 }
 </div>
 
 @code {
+    private const int PageSize = 5;
+
     private IReadOnlyList<BlogPost>? _posts;
+    private int _currentPage = 1;
+    private int _totalPages = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = await BlogService.GetAllPostsAsync();
+        await LoadPageAsync(_currentPage);
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadPageAsync(page);
+    }
+
+    private async Task LoadPageAsync(int page)
+    {
+        var (posts, total) = await BlogService.GetPagedPostsAsync(page, PageSize);
+        _posts = posts;
+        _totalPages = (int)Math.Ceiling(total / (double)PageSize);
     }
 
     private Color GetCategoryColor(string category) => category switch

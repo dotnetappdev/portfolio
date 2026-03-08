@@ -455,7 +455,8 @@
                                 }
                                 else
                                 {
-                                    <MudTable Items="@filtered" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                                     <MudTable Items="@filtered" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm"
+                                                      RowsPerPage="10">
                                         <HeaderContent>
                                             <MudTh>Title</MudTh>
                                             <MudTh>Category</MudTh>
@@ -522,6 +523,9 @@
                                                 </MudStack>
                                             </MudTd>
                                         </RowTemplate>
+                                        <PagerContent>
+                                            <MudTablePager PageSizeOptions="new int[] { 5, 10, 25 }" />
+                                        </PagerContent>
                                     </MudTable>
                                 }
                             }

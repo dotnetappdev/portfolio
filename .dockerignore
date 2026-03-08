@@ -1,0 +1,15 @@
+**/.git
+**/obj
+**/bin
+**/.vs
+**/.vscode
+**/.idea
+**/*.user
+**/*.suo
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/[Ll]og/
+**/[Ll]ogs/
+**/TestResults/
+**/.DS_Store
