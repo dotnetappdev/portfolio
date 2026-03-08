@@ -35,7 +35,13 @@ public static class DatabaseProviderFactory
                 break;
             case "sqlserver":
             default:
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                });
                 break;
         }
     }

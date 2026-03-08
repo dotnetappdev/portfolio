@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Portfolio.Data.CosmosDb;
-using Portfolio.Data.MySql;
+// using Portfolio.Data.MySql; // Disabled until Pomelo supports EF Core 10
 using Portfolio.Data.PostgreSql;
 
 namespace Portfolio.Api.Infrastructure;
@@ -26,16 +26,22 @@ public static class DatabaseProviderFactory
             case "postgres":
                 options.UsePortfolioPostgreSql(connectionString);
                 break;
-            case "mysql":
-                options.UsePortfolioMySql(connectionString);
-                break;
+            // case "mysql": // Disabled until Pomelo supports EF Core 10
+            //     options.UsePortfolioMySql(connectionString);
+            //     break;
             case "cosmosdb":
             case "cosmos":
                 options.UsePortfolioCosmosDb(connectionString);
                 break;
             case "sqlserver":
             default:
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                });
                 break;
         }
     }

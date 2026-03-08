@@ -13,7 +13,7 @@ namespace Portfolio.Web.Services;
 /// </summary>
 public class StaticSiteGeneratorService
 {
-    private readonly ApplicationDbContext _db;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly BlogService _blogService;
     private readonly MenuService _menuService;
     private readonly PortfolioApiService _apiService;
@@ -21,14 +21,14 @@ public class StaticSiteGeneratorService
     private readonly ILogger<StaticSiteGeneratorService> _logger;
 
     public StaticSiteGeneratorService(
-        ApplicationDbContext db,
+        IDbContextFactory<ApplicationDbContext> dbContextFactory,
         BlogService blogService,
         MenuService menuService,
         PortfolioApiService apiService,
         IWebHostEnvironment env,
         ILogger<StaticSiteGeneratorService> logger)
     {
-        _db = db;
+        _dbContextFactory = dbContextFactory;
         _blogService = blogService;
         _menuService = menuService;
         _apiService = apiService;
@@ -46,8 +46,10 @@ public class StaticSiteGeneratorService
         var menuItems  = await _menuService.GetVisibleItemsAsync();
         var projects   = await _apiService.GetProjectsAsync() ?? [];
         var skills     = await _apiService.GetSkillsAsync()   ?? [];
-        var heroStats  = await _db.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
-        var cmsPages   = await _db.CmsPages.Where(p => p.IsPublished).ToListAsync();
+
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var heroStats  = await db.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        var cmsPages   = await db.CmsPages.Where(p => p.IsPublished).ToListAsync();
 
         using var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))

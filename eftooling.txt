@@ -32,7 +32,7 @@ Run from the repo root after changing a model or DbContext.
 
   -- Portfolio.Api --
   cd src/Portfolio.Api
-  dotnet ef migrations add <MigrationName> --output-dir Data/Migrations
+  dotnet ef migrations add FirstMigration --output-dir Data/Migrations
 
   -- Portfolio.Web --
   cd src/Portfolio.Web

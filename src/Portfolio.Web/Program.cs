@@ -15,7 +15,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddMudServices();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     DatabaseProviderFactory.ConfigureDbContext(options, builder.Configuration));
 
 // Cookie-based authentication — credentials are validated against Portfolio.Api (JWT).
@@ -120,10 +120,11 @@ app.MapPost("/logout", async (HttpContext httpContext) =>
 if (builder.Configuration.GetValue<bool>("SeedData"))
 {
     using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var logger  = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    await context.Database.MigrateAsync();
+    await using var context = await contextFactory.CreateDbContextAsync();
+   // await context.Database.MigrateAsync();
     logger.LogInformation("Web CMS database migrated and initialised.");
 }
 

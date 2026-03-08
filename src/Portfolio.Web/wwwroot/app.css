@@ -281,3 +281,19 @@
 .ql-editor {
     min-height: 200px;
 }
+
+/* ── AppBar (Navigation) - Dark Navy Purple ─────────────────── */
+.mud-appbar {
+    background: #262041 !important;
+}
+
+.mud-appbar .mud-typography,
+.mud-appbar .mud-button-root,
+.mud-appbar .mud-icon-button {
+    color: white !important;
+}
+
+.mud-appbar .mud-button-root:hover,
+.mud-appbar .mud-icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}

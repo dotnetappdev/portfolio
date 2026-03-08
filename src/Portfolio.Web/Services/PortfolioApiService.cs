@@ -8,7 +8,7 @@ namespace Portfolio.Web.Services;
 
 public class PortfolioApiService(
     IHttpClientFactory httpClientFactory,
-    ApplicationDbContext dbContext,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory,
     ILogger<PortfolioApiService> logger)
 {
     // Cached within the scoped lifetime (one per request) to avoid repeated DB hits.
@@ -26,7 +26,8 @@ public class PortfolioApiService(
     {
         if (!_dbBaseUrlResolved)
         {
-            var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
+            await using var context = await dbContextFactory.CreateDbContextAsync();
+            var settings = await context.AppSettings.AsNoTracking().FirstOrDefaultAsync();
             _cachedDbBaseUrl = string.IsNullOrWhiteSpace(settings?.ApiBaseUrl) ? null : settings.ApiBaseUrl;
             _dbBaseUrlResolved = true;
         }
@@ -43,7 +44,8 @@ public class PortfolioApiService(
     public async Task<List<ProjectDto>> GetProjectsAsync()
     {
         // Use locally-managed projects when they exist (admin-editable via the Projects tab)
-        var localProjects = await dbContext.Projects.OrderBy(p => p.SortOrder).ToListAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var localProjects = await context.Projects.OrderBy(p => p.SortOrder).ToListAsync();
         if (localProjects.Count > 0)
         {
             return localProjects.Select(p => new ProjectDto

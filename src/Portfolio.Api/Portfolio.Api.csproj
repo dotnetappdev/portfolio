@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Portfolio.Data.CosmosDb\Portfolio.Data.CosmosDb.csproj" />
-    <ProjectReference Include="..\Portfolio.Data.MySql\Portfolio.Data.MySql.csproj" />
+    <!--<ProjectReference Include="..\Portfolio.Data.MySql\Portfolio.Data.MySql.csproj" />-->
     <ProjectReference Include="..\Portfolio.Data.PostgreSql\Portfolio.Data.PostgreSql.csproj" />
     <ProjectReference Include="..\Portfolio.Shared\Portfolio.Shared.csproj" />
   </ItemGroup>
