@@ -12,6 +12,7 @@
 @inject Portfolio.Web.Services.MenuService MenuService
 @inject Portfolio.Web.Services.AppSettingsService AppSettingsService
 @inject Portfolio.Web.Services.StaticSiteGeneratorService StaticSiteGenerator
+@inject Portfolio.Web.Services.ProjectService ProjectService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 
@@ -1098,6 +1099,279 @@
         </MudGrid>
     </MudTabPanel>
 
+    <!-- ── Projects tab ───────────────────────────────────── -->
+    <MudTabPanel Text="Projects" Icon="@Icons.Material.Filled.Apps">
+        <MudGrid Class="mt-4">
+
+            @if (!_projectShowEditor)
+            {
+                <!-- ── Projects: list view ── -->
+                <MudItem xs="12">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Apps" Class="mr-2" />
+                                        Projects
+                                        @if (_projects != null)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-2">(@_projects.Count total)</MudText>
+                                        }
+                                    </MudText>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Add"
+                                               OnClick="@OpenNewProjectEditor">
+                                        Add New Project
+                                    </MudButton>
+                                </MudStack>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (_projects == null)
+                            {
+                                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                            }
+                            else if (_projects.Count == 0)
+                            {
+                                <MudText Color="Color.Secondary" Class="pa-4">No projects yet. Add one using the button above.</MudText>
+                            }
+                            else
+                            {
+                                <MudTable Items="@_projects" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm"
+                                          RowsPerPage="10">
+                                    <HeaderContent>
+                                        <MudTh>Title</MudTh>
+                                        <MudTh>Category</MudTh>
+                                        <MudTh>GitHub</MudTh>
+                                        <MudTh>Featured</MudTh>
+                                        <MudTh>Order</MudTh>
+                                        <MudTh>Actions</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Title">
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">/projects/@context.Slug</MudText>
+                                                    {
+                                                        <MudLink Href="@($"/projects/{context.Slug}")" Target="_blank"
+                                                                 Typo="Typo.caption" Color="Color.Primary" Style="font-size:0.7rem;">
+                                                            View ↗
+                                                        </MudLink>
+                                                    }
+                                                </MudStack>
+                                            </MudStack>
+                                        </MudTd>
+                                        <MudTd DataLabel="Category">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@context.Category</MudChip>
+                                        </MudTd>
+                                        <MudTd DataLabel="GitHub">
+                                            @if (!string.IsNullOrWhiteSpace(context.GitHubUrl))
+                                            {
+                                                <MudLink Href="@context.GitHubUrl" Target="_blank" Color="Color.Default">
+                                                    <MudIcon Icon="@Icons.Custom.Brands.GitHub" Size="Size.Small" Class="mr-1" />
+                                                    View
+                                                </MudLink>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                                            }
+                                        </MudTd>
+                                        <MudTd DataLabel="Featured">
+                                            @if (context.IsFeatured)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">Featured</MudChip>
+                                            }
+                                        </MudTd>
+                                        <MudTd DataLabel="Order">@context.SortOrder</MudTd>
+                                        <MudTd DataLabel="Actions">
+                                            <MudStack Row="true" Spacing="0">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                               Size="Size.Small" Color="Color.Primary"
+                                                               OnClick="@(() => StartEditProject(context))"
+                                                               aria-label="Edit project" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Size="Size.Small" Color="Color.Error"
+                                                               OnClick="@(() => DeleteProject(context.Id))"
+                                                               aria-label="Delete project" />
+                                            </MudStack>
+                                        </MudTd>
+                                    </RowTemplate>
+                                    <PagerContent>
+                                        <MudTablePager PageSizeOptions="new int[] { 5, 10, 25 }" />
+                                    </PagerContent>
+                                </MudTable>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+            else
+            {
+                <!-- ── Projects: editor view ── -->
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Spacing="1">
+                        <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="@CancelEditProject">
+                            ← Projects
+                        </MudButton>
+                        <MudText Typo="Typo.h6">
+                            @(_editingProject == null ? "Add New Project" : "Edit Project")
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12" md="8">
+                    <MudForm @ref="_projectForm" @bind-IsValid="_projectFormValid">
+                        <!-- Title, Slug & Short Description -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent Class="pb-0">
+                                <MudTextField @bind-Value="_projectTitle" Label="Project Title" Required="true"
+                                              RequiredError="Title is required"
+                                              Variant="Variant.Outlined" Class="mb-2"
+                                              Typo="Typo.h5"
+                                              OnBlur="@GenerateProjectSlugFromTitle"
+                                              Style="font-size:1.4rem;font-weight:600;" />
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1 mb-3" Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Permalink: /projects/</MudText>
+                                    <MudTextField @bind-Value="_projectSlug" Required="true"
+                                                  RequiredError="Slug is required"
+                                                  Variant="Variant.Text" Margin="Margin.Dense"
+                                                  Typo="Typo.caption"
+                                                  Style="max-width:320px;"
+                                                  HelperText="SEO-friendly URL slug, e.g. bookit" />
+                                </MudStack>
+                                <MudTextField @bind-Value="_projectShortDescription" Label="Short Description" Required="true"
+                                              RequiredError="Short description is required"
+                                              Variant="Variant.Outlined" Class="mb-3"
+                                              HelperText="Used on listing cards — keep it under 100 characters." />
+                            </MudCardContent>
+                        </MudCard>
+
+                        <!-- Full Description -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Full Description</MudText>
+                                <MudTextField @bind-Value="_projectDescription" Label="Description" Required="true"
+                                              RequiredError="Description is required"
+                                              Variant="Variant.Outlined" Lines="5" />
+                            </MudCardContent>
+                        </MudCard>
+
+                        <!-- Tech Stack -->
+                        <MudCard Elevation="2" Class="mb-4">
+                            <MudCardContent>
+                                <MudTextField @bind-Value="_projectTechStack" Label="Tech Stack"
+                                              Variant="Variant.Outlined"
+                                              HelperText="Comma-separated, e.g. Blazor, ASP.NET Core, SQL Server" />
+                            </MudCardContent>
+                        </MudCard>
+                    </MudForm>
+                </MudItem>
+
+                <!-- Sidebar -->
+                <MudItem xs="12" md="4">
+
+                    <!-- Save card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Save" Size="Size.Small" Class="mr-1" />
+                                    Save
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                       OnClick="@SaveProject" Disabled="@_savingProject"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingProject ? "Saving…" : (_editingProject == null ? "Add Project" : "Save Changes"))
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+
+                    <!-- Project Settings -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Class="mr-1" />
+                                    Project Settings
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudTextField @bind-Value="_projectCategory" Label="Category" Required="true"
+                                          RequiredError="Category is required"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          HelperText="e.g. Work Project, Healthcare, AI, Security" />
+                            <MudNumericField @bind-Value="_projectSortOrder" Label="Sort Order"
+                                             Variant="Variant.Outlined" Class="mb-3" Min="1"
+                                             HelperText="Lower numbers appear first" />
+                            <MudSwitch @bind-Value="_projectIsFeatured" Label="@(_projectIsFeatured ? "Featured on home page" : "Not featured")"
+                                       Color="Color.Warning" />
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- GitHub & Live URL card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Custom.Brands.GitHub" Size="Size.Small" Class="mr-1" />
+                                    Links
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <!-- GitHub URL with validate button -->
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-3">
+                                <MudTextField @bind-Value="_projectGitHubUrl" Label="GitHub Repository URL"
+                                              Variant="Variant.Outlined" FullWidth="true"
+                                              Placeholder="https://github.com/username/repo"
+                                              HelperText="Optional — shown as a GitHub button on project cards" />
+                                <MudTooltip Text="Open GitHub URL in new tab to validate">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                                   Color="Color.Default" Size="Size.Medium"
+                                                   Disabled="@string.IsNullOrWhiteSpace(_projectGitHubUrl)"
+                                                   OnClick="@(() => ValidateUrl(_projectGitHubUrl))"
+                                                   aria-label="Validate GitHub URL" />
+                                </MudTooltip>
+                            </MudStack>
+
+                            <!-- Live URL with validate button -->
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-3">
+                                <MudTextField @bind-Value="_projectLiveUrl" Label="Live Demo URL"
+                                              Variant="Variant.Outlined" FullWidth="true"
+                                              Placeholder="https://example.com"
+                                              HelperText="Optional — shown as a Live Demo button on project cards" />
+                                <MudTooltip Text="Open Live URL in new tab to validate">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                                   Color="Color.Default" Size="Size.Medium"
+                                                   Disabled="@string.IsNullOrWhiteSpace(_projectLiveUrl)"
+                                                   OnClick="@(() => ValidateUrl(_projectLiveUrl))"
+                                                   aria-label="Validate live URL" />
+                                </MudTooltip>
+                            </MudStack>
+
+                            <!-- Image URL -->
+                            <MudTextField @bind-Value="_projectImageUrl" Label="Image URL"
+                                          Variant="Variant.Outlined"
+                                          Placeholder="/images/project.png"
+                                          HelperText="Optional project image" />
+                        </MudCardContent>
+                    </MudCard>
+
+                </MudItem>
+            }
+
+        </MudGrid>
+    </MudTabPanel>
+
     <!-- ── Static Site tab ─────────────────────────────────── -->
     <MudTabPanel Text="Static Site" Icon="@Icons.Material.Filled.Download">
         <MudGrid Class="mt-4">
@@ -1207,6 +1481,25 @@
     private string _statColor = "Primary";
     private int _statSortOrder = 1;
 
+    // ── Projects ─────────────────────────────────────────────
+    private MudForm _projectForm = null!;
+    private bool _projectFormValid;
+    private bool _savingProject;
+    private bool _projectShowEditor;
+    private List<Portfolio.Web.Data.PortfolioProject>? _projects;
+    private Portfolio.Web.Data.PortfolioProject? _editingProject;
+    private string _projectTitle = string.Empty;
+    private string _projectSlug = string.Empty;
+    private string _projectShortDescription = string.Empty;
+    private string _projectDescription = string.Empty;
+    private string _projectTechStack = string.Empty;
+    private string? _projectGitHubUrl;
+    private string? _projectLiveUrl;
+    private string? _projectImageUrl;
+    private string _projectCategory = string.Empty;
+    private bool _projectIsFeatured;
+    private int _projectSortOrder = 1;
+
     protected override async Task OnInitializedAsync()
     {
         _users = await UserManager.Users.ToListAsync();
@@ -1217,6 +1510,7 @@
         _blogPosts = await BlogService.GetAllForAdminAsync();
         _cmsPages  = await CmsPageService.GetAllForAdminAsync();
         _menuItems = await MenuService.GetAllForAdminAsync();
+        _projects  = await ProjectService.GetAllAsync();
     }
 
     // ── User management ─────────────────────────────────────
@@ -1327,6 +1621,130 @@
         "Warning"   => Color.Warning,
         _           => Color.Primary
     };
+
+    // ── Project management ───────────────────────────────────
+    private void OpenNewProjectEditor()
+    {
+        _editingProject = null;
+        _projectShowEditor = true;
+        ResetProjectForm();
+    }
+
+    private void StartEditProject(Portfolio.Web.Data.PortfolioProject project)
+    {
+        _editingProject           = project;
+        _projectTitle             = project.Title;
+        _projectSlug              = project.Slug;
+        _projectShortDescription  = project.ShortDescription;
+        _projectDescription       = project.Description;
+        _projectTechStack         = project.TechStack;
+        _projectGitHubUrl         = project.GitHubUrl;
+        _projectLiveUrl           = project.LiveUrl;
+        _projectImageUrl          = project.ImageUrl;
+        _projectCategory          = project.Category;
+        _projectIsFeatured        = project.IsFeatured;
+        _projectSortOrder         = project.SortOrder;
+        _projectShowEditor        = true;
+    }
+
+    private void CancelEditProject()
+    {
+        _projectShowEditor = false;
+        _editingProject    = null;
+        ResetProjectForm();
+    }
+
+    private void ResetProjectForm()
+    {
+        _projectTitle            = string.Empty;
+        _projectSlug             = string.Empty;
+        _projectShortDescription = string.Empty;
+        _projectDescription      = string.Empty;
+        _projectTechStack        = string.Empty;
+        _projectGitHubUrl        = null;
+        _projectLiveUrl          = null;
+        _projectImageUrl         = null;
+        _projectCategory         = string.Empty;
+        _projectIsFeatured       = false;
+        _projectSortOrder        = (_projects?.Count ?? 0) + 1;
+    }
+
+    private void GenerateProjectSlugFromTitle()
+    {
+        if (_editingProject == null && !string.IsNullOrWhiteSpace(_projectTitle) && string.IsNullOrWhiteSpace(_projectSlug))
+            _projectSlug = GenerateSlug(_projectTitle);
+    }
+
+    private async Task SaveProject()
+    {
+        await _projectForm.Validate();
+        if (!_projectFormValid) return;
+
+        _savingProject = true;
+
+        if (_editingProject != null)
+        {
+            _editingProject.Title            = _projectTitle;
+            _editingProject.Slug             = _projectSlug;
+            _editingProject.ShortDescription = _projectShortDescription;
+            _editingProject.Description      = _projectDescription;
+            _editingProject.TechStack        = _projectTechStack;
+            _editingProject.GitHubUrl        = string.IsNullOrWhiteSpace(_projectGitHubUrl) ? null : _projectGitHubUrl;
+            _editingProject.LiveUrl          = string.IsNullOrWhiteSpace(_projectLiveUrl) ? null : _projectLiveUrl;
+            _editingProject.ImageUrl         = string.IsNullOrWhiteSpace(_projectImageUrl) ? null : _projectImageUrl;
+            _editingProject.Category         = _projectCategory;
+            _editingProject.IsFeatured       = _projectIsFeatured;
+            _editingProject.SortOrder        = _projectSortOrder;
+            await ProjectService.UpdateAsync(_editingProject);
+            Snackbar.Add("Project updated successfully.", Severity.Success);
+        }
+        else
+        {
+            var newProject = new Portfolio.Web.Data.PortfolioProject
+            {
+                Title            = _projectTitle,
+                Slug             = _projectSlug,
+                ShortDescription = _projectShortDescription,
+                Description      = _projectDescription,
+                TechStack        = _projectTechStack,
+                GitHubUrl        = string.IsNullOrWhiteSpace(_projectGitHubUrl) ? null : _projectGitHubUrl,
+                LiveUrl          = string.IsNullOrWhiteSpace(_projectLiveUrl) ? null : _projectLiveUrl,
+                ImageUrl         = string.IsNullOrWhiteSpace(_projectImageUrl) ? null : _projectImageUrl,
+                Category         = _projectCategory,
+                IsFeatured       = _projectIsFeatured,
+                SortOrder        = _projectSortOrder
+            };
+            await ProjectService.CreateAsync(newProject);
+            Snackbar.Add("Project added successfully.", Severity.Success);
+        }
+
+        _projects = await ProjectService.GetAllAsync();
+        _savingProject = false;
+        CancelEditProject();
+    }
+
+    private async Task DeleteProject(int id)
+    {
+        await ProjectService.DeleteAsync(id);
+        _projects = await ProjectService.GetAllAsync();
+        Snackbar.Add("Project deleted.", Severity.Info);
+    }
+
+    private async Task ValidateUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        // Only allow http/https to prevent javascript: or other malicious schemes
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+        }
+        else
+        {
+            Snackbar.Add("URL must start with http:// or https://", Severity.Warning);
+        }
+    }
 
     // ── Blog CMS ────────────────────────────────────────────
     private MudForm _postForm = null!;

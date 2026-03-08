@@ -68,6 +68,13 @@ public class StaticSiteGeneratorService
                     BuildBlogPostPage(menuItems, post, related, depth: 2));
             }
 
+            foreach (var project in projects.Where(p => !string.IsNullOrWhiteSpace(p.Slug)))
+            {
+                var others = projects.Where(p => p.Slug != project.Slug).Take(3).ToList();
+                AddText(zip, $"projects/{project.Slug}/index.html",
+                    BuildProjectDetailPage(menuItems, project, others, depth: 2));
+            }
+
             foreach (var page in cmsPages)
                 AddText(zip, $"{page.Slug}/index.html", BuildCmsPage(menuItems, page, depth: 1));
 
@@ -616,18 +623,39 @@ h2.section-title {
               </div>
 """));
 
-        var featuredProjects = string.Join("\n", projects.Take(4).Select(p => $"""
+        var featuredProjects = string.Join("\n", projects.Take(4).Select(p =>
+        {
+            var detailUrl = !string.IsNullOrWhiteSpace(p.Slug) ? $"{Root(depth)}projects/{p.Slug}/" : string.Empty;
+            var titleHtml = !string.IsNullOrEmpty(detailUrl)
+                ? $"""<a href="{detailUrl}" style="color:inherit;text-decoration:none;">{H(p.Title)}</a>"""
+                : H(p.Title);
+            var detailBtn = !string.IsNullOrEmpty(detailUrl)
+                ? $"""<a class="btn btn-outline btn-sm" href="{detailUrl}">Details</a>"""
+                : string.Empty;
+            var ghBtn = p.GitHubUrl is not null
+                ? $"""<a class="btn btn-outline btn-sm" href="{H(p.GitHubUrl)}" target="_blank" rel="noopener">GitHub</a>"""
+                : string.Empty;
+            var liveBtn = p.LiveUrl is not null
+                ? $"""<a class="btn btn-primary btn-sm" href="{H(p.LiveUrl)}" target="_blank" rel="noopener">Live Demo</a>"""
+                : string.Empty;
+            var buttons = string.Join(" ", new[] { detailBtn, ghBtn, liveBtn }.Where(b => !string.IsNullOrEmpty(b)));
+            var actions = !string.IsNullOrEmpty(buttons)
+                ? $"""<div class="card-actions" style="margin-top:0.75rem;">{buttons}</div>"""
+                : $"""<div class="card-actions" style="margin-top:0.75rem;"><a class="btn btn-outline btn-sm" href="{Root(depth)}projects/">View All Projects</a></div>""";
+            return $"""
             <div class="card">
               <div class="card-header">
-                <h3>{H(p.Title)}</h3>
+                <h3>{titleHtml}</h3>
                 <span class="category {ProjectColorClass(p.Category)}" style="display:inline-block;border-radius:999px;padding:0.1rem 0.6rem;font-size:0.8rem;margin-top:0.25rem;">{H(p.Category)}</span>
               </div>
               <p style="font-size:0.9rem;color:var(--text-muted);margin:0.5rem 0 0.75rem;">{H(p.ShortDescription)}</p>
               <div class="chip-set">
 {string.Join("\n", p.TechStack.Split(',').Take(3).Select(t => $"                <span class=\"chip chip-primary\">{H(t.Trim())}</span>"))}
               </div>
+              {actions}
             </div>
-"""));
+""";
+        }));
 
         var body = $$"""
     <section class="hero">
@@ -810,21 +838,30 @@ h2.section-title {
                 ? $"""<img class="featured-img" src="{r}{p.ImageUrl.TrimStart('/')}" alt="{H(p.Title)}" loading="lazy" />"""
                 : string.Empty;
 
+            var detailUrl = !string.IsNullOrWhiteSpace(p.Slug) ? $"{r}projects/{p.Slug}/" : string.Empty;
+            var titleHtml = !string.IsNullOrEmpty(detailUrl)
+                ? $"""<a href="{detailUrl}" style="color:inherit;text-decoration:none;">{H(p.Title)}</a>"""
+                : H(p.Title);
+
             var ghBtn = p.GitHubUrl is not null
                 ? $"""<a class="btn btn-outline btn-sm" href="{H(p.GitHubUrl)}" target="_blank" rel="noopener">GitHub</a>"""
                 : string.Empty;
             var liveBtn = p.LiveUrl is not null
                 ? $"""<a class="btn btn-primary btn-sm" href="{H(p.LiveUrl)}" target="_blank" rel="noopener">Live Demo</a>"""
                 : string.Empty;
+            var detailBtn = !string.IsNullOrEmpty(detailUrl)
+                ? $"""<a class="btn btn-outline btn-sm" href="{detailUrl}">Details</a>"""
+                : string.Empty;
             var featured = p.IsFeatured
                 ? """<span class="chip chip-warning" style="margin-left:0.5rem;">Featured</span>"""
                 : string.Empty;
+            var buttons = string.Join(" ", new[] { detailBtn, ghBtn, liveBtn }.Where(b => !string.IsNullOrEmpty(b)));
 
             return $"""
             <div class="card">
               {imageHtml}
               <div class="card-header" style="margin-top:{(string.IsNullOrEmpty(imageHtml) ? "0" : "0.75rem")};">
-                <h3>{H(p.Title)} {featured}</h3>
+                <h3>{titleHtml} {featured}</h3>
                 <span class="chip {ProjectColorClass(p.Category)}" style="margin-top:0.25rem;">{H(p.Category)}</span>
               </div>
               <p style="margin:0.75rem 0;color:var(--text-muted);font-size:0.9rem;">{H(p.Description)}</p>
@@ -832,7 +869,7 @@ h2.section-title {
               <div class="chip-set">
 {string.Join("\n", p.TechStack.Split(',').Select(t => $"                <span class=\"chip chip-primary\">{H(t.Trim())}</span>"))}
               </div>
-              {(ghBtn + liveBtn is not "" ? $"""<div style="display:flex;gap:0.5rem;margin-top:1rem;">{ghBtn}{liveBtn}</div>""" : "")}
+              {(!string.IsNullOrEmpty(buttons) ? $"""<div style="display:flex;gap:0.5rem;margin-top:1rem;">{buttons}</div>""" : "")}
             </div>
 """;
         }));
@@ -852,6 +889,73 @@ h2.section-title {
 """;
         return PageShell("Projects", body, menuItems, depth,
             "Portfolio projects by David Buckley: Blazor, ASP.NET Core, AI and Security applications");
+    }
+
+    // ─── Project detail page ──────────────────────────────────────────────────
+
+    private static string BuildProjectDetailPage(
+        IReadOnlyList<MenuItem> menuItems,
+        ProjectDto project,
+        List<ProjectDto> others,
+        int depth)
+    {
+        var r = Root(depth);
+        var imageHtml = !string.IsNullOrWhiteSpace(project.ImageUrl)
+            ? $"""<img src="{r}{project.ImageUrl.TrimStart('/')}" alt="{H(project.Title)}" style="width:100%;max-height:280px;object-fit:contain;border-radius:8px;margin-bottom:1.5rem;background:rgba(255,255,255,0.05);padding:0.75rem;" loading="lazy" />"""
+            : string.Empty;
+        var ghBtn = project.GitHubUrl is not null
+            ? $"""<a class="btn btn-outline" href="{H(project.GitHubUrl)}" target="_blank" rel="noopener">View on GitHub</a>"""
+            : string.Empty;
+        var liveBtn = project.LiveUrl is not null
+            ? $"""<a class="btn btn-primary" href="{H(project.LiveUrl)}" target="_blank" rel="noopener">Live Demo</a>"""
+            : string.Empty;
+        var techChips = string.Join("\n", project.TechStack.Split(',').Select(t =>
+            $"""<span class="chip chip-primary">{H(t.Trim())}</span>"""));
+        var otherLinks = string.Join("\n", others.Where(p => !string.IsNullOrWhiteSpace(p.Slug)).Select(p =>
+            $"""<li><a href="{r}projects/{p.Slug}/" style="color:var(--primary);">{H(p.Title)}</a> <span style="color:var(--text-muted);font-size:0.8rem;">— {H(p.Category)}</span></li>"""));
+        var detailButtons = string.Join(" ", new[] { ghBtn, liveBtn }.Where(b => !string.IsNullOrEmpty(b)));
+        var detailButtonsHtml = !string.IsNullOrEmpty(detailButtons)
+            ? $"""<div style="display:flex;gap:0.75rem;margin-top:1rem;">{detailButtons}</div>"""
+            : string.Empty;
+
+        var body = $"""
+    <div class="page-banner">
+      <div class="container">
+        <h1>{H(project.Title)}</h1>
+        <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+          <span class="chip {ProjectColorClass(project.Category)}">{H(project.Category)}</span>
+          {(project.IsFeatured ? """<span class="chip chip-warning">Featured</span>""" : "")}
+        </div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="grid-content" style="display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1100px;margin:0 auto;">
+        <div>
+          <a href="{r}projects/" style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--primary);text-decoration:none;margin-bottom:1.5rem;font-size:0.9rem;">← Back to Projects</a>
+          {imageHtml}
+          <div class="card" style="margin-bottom:1.5rem;padding:1.5rem;line-height:1.8;">
+            <p>{H(project.Description)}</p>
+          </div>
+          <div class="card" style="margin-bottom:1.5rem;">
+            <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">Technologies Used</p>
+            <div class="chip-set">{techChips}</div>
+            {detailButtonsHtml}
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:1.5rem;padding:1.25rem;">
+            <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">About the Author</p>
+            <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">30 years building .NET software. Currently focused on AI integration and application security.</p>
+            <a class="btn btn-primary btn-sm" href="{r}contact/" style="width:100%;justify-content:center;">Get In Touch</a>
+          </div>
+          {(otherLinks.Length > 0 ?
+              $"<div class=\"card\" style=\"padding:1.25rem;\"><p style=\"font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;\">More Projects</p><ul style=\"list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.6rem;\">{otherLinks}</ul><div style=\"margin-top:1rem;\"><a href=\"{r}projects/\" style=\"color:var(--primary);font-size:0.9rem;\">View All Projects →</a></div></div>"
+              : "")}
+        </div>
+      </div>
+    </div>
+""";
+        return PageShell(project.Title, body, menuItems, depth, project.ShortDescription);
     }
 
     // ─── Skills page ──────────────────────────────────────────────────────────

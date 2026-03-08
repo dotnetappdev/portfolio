@@ -54,6 +54,7 @@ builder.Services.AddScoped<Portfolio.Web.Services.MenuService>();
 builder.Services.AddScoped<Portfolio.Web.Services.AppSettingsService>();
 builder.Services.AddScoped<Portfolio.Web.Services.PortfolioApiService>();
 builder.Services.AddScoped<Portfolio.Web.Services.StaticSiteGeneratorService>();
+builder.Services.AddScoped<Portfolio.Web.Services.ProjectService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();

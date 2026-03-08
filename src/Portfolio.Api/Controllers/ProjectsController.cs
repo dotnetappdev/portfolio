@@ -22,6 +22,7 @@ public class ProjectsController : ControllerBase
             {
                 Id = p.Id,
                 Title = p.Title,
+                Slug = p.Slug,
                 Description = p.Description,
                 ShortDescription = p.ShortDescription,
                 TechStack = p.TechStack,
@@ -43,6 +44,7 @@ public class ProjectsController : ControllerBase
         {
             Id = project.Id,
             Title = project.Title,
+            Slug = project.Slug,
             Description = project.Description,
             ShortDescription = project.ShortDescription,
             TechStack = project.TechStack,
@@ -65,6 +67,7 @@ public class ProjectsController : ControllerBase
             {
                 Id = p.Id,
                 Title = p.Title,
+                Slug = p.Slug,
                 Description = p.Description,
                 ShortDescription = p.ShortDescription,
                 TechStack = p.TechStack,
