@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Portfolio.Api.Data;
 using Portfolio.Api.Infrastructure;
 using Portfolio.Api.Models;
@@ -10,7 +11,43 @@ using Portfolio.Api.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+// Swashbuckle Swagger — active in all environments so the UI is available after deployment.
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title       = "Portfolio API",
+        Version     = "v1",
+        Description = "REST API for the Portfolio application."
+    });
+
+    // Add JWT bearer security definition so the Swagger UI can send authenticated requests.
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name         = "Authorization",
+        Type         = SecuritySchemeType.Http,
+        Scheme       = "Bearer",
+        BearerFormat = "JWT",
+        In           = ParameterLocation.Header,
+        Description  = "Enter your JWT token. Example: Bearer {token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id   = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     DatabaseProviderFactory.ConfigureDbContext(options, builder.Configuration));
@@ -66,10 +103,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Swagger UI — available in all environments (including production / Azure).
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.MapOpenApi();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Portfolio API v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.UseHttpsRedirection();
 app.UseCors("BlazorOrigin");
