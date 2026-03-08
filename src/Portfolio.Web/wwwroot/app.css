@@ -216,12 +216,30 @@
 }
 
 /* ── CMS/WYSIWYG body content ─────────────────────────────── */
+/*
+ * Quill saves explicit inline colour values (e.g. color:rgb(0,0,0)) on every
+ * element it touches. Those inline styles have higher specificity than class
+ * rules, so we need !important here to ensure the theme text colour is used in
+ * both light and dark mode, not whatever the editor stored.
+ */
 .cms-body {
     color: var(--mud-palette-text-primary);
     line-height: 1.8;
     font-size: 1rem;   /* 16 px — WCAG AA minimum for normal text */
 }
 
+/* Override Quill's inline colour attributes so the theme text colour is always
+   respected in BOTH light and dark modes. var(--mud-palette-text-primary)
+   resolves to the correct hue for whichever theme is active. */
+.cms-body p,
+.cms-body li,
+.cms-body h1, .cms-body h2, .cms-body h3,
+.cms-body h4, .cms-body h5, .cms-body h6,
+.cms-body td, .cms-body th, .cms-body span {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Headings: weight and spacing (no colour — inherited from the rule above) */
 .cms-body h1, .cms-body h2, .cms-body h3,
 .cms-body h4, .cms-body h5, .cms-body h6 {
     font-weight: 700;
@@ -254,18 +272,17 @@
     opacity: 0.85;
 }
 
+/* Code blocks — light mode: subtle dark tint */
 .cms-body pre, .cms-body code {
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.06);
     border-radius: 4px;
     padding: 0.2em 0.4em;
     font-family: 'Courier New', monospace;
     font-size: 0.9em;
+    color: #1A1A3E !important; /* readable on the light-mode code tint */
 }
 
-:root[data-mud-theme="dark"] .cms-body pre,
-:root[data-mud-theme="dark"] .cms-body code {
-    background: rgba(255, 255, 255, 0.08);
-}
+/* Code blocks — dark mode override is in the dedicated block near the bottom of this file */
 
 .cms-body pre {
     padding: 1rem;
@@ -273,8 +290,9 @@
     margin-bottom: 1.2rem;
 }
 
+/* Links — use the theme primary colour so they stand out in both modes */
 .cms-body a {
-    color: var(--mud-palette-primary);
+    color: var(--mud-palette-primary) !important;
     text-decoration: underline;
 }
 
@@ -372,34 +390,11 @@ body.font-scale-xlarge .cms-body {
     font-size: 1.25rem !important;
 }
 
-/* ── Blog / CMS content — dark mode readability ─────────────── */
-/* Override any hardcoded inline colours saved by the Quill editor */
-:root[data-mud-theme="dark"] .cms-body {
-    color: var(--mud-palette-text-primary);
-}
-
-:root[data-mud-theme="dark"] .cms-body p,
-:root[data-mud-theme="dark"] .cms-body li,
-:root[data-mud-theme="dark"] .cms-body h1,
-:root[data-mud-theme="dark"] .cms-body h2,
-:root[data-mud-theme="dark"] .cms-body h3,
-:root[data-mud-theme="dark"] .cms-body h4,
-:root[data-mud-theme="dark"] .cms-body h5,
-:root[data-mud-theme="dark"] .cms-body h6,
-:root[data-mud-theme="dark"] .cms-body td,
-:root[data-mud-theme="dark"] .cms-body th,
-:root[data-mud-theme="dark"] .cms-body span {
-    color: var(--mud-palette-text-primary) !important;
-}
-
-/* Code blocks keep their own colour treatment */
+/* ── Blog / CMS content — dark mode code-block override ─────── */
+/* The base .cms-body rules above already cover text colours for both modes.
+   Only the code-block background differs between light and dark. */
 :root[data-mud-theme="dark"] .cms-body pre,
 :root[data-mud-theme="dark"] .cms-body code {
     background: rgba(255, 255, 255, 0.08) !important;
     color: #E2E8F0 !important;
-}
-
-/* Links remain distinguishable in both modes */
-:root[data-mud-theme="dark"] .cms-body a {
-    color: var(--mud-palette-primary) !important;
 }
