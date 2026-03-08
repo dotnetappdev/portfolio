@@ -1,12 +1,14 @@
 using System.Text;
+using System.IO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+
 using Portfolio.Api.Data;
 using Portfolio.Api.Infrastructure;
 using Portfolio.Api.Models;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -119,38 +121,58 @@ app.MapControllers();
 
 // Apply pending EF Core migrations and seed the database on startup.
 // Controlled by "SeedData": true in appsettings.json.
-if (builder.Configuration.GetValue<bool>("SeedData"))
+try
 {
-    using var scope = app.Services.CreateScope();
-    var context  = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userMgr  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-    await context.Database.MigrateAsync();
-
-    if (!await roleMgr.RoleExistsAsync("Admin"))
-        await roleMgr.CreateAsync(new IdentityRole("Admin"));
-
-    var adminEmail    = builder.Configuration["DefaultAdmin:Email"]    ?? "admin@portfolio.com";
-    var adminPassword = builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!";
-
-    if (await userMgr.FindByEmailAsync(adminEmail) == null)
+    if (builder.Configuration.GetValue<bool>("SeedData"))
     {
-        var admin = new ApplicationUser
+        using var scope = app.Services.CreateScope();
+        var context  = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var userMgr  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+        await context.Database.MigrateAsync();
+
+        if (!await roleMgr.RoleExistsAsync("Admin"))
+            await roleMgr.CreateAsync(new IdentityRole("Admin"));
+
+        var adminEmail    = builder.Configuration["DefaultAdmin:Email"]    ?? "admin@portfolio.com";
+        var adminPassword = builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!";
+
+        if (await userMgr.FindByEmailAsync(adminEmail) == null)
         {
-            UserName       = adminEmail,
-            Email          = adminEmail,
-            FirstName      = "David",
-            LastName       = "Buckley",
-            EmailConfirmed = true
-        };
-        var result = await userMgr.CreateAsync(admin, adminPassword);
-        if (result.Succeeded)
-            await userMgr.AddToRoleAsync(admin, "Admin");
+            var admin = new ApplicationUser
+            {
+                UserName       = adminEmail,
+                Email          = adminEmail,
+                FirstName      = "David",
+                LastName       = "Buckley",
+                EmailConfirmed = true
+            };
+            var result = await userMgr.CreateAsync(admin, adminPassword);
+            if (result.Succeeded)
+                await userMgr.AddToRoleAsync(admin, "Admin");
+        }
+
+        logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
     }
 
-    logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
+    app.Run();
 }
+catch (Exception ex)
+{
+    try
+    {
+        var home = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
+        var path = Path.Combine(home, "site", "wwwroot", "startup-error.txt");
+        var dir  = Path.GetDirectoryName(path) ?? home;
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(path, ex.ToString());
+    }
+    catch
+    {
+        // Swallow secondary exceptions when writing the error file.
+    }
 
-app.Run();
+    throw;
+}
