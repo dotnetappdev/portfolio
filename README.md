@@ -394,11 +394,11 @@ Update `appsettings.Development.json` in both projects:
 |---|---|---|
 | `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
 | `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `BaseApiUrl` | Base URL of Portfolio.Api (production default already set) | `https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/` |
+| `BaseApiUrl` | Base URL of Portfolio.Api (production default already set) | `https://your-api.azurewebsites.net/` |
 | `DefaultAdmin:Email` | Seeded admin email | Unused — users are managed in Portfolio.Api |
 | `DefaultAdmin:Password` | Seeded admin password | Unused — users are managed in Portfolio.Api |
 
-`BaseApiUrl` is the primary way to point the web app at the API for any environment. The production value (`https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/`) is already set in `appsettings.json`. `appsettings.Development.json` overrides this to `https://localhost:7002/` for local development. You can also override it via an environment variable (`BaseApiUrl=https://...`) or via the admin **Settings** panel (database value takes priority when non-empty).
+`BaseApiUrl` is the primary way to point the web app at the API for any environment. The production value is already set in `appsettings.json` (see the file for the actual Azure App Service URL). `appsettings.Development.json` overrides this to `https://localhost:7002/` for local development. You can also override it via an environment variable (`BaseApiUrl=https://...`) or via the admin **Settings** panel (database value takes priority when non-empty).
 
 ---
 
@@ -466,7 +466,7 @@ The development defaults (in `appsettings.Development.json`) are:
 
 | Setting | Value |
 |---|---|
-| JWT key | `PortfolioJwtKey-Dev-MustBeChangedInProduction!!` |
+| JWT key | _(see `appsettings.Development.json` — change before going live)_ |
 | Admin email | `admin@portfolio.com` |
 | Admin password | `Admin@123456!` |
 
@@ -735,7 +735,7 @@ The Portfolio.Api exposes interactive Swagger documentation via Swashbuckle at `
 | Environment | Swagger URL |
 |---|---|
 | Local development | `https://localhost:7002/swagger` |
-| Azure (production) | `https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/swagger` |
+| Azure (production) | `https://<your-api-hostname>/swagger` |
 | Docker Compose | `http://localhost:5008/swagger` |
 
 ### Using JWT auth in Swagger

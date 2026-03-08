@@ -2,7 +2,7 @@
 
 This guide covers building Docker images locally, running them with Docker Compose, and publishing both **Portfolio.Api** and **Portfolio.Web** to Azure using Azure Container Apps or Azure App Service.
 
-> **Swagger UI:** Once deployed, the interactive API documentation is available at `/swagger` on Portfolio.Api in all environments. For the current Azure App Service deployment: `https://dotnetdevni-faagd9h6f5hzbehj.ukwest-01.azurewebsites.net/swagger`
+> **Swagger UI:** Once deployed, the interactive API documentation is available at `https://<your-api-hostname>/swagger` on Portfolio.Api in all environments.
 
 ---
 
