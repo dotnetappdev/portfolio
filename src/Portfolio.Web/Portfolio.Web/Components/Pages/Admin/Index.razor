@@ -1703,8 +1703,18 @@
 
     private async Task ValidateUrl(string? url)
     {
-        if (!string.IsNullOrWhiteSpace(url))
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        // Only allow http/https to prevent javascript: or other malicious schemes
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
             await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+        }
+        else
+        {
+            Snackbar.Add("URL must start with http:// or https://", Severity.Warning);
+        }
     }
 
     // ── Blog CMS ────────────────────────────────────────────

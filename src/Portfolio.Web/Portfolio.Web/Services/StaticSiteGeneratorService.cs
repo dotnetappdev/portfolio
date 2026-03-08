@@ -624,7 +624,7 @@ h2.section-title {
             var liveBtn = p.LiveUrl is not null
                 ? $"""<a class="btn btn-primary btn-sm" href="{H(p.LiveUrl)}" target="_blank" rel="noopener">Live Demo</a>"""
                 : string.Empty;
-            var actions = (ghBtn + liveBtn).Length > 0
+            var actions = !string.IsNullOrEmpty(ghBtn) || !string.IsNullOrEmpty(liveBtn)
                 ? $"""<div class="card-actions" style="margin-top:0.75rem;">{ghBtn}{liveBtn}</div>"""
                 : $"""<div class="card-actions" style="margin-top:0.75rem;"><a class="btn btn-outline btn-sm" href="{Root(depth)}projects/">View All Projects</a></div>""";
             return $"""

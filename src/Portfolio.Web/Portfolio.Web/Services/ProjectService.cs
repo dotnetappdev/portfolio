@@ -30,7 +30,14 @@ public class ProjectService(ApplicationDbContext dbContext)
         if (project != null)
         {
             dbContext.Projects.Remove(project);
-            await dbContext.SaveChangesAsync();
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Project was already deleted by another request — nothing to do
+            }
         }
     }
 }
