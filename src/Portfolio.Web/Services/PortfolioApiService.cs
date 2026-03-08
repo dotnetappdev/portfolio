@@ -11,20 +11,32 @@ public class PortfolioApiService(
     ApplicationDbContext dbContext,
     ILogger<PortfolioApiService> logger)
 {
-    // Cached within the scoped lifetime (one per request) to avoid repeated DB hits
-    private string? _cachedBaseUrl;
+    // Cached within the scoped lifetime (one per request) to avoid repeated DB hits.
+    // null  → not yet resolved
+    // ""    → resolved; no DB override — use the HttpClient base address from appsettings
+    // other → resolved DB override
+    private string? _cachedDbBaseUrl;
+    private bool _dbBaseUrlResolved;
 
-    /// <summary>Returns an HttpClient whose BaseAddress is resolved from the DB setting (cached per scope).</summary>
+    /// <summary>
+    /// Returns an HttpClient whose BaseAddress comes from appsettings <c>BaseApiUrl</c> by default.
+    /// If the admin has set a non-empty <c>ApiBaseUrl</c> in the DB, that value overrides appsettings.
+    /// </summary>
     private async Task<HttpClient> GetClientAsync()
     {
-        if (_cachedBaseUrl == null)
+        if (!_dbBaseUrlResolved)
         {
             var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
-            _cachedBaseUrl = settings?.ApiBaseUrl ?? "https://localhost:7002/";
+            _cachedDbBaseUrl = string.IsNullOrWhiteSpace(settings?.ApiBaseUrl) ? null : settings.ApiBaseUrl;
+            _dbBaseUrlResolved = true;
         }
 
         var client = httpClientFactory.CreateClient("PortfolioApi");
-        client.BaseAddress = new Uri(_cachedBaseUrl.TrimEnd('/') + "/");
+
+        // Only override the factory-configured base address when the admin has set an explicit DB value
+        if (_cachedDbBaseUrl != null)
+            client.BaseAddress = new Uri(_cachedDbBaseUrl.TrimEnd('/') + "/");
+
         return client;
     }
 

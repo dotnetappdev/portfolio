@@ -156,8 +156,8 @@ namespace Portfolio.Web.Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "AppSettings",
-                columns: new[] { "Id", "ApiBaseUrl" },
-                values: new object[] { 1, "https://localhost:7002/" });
+                columns: new[] { "Id" },
+                values: new object[] { 1 });
 
             migrationBuilder.InsertData(
                 table: "BlogPosts",

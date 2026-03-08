@@ -34,13 +34,12 @@ namespace Portfolio.Web.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            ApiBaseUrl = "https://localhost:7002/"
+                            Id = 1
                         });
                 });
 
             modelBuilder.Entity("Portfolio.Web.Data.BlogPost", b =>
-                {
+            {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");

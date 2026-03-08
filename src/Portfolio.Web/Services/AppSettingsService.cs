@@ -9,7 +9,7 @@ public class AppSettingsService(ApplicationDbContext dbContext)
     /// <summary>Returns the current app settings row, or a default instance if not yet seeded.</summary>
     public async Task<AppSettings> GetAsync() =>
         await dbContext.AppSettings.FirstOrDefaultAsync()
-        ?? new AppSettings { Id = 1, ApiBaseUrl = "https://localhost:7002/" };
+        ?? new AppSettings { Id = 1 };
 
     /// <summary>Persists the app settings row (insert or update).</summary>
     public async Task SaveAsync(AppSettings settings)

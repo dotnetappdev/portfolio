@@ -50,6 +50,7 @@ JWT_KEY=<your-long-random-secret-32-chars-min>
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=YourSecureP@ssword1!
 ALLOWED_ORIGINS=http://localhost:5072
+BASE_API_URL=http://localhost:5008/
 ```
 
 ---
@@ -190,6 +191,7 @@ az containerapp create \
         DatabaseProvider=Sqlite \
         "ConnectionStrings__DefaultConnection=Data Source=/app/data/portfolio-web.db" \
         SeedData=true \
+        "BaseApiUrl=https://$API_URL/" \
         "DefaultAdmin__Email=admin@yourdomain.com" \
         "DefaultAdmin__Password=YourSecureP@ssword1!"
 ```
@@ -303,6 +305,7 @@ az webapp config appsettings set \
         DatabaseProvider=Sqlite \
         "ConnectionStrings__DefaultConnection=Data Source=/app/data/portfolio-web.db" \
         SeedData=true \
+        "BaseApiUrl=https://portfolio-api-app.azurewebsites.net/" \
         "DefaultAdmin__Email=admin@yourdomain.com" \
         "DefaultAdmin__Password=YourSecureP@ssword1!"
 ```

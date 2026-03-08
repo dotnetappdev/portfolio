@@ -245,7 +245,7 @@ public class ApplicationDbContext : DbContext
 
         // Seed a default app settings row
         builder.Entity<AppSettings>().HasData(
-            new AppSettings { Id = 1, ApiBaseUrl = "https://localhost:7002/" }
+            new AppSettings { Id = 1, ApiBaseUrl = null }
         );
 
         // Seed default navigation menu items

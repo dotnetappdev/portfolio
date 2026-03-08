@@ -18,25 +18,40 @@ public class PortfolioApiAuthService(
 {
     // Cached for the lifetime of this scoped service instance (one per request).
     // Thread-safety is not a concern because scoped services are never shared across requests.
-    private string? _cachedBaseUrl;
+    // null  → not yet resolved
+    // ""    → resolved; no DB override — use the HttpClient base address from appsettings
+    // other → resolved DB override
+    private string? _cachedDbBaseUrl;
+    private bool _dbBaseUrlResolved;
 
+    /// <summary>
+    /// Resolves the base URL once (DB override takes priority over appsettings).
+    /// After calling this, <see cref="_cachedDbBaseUrl"/> is either null (use factory address) or the DB override.
+    /// </summary>
+    private async Task ResolveBaseUrlAsync()
+    {
+        if (_dbBaseUrlResolved) return;
+        var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
+        _cachedDbBaseUrl = string.IsNullOrWhiteSpace(settings?.ApiBaseUrl) ? null : settings.ApiBaseUrl;
+        _dbBaseUrlResolved = true;
+    }
+
+    /// <summary>
+    /// Returns an HttpClient pre-configured with the correct base address.
+    /// Uses the appsettings <c>BaseApiUrl</c> by default; the admin-panel DB value overrides if set.
+    /// </summary>
     private async Task<HttpClient> GetClientAsync()
     {
-        if (_cachedBaseUrl == null)
-        {
-            var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
-            _cachedBaseUrl = settings?.ApiBaseUrl ?? "https://localhost:7002/";
-        }
-
+        await ResolveBaseUrlAsync();
         var client = httpClientFactory.CreateClient("PortfolioApi");
-        client.BaseAddress = new Uri(_cachedBaseUrl.TrimEnd('/') + "/");
+        if (_cachedDbBaseUrl != null)
+            client.BaseAddress = new Uri(_cachedDbBaseUrl.TrimEnd('/') + "/");
         return client;
     }
 
-    private HttpClient GetClientWithToken(string baseUrl, string token)
+    private async Task<HttpClient> GetClientWithTokenAsync(string token)
     {
-        var client = httpClientFactory.CreateClient("PortfolioApi");
-        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+        var client = await GetClientAsync();
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         return client;
@@ -83,12 +98,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            if (_cachedBaseUrl == null)
-            {
-                var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
-                _cachedBaseUrl = settings?.ApiBaseUrl ?? "https://localhost:7002/";
-            }
-            var client = GetClientWithToken(_cachedBaseUrl, adminToken);
+            var client = await GetClientWithTokenAsync(adminToken);
             return await client.GetFromJsonAsync<List<UserDto>>("api/auth/users")
                    ?? [];
         }
@@ -104,12 +114,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            if (_cachedBaseUrl == null)
-            {
-                var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
-                _cachedBaseUrl = settings?.ApiBaseUrl ?? "https://localhost:7002/";
-            }
-            var client = GetClientWithToken(_cachedBaseUrl, adminToken);
+            var client = await GetClientWithTokenAsync(adminToken);
             var response = await client.PostAsJsonAsync("api/auth/users", dto);
             if (response.IsSuccessStatusCode) return (true, null);
 

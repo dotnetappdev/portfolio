@@ -32,8 +32,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
-// Named HTTP client for the Portfolio API — base URL is stored in AppSettings (DB)
-builder.Services.AddHttpClient("PortfolioApi");
+// Named HTTP client for the Portfolio API.
+// BaseApiUrl from appsettings is the deployment-time default; the admin panel (DB) can override at runtime.
+builder.Services.AddHttpClient("PortfolioApi", client =>
+{
+    var baseApiUrl = builder.Configuration["BaseApiUrl"];
+    if (!string.IsNullOrWhiteSpace(baseApiUrl))
+        client.BaseAddress = new Uri(baseApiUrl.TrimEnd('/') + "/");
+});
 
 // Named HTTP clients for SMS providers
 builder.Services.AddHttpClient("Twilio");

@@ -390,10 +390,11 @@ Update `appsettings.Development.json` in both projects:
 |---|---|---|
 | `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
 | `ConnectionStrings:DefaultConnection` | Database connection | See above |
+| `BaseApiUrl` | Base URL of Portfolio.Api (deployment-time default) | `https://my-api.azurecontainerapps.io/` |
 | `DefaultAdmin:Email` | Seeded admin email | Unused — users are managed in Portfolio.Api |
 | `DefaultAdmin:Password` | Seeded admin password | Unused — users are managed in Portfolio.Api |
 
-> **API base URL** is now configured in the admin **Settings** tab (stored in the database), no longer an `appsettings.json` key.
+`BaseApiUrl` is the primary way to point the web app at the API for any environment. Set it in `appsettings.json`, `appsettings.Development.json`, or as an environment variable (`BaseApiUrl=https://...`). The admin **Settings** panel (stored in the database) can override this at runtime if needed — the database value takes priority when non-empty.
 
 ---
 
