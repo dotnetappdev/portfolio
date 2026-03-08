@@ -138,6 +138,8 @@ Portfolio.slnx
 
 Both the Web API and the Blazor site have Dockerfiles. A `docker-compose.yml` at the repo root orchestrates both containers together using SQLite for zero-setup persistence.
 
+> **Azure deployment?** See **[DOCKER-AZURE.md](./DOCKER-AZURE.md)** for the full guide to pushing both services to Azure Container Apps or Azure App Service — including ACR setup, environment variable configuration, and switching from SQLite to Azure SQL / PostgreSQL.
+
 ### Quick start with Docker Compose
 
 1. **Set the required JWT key** (minimum 32 characters). Copy the example env file and fill in your values:
@@ -332,6 +334,7 @@ Each provider is isolated in its own class library (`Portfolio.Data.MySql`, `Por
 The database schema is created and all pending migrations are applied automatically at startup via `MigrateAsync()`. Seed data (projects, skills, admin user) is inserted on first run when `SeedData: true` is set.
 
 See **[MIGRATIONS.md](./MIGRATIONS.md)** for the full guide on creating, applying, and rolling back migrations for each provider.
+See **[eftooling.txt](./eftooling.txt)** for a plain-text quick-reference of every EF Core CLI command.
 
 ---
 

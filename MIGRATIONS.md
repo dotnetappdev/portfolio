@@ -154,3 +154,11 @@ To reset and re-seed from scratch:
 docker compose down -v    # removes volumes (all data is lost)
 docker compose up --build
 ```
+
+See **[DOCKER-AZURE.md](./DOCKER-AZURE.md)** for the complete guide on publishing both services to Azure (Container Apps or App Service), including ACR image push, environment variable setup, and switching to Azure SQL or PostgreSQL.
+
+---
+
+## Quick reference
+
+For a concise plain-text list of every EF Core CLI command used in this project, see **[eftooling.txt](./eftooling.txt)**.
