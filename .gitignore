@@ -487,3 +487,5 @@ $RECYCLE.BIN/
 *.swp
 nohup.out
 src/Portfolio.Web/appsettings.Development.json
+src/Portfolio.Web/bin\Debug/
+src/Portfolio.Web/bin/
