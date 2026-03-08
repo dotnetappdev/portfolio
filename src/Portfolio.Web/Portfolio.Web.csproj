@@ -6,6 +6,10 @@
 	  
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- OutOfProcess runs the app on Kestrel outside of IIS/IIS Express.
+         Required on SmarterASP.NET shared hosting to avoid HTTP 500.34
+         (mixing hosting models in the same app pool). -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <ItemGroup>

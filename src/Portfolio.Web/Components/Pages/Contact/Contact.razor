@@ -87,7 +87,7 @@
 
     private async Task HandleSubmit()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_isValid) return;
 
         // Validate CAPTCHA

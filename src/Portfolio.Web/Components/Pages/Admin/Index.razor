@@ -1518,7 +1518,7 @@
     // ── User management ─────────────────────────────────────
     private async Task HandleCreateUser()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_isValid) return;
 
         _creating = true;
@@ -1579,7 +1579,7 @@
 
     private async Task SaveStat()
     {
-        await _statForm.Validate();
+        await _statForm.ValidateAsync();
         if (!_statFormValid) return;
 
         _savingStat = true;
@@ -1688,7 +1688,7 @@
 
     private async Task SaveProject()
     {
-        await _projectForm.Validate();
+        await _projectForm.ValidateAsync();
         if (!_projectFormValid) return;
 
         _savingProject = true;
@@ -1843,7 +1843,7 @@
 
     private async Task SavePost()
     {
-        await _postForm.Validate();
+        await _postForm.ValidateAsync();
         if (!_postFormValid) return;
 
         _savingPost = true;
@@ -1991,7 +1991,7 @@
 
     private async Task SavePage()
     {
-        await _pageForm.Validate();
+        await _pageForm.ValidateAsync();
         if (!_pageFormValid) return;
 
         _savingPage = true;
@@ -2091,7 +2091,7 @@
 
     private async Task SaveMenuItem()
     {
-        await _menuForm.Validate();
+        await _menuForm.ValidateAsync();
         if (!_menuFormValid) return;
 
         _savingMenuItem = true;

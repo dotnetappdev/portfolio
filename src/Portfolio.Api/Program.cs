@@ -12,6 +12,15 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = builder.Configuration["Sentry:Dsn"] ?? string.Empty;
+    o.TracesSampleRate = builder.Configuration.GetValue<double?>("Sentry:TracesSampleRate") ?? 0.2;
+    o.MinimumBreadcrumbLevel = LogLevel.Information;
+    o.MinimumEventLevel      = LogLevel.Warning;
+    o.SendDefaultPii         = false;
+});
+
 builder.Services.AddControllers();
 
 // Swashbuckle Swagger — active in all environments so the UI is available after deployment.
@@ -35,18 +44,11 @@ builder.Services.AddSwaggerGen(options =>
         Description  = "Enter your JWT token. Example: Bearer {token}"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
-                }
-            },
-            Array.Empty<string>()
+            new OpenApiSecuritySchemeReference("Bearer", null, null),
+            new List<string>()
         }
     });
 });
@@ -119,19 +121,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Apply pending EF Core migrations and seed the database on startup.
-// Controlled by "SeedData": true in appsettings.json.
+// Apply pending EF Core migrations on every startup — keeps dev and production
+// databases in sync automatically without manual dotnet ef database update.
 try
 {
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger  = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    await context.Database.MigrateAsync();
+    logger.LogInformation("Database migrations applied successfully.");
+
     if (builder.Configuration.GetValue<bool>("SeedData"))
     {
-        using var scope = app.Services.CreateScope();
-        var context  = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var userMgr  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-        await context.Database.MigrateAsync();
+        var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
         if (!await roleMgr.RoleExistsAsync("Admin"))
             await roleMgr.CreateAsync(new IdentityRole("Admin"));
