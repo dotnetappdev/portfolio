@@ -10,7 +10,7 @@ services:
       - DatabaseProvider=Sqlite
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/portfolio-api.db
       - SeedData=true
-      - Jwt__Key=${JWT_KEY}
+      - Jwt__Key=${JWT_KEY:?Please set JWT_KEY in your .env file (min 32 characters)}
       - Jwt__Issuer=Portfolio.Api
       - Jwt__Audience=Portfolio.Web
       - DefaultAdmin__Email=${ADMIN_EMAIL:-admin@portfolio.com}

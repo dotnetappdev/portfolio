@@ -43,7 +43,7 @@ The compose file exposes:
 
 ### Environment variables
 
-Create a `.env` file at the repo root to override defaults:
+**`JWT_KEY` is required.** Create a `.env` file at the repo root before running `docker compose up`:
 
 ```env
 JWT_KEY=<your-long-random-secret-32-chars-min>
@@ -51,6 +51,17 @@ ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=YourSecureP@ssword1!
 ALLOWED_ORIGINS=http://localhost:5072
 BASE_API_URL=http://localhost:5008/
+```
+
+> **Important:** If `JWT_KEY` is not set, `docker compose up` will immediately fail with a clear error message. The Portfolio.Api startup will throw an `InvalidOperationException` if the key is empty or missing — this is intentional to prevent running with no signing key.
+
+To generate a strong key:
+```bash
+# Linux / macOS
+openssl rand -base64 32
+
+# PowerShell
+[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
 ```
 
 ---
