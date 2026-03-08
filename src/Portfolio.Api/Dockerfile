@@ -1,14 +1,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy project files for restore
+# Copy project files for restore (including all ProjectReference dependencies)
 COPY Portfolio.Shared/Portfolio.Shared.csproj Portfolio.Shared/
+COPY Portfolio.Data.CosmosDb/Portfolio.Data.CosmosDb.csproj Portfolio.Data.CosmosDb/
+COPY Portfolio.Data.MySql/Portfolio.Data.MySql.csproj Portfolio.Data.MySql/
+COPY Portfolio.Data.PostgreSql/Portfolio.Data.PostgreSql.csproj Portfolio.Data.PostgreSql/
 COPY Portfolio.Api/Portfolio.Api.csproj Portfolio.Api/
 
 RUN dotnet restore Portfolio.Api/Portfolio.Api.csproj
 
 # Copy all source files and publish
 COPY Portfolio.Shared/ Portfolio.Shared/
+COPY Portfolio.Data.CosmosDb/ Portfolio.Data.CosmosDb/
+COPY Portfolio.Data.MySql/ Portfolio.Data.MySql/
+COPY Portfolio.Data.PostgreSql/ Portfolio.Data.PostgreSql/
 COPY Portfolio.Api/ Portfolio.Api/
 
 RUN dotnet publish Portfolio.Api/Portfolio.Api.csproj -c Release -o /app/publish --no-restore

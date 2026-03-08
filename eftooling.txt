@@ -1,0 +1,169 @@
+========================================================
+  Entity Framework Core CLI Tooling — Quick Reference
+========================================================
+
+This project uses EF Core code-first migrations.
+Migrations are applied automatically at startup via Database.MigrateAsync()
+whenever "SeedData": true is set in appsettings.json.
+
+Use the commands below when you need to manage migrations manually.
+
+--------------------------------------------------------
+  PREREQUISITES
+--------------------------------------------------------
+
+Install the EF Core global CLI tools (one-time per machine):
+
+  dotnet tool install -g dotnet-ef
+
+Update to the latest version:
+
+  dotnet tool update -g dotnet-ef
+
+Verify the installed version:
+
+  dotnet ef --version
+
+--------------------------------------------------------
+  ADD A NEW MIGRATION
+--------------------------------------------------------
+
+Run from the repo root after changing a model or DbContext.
+
+  -- Portfolio.Api --
+  cd src/Portfolio.Api
+  dotnet ef migrations add <MigrationName> --output-dir Data/Migrations
+
+  -- Portfolio.Web --
+  cd src/Portfolio.Web
+  dotnet ef migrations add <MigrationName> \
+      --output-dir Data/Migrations \
+      --project Portfolio.Web.csproj \
+      --startup-project Portfolio.Web.csproj
+
+Replace <MigrationName> with a descriptive PascalCase name.
+Examples:
+  AddBlogFeaturedImage
+  AddContactMessageStatus
+  AddSeoFields
+
+--------------------------------------------------------
+  APPLY MIGRATIONS MANUALLY
+--------------------------------------------------------
+
+Migrations run automatically at startup. Use these commands
+only in CI pipelines or when SeedData is disabled.
+
+  -- Portfolio.Api --
+  cd src/Portfolio.Api
+  dotnet ef database update
+
+  -- Portfolio.Web --
+  cd src/Portfolio.Web
+  dotnet ef database update \
+      --project Portfolio.Web.csproj \
+      --startup-project Portfolio.Web.csproj
+
+Apply migrations up to a specific migration name:
+
+  dotnet ef database update <TargetMigrationName>
+
+--------------------------------------------------------
+  LIST MIGRATIONS
+--------------------------------------------------------
+
+  -- Portfolio.Api --
+  cd src/Portfolio.Api
+  dotnet ef migrations list
+
+  -- Portfolio.Web --
+  cd src/Portfolio.Web
+  dotnet ef migrations list \
+      --project Portfolio.Web.csproj \
+      --startup-project Portfolio.Web.csproj
+
+The output shows each migration and whether it has been applied (*)
+or is still pending.
+
+--------------------------------------------------------
+  REMOVE THE LAST MIGRATION
+--------------------------------------------------------
+
+Only if the migration has NOT yet been applied to the database.
+
+  -- Portfolio.Api --
+  cd src/Portfolio.Api
+  dotnet ef migrations remove
+
+  -- Portfolio.Web --
+  cd src/Portfolio.Web
+  dotnet ef migrations remove \
+      --project Portfolio.Web.csproj \
+      --startup-project Portfolio.Web.csproj
+
+--------------------------------------------------------
+  ROLL BACK TO A SPECIFIC MIGRATION
+--------------------------------------------------------
+
+Roll back to a named migration (applies any down migrations in between):
+
+  dotnet ef database update <TargetMigrationName>
+
+Roll back everything (drops all tables — destructive!):
+
+  dotnet ef database update 0
+
+--------------------------------------------------------
+  GENERATE A SQL SCRIPT
+--------------------------------------------------------
+
+Generate a SQL script instead of running migrations directly.
+Useful for review or for running against a managed cloud database.
+
+  -- All migrations from empty database --
+  dotnet ef migrations script --output migration.sql
+
+  -- From a specific migration to latest --
+  dotnet ef migrations script <FromMigration> --output migration.sql
+
+  -- Between two specific migrations --
+  dotnet ef migrations script <FromMigration> <ToMigration> --output migration.sql
+
+  -- Idempotent script (safe to run multiple times) --
+  dotnet ef migrations script --idempotent --output migration.sql
+
+--------------------------------------------------------
+  DATABASE PROVIDERS
+--------------------------------------------------------
+
+Set "DatabaseProvider" in appsettings.json (or via environment variable)
+to switch providers. No code changes required.
+
+  Value               Driver                  Connection string example
+  -----------------------------------------------------------------------
+  Sqlite (default)    SQLite                  Data Source=portfolio.db
+  SqlServer           SQL Server / Azure SQL  Server=...;Database=...
+  PostgreSql          PostgreSQL (Npgsql)     Host=...;Database=...
+  MySql               MySQL / MariaDB (Pomelo) Server=...;Database=...
+  CosmosDb            Azure Cosmos DB         AccountEndpoint=...
+
+NOTE: Azure Cosmos DB does not support relational migrations.
+      Use EnsureCreatedAsync for Cosmos — the app handles this automatically.
+
+--------------------------------------------------------
+  DOCKER — APPLY MIGRATIONS IN A CONTAINER
+--------------------------------------------------------
+
+Migrations run automatically when the containers start.
+To force a migration run against a running container:
+
+  docker exec portfolio-api dotnet Portfolio.Api.dll
+  docker exec portfolio-web dotnet Portfolio.Web.dll
+
+To reset the database volumes (destructive — all data lost):
+
+  docker compose down -v
+  docker compose up --build
+
+See DOCKER-AZURE.md for full container and Azure deployment commands.
+See MIGRATIONS.md for a full narrative guide on the migration workflow.

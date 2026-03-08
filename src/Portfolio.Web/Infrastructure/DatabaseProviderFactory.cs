@@ -3,7 +3,7 @@ using Portfolio.Data.CosmosDb;
 using Portfolio.Data.MySql;
 using Portfolio.Data.PostgreSql;
 
-namespace Portfolio.Api.Infrastructure;
+namespace Portfolio.Web.Infrastructure;
 
 /// <summary>
 /// Configures the EF Core database provider based on the "DatabaseProvider" appsetting.

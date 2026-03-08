@@ -58,24 +58,32 @@ Portfolio.slnx
     ├── Portfolio.Shared/              # Shared DTOs and models
     ├── Portfolio.Api/                 # REST Web API (.NET 10)
     │   └── Infrastructure/           # DatabaseProviderFactory
+    ├── Portfolio.Data.MySql/          # EF Core MySQL provider (Pomelo)
+    ├── Portfolio.Data.CosmosDb/       # EF Core Azure Cosmos DB provider
+    ├── Portfolio.Data.PostgreSql/     # EF Core PostgreSQL provider (Npgsql)
     ├── Portfolio.Sms.Abstractions/    # ISmsService, SmsMessage, SmsResult (no dependencies)
     ├── Portfolio.Sms.ClickSend/       # ClickSend REST API implementation
     ├── Portfolio.Sms.Twilio/          # Twilio REST API implementation
-    └── Portfolio.Web/
-        ├── Portfolio.Web/             # Blazor Server App
-        │   ├── Components/
-        │   │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
-        │   │   ├── Pages/
-        │   │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
-        │   │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
-        │   │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
-        │   │   │   └── CmsPageView/   # Catch-all /{**slug} for custom CMS pages
-        │   │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
-        │   ├── Data/                  # ApplicationDbContext, BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
-        │   ├── Infrastructure/        # DatabaseProviderFactory
-        │   └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
-        │                              #   PortfolioApiService, SmsSender, StaticSiteGeneratorService
-        └── Portfolio.Web.Client/      # Blazor WASM Client
+    └── Portfolio.Web/                 # Blazor Web App (server-side, single project)
+        ├── Components/
+        │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
+        │   ├── Pages/
+        │   │   ├── About/         # About page
+        │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
+        │   │   ├── Auth/          # Login and AccessDenied pages
+        │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
+        │   │   ├── Contact/       # Contact form with CAPTCHA
+        │   │   ├── Error/         # Error and NotFound pages
+        │   │   ├── Home/          # Home/landing page
+        │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
+        │   │   ├── Skills/        # Skills page
+        │   │   └── CmsPageView.razor  # Catch-all /{**slug} for custom CMS pages
+        │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
+        ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
+        ├── Infrastructure/        # DatabaseProviderFactory
+        └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
+                                   #   PortfolioApiService, PortfolioApiAuthService, SmsSender,
+                                   #   StaticSiteGeneratorService, ProjectService
 ```
 
 ## Features
@@ -96,7 +104,9 @@ Portfolio.slnx
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header
 - **REST API with fallback**: Blazor app works standalone when API is offline
-- **Configurable database provider**: SQL Server, SQLite, or PostgreSQL via one setting
+- **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library
+- **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
+- **Swagger UI**: interactive API documentation available at `/swagger` on Portfolio.Api in all environments (including production); JWT auth wired in so you can test protected endpoints directly from the browser
 - **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, projects, and generate static exports
 - **In-app settings**: API base URL and SMS provider (with all API keys/tokens) configured through the admin Settings tab — stored in the database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
@@ -109,8 +119,8 @@ Portfolio.slnx
 |---|---|
 | Frontend | ASP.NET Core Blazor (.NET 10) + MudBlazor 8 |
 | Backend | ASP.NET Core REST Web API (.NET 10) |
-| Database | SQL Server / SQLite / PostgreSQL + EF Core 9 |
-| Auth (Web) | ASP.NET Identity with cookie auth |
+| Database | SQL Server / SQLite / PostgreSQL / MySQL / Cosmos DB + EF Core 9 |
+| Auth (Web) | Cookie auth backed by Portfolio.Api JWT (single Identity store) |
 | Auth (API) | JWT Bearer tokens |
 | AI Skills | Semantic Kernel, Azure OpenAI, RAG, ML.NET |
 | Security | OWASP, OAuth2/OIDC, Threat Modelling |
@@ -128,6 +138,8 @@ Portfolio.slnx
 ## Docker
 
 Both the Web API and the Blazor site have Dockerfiles. A `docker-compose.yml` at the repo root orchestrates both containers together using SQLite for zero-setup persistence.
+
+> **Azure deployment?** See **[DOCKER-AZURE.md](./DOCKER-AZURE.md)** for the full guide to pushing both services to Azure Container Apps or Azure App Service — including ACR setup, environment variable configuration, and switching from SQLite to Azure SQL / PostgreSQL.
 
 ### Quick start with Docker Compose
 
@@ -182,7 +194,7 @@ The following variables can be set in a `.env` file at the repo root or exported
 docker build -t portfolio-api -f src/Portfolio.Api/Dockerfile ./src
 
 # Blazor Web image only
-docker build -t portfolio-web -f src/Portfolio.Web/Portfolio.Web/Dockerfile ./src
+docker build -t portfolio-web -f src/Portfolio.Web/Dockerfile ./src
 ```
 
 ### Persistent data
@@ -248,9 +260,7 @@ Add `SA_PASSWORD` to your `.env` file (must meet SQL Server complexity requireme
 
 #### PostgreSQL
 
-> **Note:** PostgreSQL requires installing `Npgsql.EntityFrameworkCore.PostgreSQL` in both `Portfolio.Api` and `Portfolio.Web` and uncommenting `UseNpgsql` in each project's `Infrastructure/DatabaseProviderFactory.cs`. See [Database Configuration](#database-configuration) for full instructions.
-
-Once the packages are installed, add a PostgreSQL service and update the env vars:
+Add a PostgreSQL service and update the env vars (no code changes needed — the provider library is already referenced):
 
 ```yaml
 services:
@@ -309,19 +319,23 @@ dotnet build Portfolio.slnx
 
 ## Database Configuration
 
-Set `DatabaseProvider` in `appsettings.json` (or override per environment):
+Set `DatabaseProvider` in `appsettings.json` (or override per environment).
+All providers are fully supported out of the box — no manual NuGet installs needed.
 
 | Value | Driver | Connection string format |
 |---|---|---|
 | `SqlServer` (default) | SQL Server / LocalDB | `Server=(localdb)\mssqllocaldb;Database=PortfolioDb;Trusted_Connection=True;` |
 | `Sqlite` | SQLite | `Data Source=portfolio.db` |
-| `PostgreSql` | PostgreSQL | `Host=localhost;Database=portfolio;Username=...;Password=...` |
+| `PostgreSql` or `Postgres` | PostgreSQL (Npgsql) | `Host=localhost;Database=portfolio;Username=...;Password=...` |
+| `MySql` | MySQL / MariaDB (Pomelo) | `Server=localhost;Database=portfolio;User=...;Password=...` |
+| `CosmosDb` or `Cosmos` | Azure Cosmos DB | `AccountEndpoint=https://...;AccountKey=...;Database=portfolio` |
 
-> **PostgreSQL:** install the `Npgsql.EntityFrameworkCore.PostgreSQL` NuGet package in both
-> `Portfolio.Api` and `Portfolio.Web`, then uncomment the `UseNpgsql` line in each project's
-> `Infrastructure/DatabaseProviderFactory.cs`.
+Each provider is isolated in its own class library (`Portfolio.Data.MySql`, `Portfolio.Data.CosmosDb`, `Portfolio.Data.PostgreSql`). SQL Server and SQLite are built into `Portfolio.Api` and `Portfolio.Web` via the standard EF Core packages already referenced.
 
-The database schema is created automatically on first run via `EnsureCreatedAsync`.
+The database schema is created and all pending migrations are applied automatically at startup via `MigrateAsync()`. Seed data (projects, skills, admin user) is inserted on first run when `SeedData: true` is set.
+
+See **[MIGRATIONS.md](./MIGRATIONS.md)** for the full guide on creating, applying, and rolling back migrations for each provider.
+See **[eftooling.txt](./eftooling.txt)** for a plain-text quick-reference of every EF Core CLI command.
 
 ---
 
@@ -337,7 +351,7 @@ cd src/Portfolio.Api
 dotnet run
 
 # Terminal 2: Blazor web app
-cd src/Portfolio.Web/Portfolio.Web
+cd src/Portfolio.Web
 dotnet run
 ```
 
@@ -364,25 +378,27 @@ Update `appsettings.Development.json` in both projects:
 
 | Key | Description | Example |
 |---|---|---|
-| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql` |
-| `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `Jwt:Key` | JWT signing key (min 32 chars) | Set via secret or env var |
+| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
+| `Jwt:Key` | JWT signing key — **never commit**; inject via env var or secret | _(empty in source — see below)_ |
 | `Jwt:Issuer` | JWT issuer claim | `Portfolio.Api` |
 | `Jwt:Audience` | JWT audience claim | `Portfolio.Web` |
 | `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
 | `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
 | `AllowedOrigins` | CORS allowed origins | `https://yourdomain.com` |
 
+> **`Jwt:Key` is intentionally blank in `appsettings.json`.** The app will throw `InvalidOperationException` at startup if the key is missing or empty — it will never silently run without a signing key. See [Secrets Management](#secrets-management) below for how to supply it per environment.
+
 ### Portfolio.Web: `appsettings.json`
 
 | Key | Description | Example |
 |---|---|---|
-| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql` |
+| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
 | `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
-| `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
+| `BaseApiUrl` | Base URL of Portfolio.Api (production default already set) | `https://your-api.azurewebsites.net/` |
+| `DefaultAdmin:Email` | Seeded admin email | Unused — users are managed in Portfolio.Api |
+| `DefaultAdmin:Password` | Seeded admin password | Unused — users are managed in Portfolio.Api |
 
-> **API base URL** is now configured in the admin **Settings** tab (stored in the database), no longer an `appsettings.json` key.
+`BaseApiUrl` is the primary way to point the web app at the API for any environment. The production value is already set in `appsettings.json` (see the file for the actual Azure App Service URL). `appsettings.Development.json` overrides this to `https://localhost:7002/` for local development. You can also override it via an environment variable (`BaseApiUrl=https://...`) or via the admin **Settings** panel (database value takes priority when non-empty).
 
 ---
 
@@ -398,12 +414,47 @@ dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
 dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 
 # Web secrets
-cd src/Portfolio.Web/Portfolio.Web
+cd src/Portfolio.Web
 dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
 dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 ```
 
-In production use environment variables or a secrets manager (Azure Key Vault, AWS Secrets Manager, etc.):
+### Azure App Service
+
+Set the JWT key and other secrets as **Application Settings** in the Azure portal — they are injected as environment variables at runtime. ASP.NET Core maps double-underscore (`__`) to nested config keys:
+
+1. Azure Portal → App Service (`portfolio-api-app`) → **Configuration** → **Application settings**
+2. Add the following settings:
+
+| App Setting name | Maps to config key | Value |
+|---|---|---|
+| `Jwt__Key` | `Jwt:Key` | A strong random string (32+ chars, see below) |
+| `DefaultAdmin__Email` | `DefaultAdmin:Email` | Your admin email |
+| `DefaultAdmin__Password` | `DefaultAdmin:Password` | A strong password |
+
+Generate a strong JWT key:
+```bash
+# Linux / macOS
+openssl rand -base64 32
+
+# PowerShell
+[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
+```
+
+3. Click **Save** — the app restarts automatically with the new key injected.
+
+> **Important:** `Jwt:Key` is intentionally blank in committed `appsettings.json`. The Portfolio.Api startup throws `InvalidOperationException` if the key is empty or missing — the app will refuse to start rather than run insecurely.
+
+### Docker Compose
+
+Set `JWT_KEY` in a `.env` file at the repo root (already wired in `docker-compose.yml`):
+
+```bash
+cp .env.example .env
+# Edit .env and replace the JWT_KEY placeholder with your own key
+```
+
+### Production environment variables (general)
 
 ```bash
 export Jwt__Key="your-production-secret"
@@ -415,10 +466,11 @@ The development defaults (in `appsettings.Development.json`) are:
 
 | Setting | Value |
 |---|---|
+| JWT key | _(see `appsettings.Development.json` — change before going live)_ |
 | Admin email | `admin@portfolio.com` |
 | Admin password | `Admin@123456!` |
 
-> Change these before going live.
+> **Change all of these before going live.**
 
 ---
 
@@ -672,4 +724,28 @@ The full project catalogue also includes:
 - HTTPS enforced in non-development environments
 - HSTS enabled in production
 - Sensitive config values are empty in committed `appsettings.json`; supply via secrets or environment variables
+- `Jwt:Key` is blank in source — app refuses to start if no key is injected (fail-fast at startup)
+
+---
+
+## Swagger UI (API Documentation)
+
+The Portfolio.Api exposes interactive Swagger documentation via Swashbuckle at `/swagger` in **all environments** (development and production).
+
+| Environment | Swagger URL |
+|---|---|
+| Local development | `https://localhost:7002/swagger` |
+| Azure (production) | `https://<your-api-hostname>/swagger` |
+| Docker Compose | `http://localhost:5008/swagger` |
+
+### Using JWT auth in Swagger
+
+1. Call `POST /api/auth/login` with your admin credentials to obtain a JWT token
+2. Click **Authorize** (the padlock icon) at the top right of the Swagger UI
+3. Enter `Bearer <your-token>` in the Value field
+4. Click **Authorize** — all subsequent requests will include the `Authorization` header
+
+### Azure App Service — 500.30 fix
+
+Portfolio.Api is configured with `<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>` in `Portfolio.Api.csproj`. This runs the API on the Kestrel web server rather than inside the IIS in-process hosting module, which resolves HTTP 500.30 startup failures on Azure App Service caused by in-process hosting module incompatibilities.
 
