@@ -124,7 +124,11 @@ if (builder.Configuration.GetValue<bool>("SeedData"))
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     await using var context = await contextFactory.CreateDbContextAsync();
-   // await context.Database.MigrateAsync();
+    var providerName = context.Database.ProviderName ?? "";
+    if (providerName.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+        await context.Database.EnsureCreatedAsync();
+    else
+        await context.Database.MigrateAsync();
     logger.LogInformation("Web CMS database migrated and initialised.");
 }
 

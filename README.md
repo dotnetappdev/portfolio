@@ -5,34 +5,25 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ## Screenshots
 
 ### Home Page
-![Home Page](https://github.com/user-attachments/assets/066d11be-7bb1-4fd8-8846-f4db81449dd8)
+![Home Page](https://github.com/user-attachments/assets/54921805-ad54-4c4f-9e72-ea7fdd847a6e)
 
 ### Projects (with improved descriptions and tech chips)
-![Projects](https://github.com/user-attachments/assets/6c3d546d-9aae-473c-9d43-f1291d2a507f)
+![Projects](https://github.com/user-attachments/assets/6bfc6b2d-b810-4bc8-b7e1-0a13e81362ab)
 
-### Blog listing (8 posts, paginated — 5 per page — each with a themed featured image)
-![Blog Listing](https://github.com/user-attachments/assets/ad473d52-f82a-4b8d-8daf-f113958f2045)
+### Blog listing (paginated, each with a themed featured image)
+![Blog Listing](https://github.com/user-attachments/assets/79f8970a-62d7-4f92-8217-278be3d16c14)
 
-### Blog Post: BookIt (product SVG mockup + newspaper-style H2 sections)
-![Blog Post BookIt](https://github.com/user-attachments/assets/05454c04-bdde-4ff4-b670-b37d85236e6b)
-
-### Blog Post: AI in .NET (AI chat mockup featured image)
-![Blog Post AI](https://github.com/user-attachments/assets/e5cbaba8-2f22-47bd-99ea-6603dc2844cb)
-
-### Blog Post: OWASP (security dashboard featured image)
-![Blog Post OWASP](https://github.com/user-attachments/assets/5aa434c2-a009-4e00-9752-e5c17bd3d8bb)
-
-### Blog Post: Three Decades (code editor featured image)
-![Blog Post .NET](https://github.com/user-attachments/assets/e07ad50b-a977-4e0b-9800-aa7d65e70273)
+### Blog Post: BookIt (dark mode — top bar matches background)
+![Blog Post BookIt](https://github.com/user-attachments/assets/f1aa95cb-37cb-44d3-b0fc-d33ba4f35ff2)
 
 ### Skills (with AI and Security categories)
-![Skills](https://github.com/user-attachments/assets/81c0b73d-1544-4bed-83dc-e37934382beb)
+![Skills](https://github.com/user-attachments/assets/32b07fca-e8fa-4c56-927e-d068e730adcd)
 
 ### About
-![About](https://github.com/user-attachments/assets/fdfc3213-dd66-4399-997e-f507245af7b2)
+![About](https://github.com/user-attachments/assets/b1f2df82-5306-4a9e-a0b2-af8b8f23ac2e)
 
 ### Contact (with math CAPTCHA)
-![Contact](https://github.com/user-attachments/assets/bed68ebf-d13e-42da-9c6e-d0a899062e9b)
+![Contact](https://github.com/user-attachments/assets/e3a8b864-ac24-4574-a588-7a99c247fdc3)
 
 ### Chip styling — Outlined across all public pages (light & dark)
 
