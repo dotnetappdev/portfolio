@@ -1,0 +1,203 @@
+@page "/projects/{Slug}"
+@rendermode InteractiveServer
+@using Portfolio.Web.Data
+@inject Portfolio.Web.Services.ProjectService ProjectService
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
+@inject NavigationManager Navigation
+
+<PageTitle>@(_project?.Title ?? "Project Not Found") | David Buckley</PageTitle>
+
+@if (_project is not null)
+{
+    <HeadContent>
+        <meta name="description" content="@_project.ShortDescription" />
+        <meta property="og:title" content="@_project.Title | David Buckley" />
+        <meta property="og:description" content="@_project.ShortDescription" />
+        <meta property="og:type" content="article" />
+        @if (!string.IsNullOrWhiteSpace(_project.ImageUrl))
+        {
+            <meta property="og:image" content="@_project.ImageUrl" />
+        }
+        <link rel="canonical" href="@Navigation.Uri" />
+    </HeadContent>
+}
+
+@if (_loading)
+{
+    <div class="page-content">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    </div>
+}
+else if (_project == null)
+{
+    <div class="page-content">
+        <MudText Typo="Typo.h4" Class="mb-4">Project not found</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/projects"
+                   StartIcon="@Icons.Material.Filled.ArrowBack">Back to Projects</MudButton>
+    </div>
+}
+else
+{
+    <div class="page-banner">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
+                <MudAvatar Color="@GetProjectColor(_project.Category)" Size="Size.Large">
+                    <MudIcon Icon="@GetProjectIcon(_project.Category)" />
+                </MudAvatar>
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h3" Class="fw-bold mb-1">@_project.Title</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudChip T="string" Color="@GetProjectColor(_project.Category)" Variant="Variant.Filled" Size="Size.Small">@_project.Category</MudChip>
+                        @if (_project.IsFeatured)
+                        {
+                            <MudChip T="string" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small">Featured</MudChip>
+                        }
+                    </MudStack>
+                </MudStack>
+            </MudStack>
+        </MudContainer>
+    </div>
+
+    <div class="page-content">
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" md="8">
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/projects"
+                           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-4">
+                    Back to Projects
+                </MudButton>
+
+                @if (!string.IsNullOrWhiteSpace(_project.ImageUrl))
+                {
+                    <img src="@_project.ImageUrl" alt="@_project.Title"
+                         style="width:100%;max-height:320px;object-fit:contain;border-radius:8px;margin-bottom:24px;background:rgba(255,255,255,0.05);padding:1rem;" />
+                }
+
+                <MudPaper Class="pa-6 mb-4" Elevation="2">
+                    <MudText Typo="Typo.body1" Style="line-height:1.8;">@_project.Description</MudText>
+                </MudPaper>
+
+                <MudCard Elevation="2" Class="mb-4">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Technologies Used</MudText>
+                        <MudChipSet T="string">
+                            @foreach (var tech in _project.TechStack.Split(','))
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@tech.Trim()</MudChip>
+                            }
+                        </MudChipSet>
+                    </MudCardContent>
+                    @if (_project.GitHubUrl != null || _project.LiveUrl != null)
+                    {
+                        <MudCardActions>
+                            @if (_project.GitHubUrl != null)
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                           StartIcon="@Icons.Custom.Brands.GitHub"
+                                           Href="@_project.GitHubUrl" Target="_blank">
+                                    View on GitHub
+                                </MudButton>
+                            }
+                            @if (_project.LiveUrl != null)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Launch"
+                                           Href="@_project.LiveUrl" Target="_blank" Class="ml-2">
+                                    Live Demo
+                                </MudButton>
+                            }
+                        </MudCardActions>
+                    }
+                </MudCard>
+
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="mb-4">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+                            About the Author
+                        </MudText>
+                        <MudText Typo="Typo.body2" Class="mb-3">
+                            30 years building .NET software. Currently focused on AI integration and application security.
+                        </MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/contact"
+                                   StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" FullWidth="true">
+                            Get In Touch
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+
+                @if (_otherProjects.Count > 0)
+                {
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">More Projects</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudList T="string" Dense="true">
+                                @foreach (var other in _otherProjects)
+                                {
+                                    <MudListItem>
+                                        <MudLink Href="@($"/projects/{other.Slug}")" Color="Color.Primary">
+                                            @other.Title
+                                        </MudLink>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@other.Category</MudText>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/projects"
+                                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                                View All Projects
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                }
+            </MudItem>
+        </MudGrid>
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = string.Empty;
+    private PortfolioProject? _project;
+    private List<Portfolio.Shared.Models.ProjectDto> _otherProjects = [];
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _project = await ProjectService.GetBySlugAsync(Slug);
+        if (_project is not null)
+        {
+            var all = await ApiService.GetProjectsAsync();
+            _otherProjects = all.Where(p => p.Slug != Slug && !string.IsNullOrWhiteSpace(p.Slug)).Take(3).ToList();
+        }
+        _loading = false;
+    }
+
+    private Color GetProjectColor(string category) => category switch
+    {
+        "Healthcare" => Color.Error,
+        "Mobile Application" => Color.Secondary,
+        "Web Application" => Color.Primary,
+        "Work Project" => Color.Primary,
+        "AI" => Color.Tertiary,
+        "Security" => Color.Warning,
+        _ => Color.Tertiary
+    };
+
+    private string GetProjectIcon(string category) => category switch
+    {
+        "Healthcare" => Icons.Material.Filled.LocalHospital,
+        "Mobile Application" => Icons.Material.Filled.PhoneAndroid,
+        "Web Application" => Icons.Material.Filled.Web,
+        "Work Project" => Icons.Material.Filled.Work,
+        "AI" => Icons.Material.Filled.Psychology,
+        "Security" => Icons.Material.Filled.Security,
+        _ => Icons.Material.Filled.Apps
+    };
+}

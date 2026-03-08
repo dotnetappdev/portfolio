@@ -1152,7 +1152,15 @@
                                         <MudTd DataLabel="Title">
                                             <MudStack Spacing="0">
                                                 <MudText Typo="Typo.body2" Class="fw-bold">@context.Title</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ShortDescription</MudText>
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">/projects/@context.Slug</MudText>
+                                                    {
+                                                        <MudLink Href="@($"/projects/{context.Slug}")" Target="_blank"
+                                                                 Typo="Typo.caption" Color="Color.Primary" Style="font-size:0.7rem;">
+                                                            View ↗
+                                                        </MudLink>
+                                                    }
+                                                </MudStack>
                                             </MudStack>
                                         </MudTd>
                                         <MudTd DataLabel="Category">
@@ -1218,14 +1226,24 @@
 
                 <MudItem xs="12" md="8">
                     <MudForm @ref="_projectForm" @bind-IsValid="_projectFormValid">
-                        <!-- Title & Short Description -->
+                        <!-- Title, Slug & Short Description -->
                         <MudCard Elevation="2" Class="mb-4">
-                            <MudCardContent>
+                            <MudCardContent Class="pb-0">
                                 <MudTextField @bind-Value="_projectTitle" Label="Project Title" Required="true"
                                               RequiredError="Title is required"
-                                              Variant="Variant.Outlined" Class="mb-3"
+                                              Variant="Variant.Outlined" Class="mb-2"
                                               Typo="Typo.h5"
+                                              OnBlur="@GenerateProjectSlugFromTitle"
                                               Style="font-size:1.4rem;font-weight:600;" />
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-1 mb-3" Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Permalink: /projects/</MudText>
+                                    <MudTextField @bind-Value="_projectSlug" Required="true"
+                                                  RequiredError="Slug is required"
+                                                  Variant="Variant.Text" Margin="Margin.Dense"
+                                                  Typo="Typo.caption"
+                                                  Style="max-width:320px;"
+                                                  HelperText="SEO-friendly URL slug, e.g. bookit" />
+                                </MudStack>
                                 <MudTextField @bind-Value="_projectShortDescription" Label="Short Description" Required="true"
                                               RequiredError="Short description is required"
                                               Variant="Variant.Outlined" Class="mb-3"
@@ -1471,6 +1489,7 @@
     private List<Portfolio.Web.Data.PortfolioProject>? _projects;
     private Portfolio.Web.Data.PortfolioProject? _editingProject;
     private string _projectTitle = string.Empty;
+    private string _projectSlug = string.Empty;
     private string _projectShortDescription = string.Empty;
     private string _projectDescription = string.Empty;
     private string _projectTechStack = string.Empty;
@@ -1615,6 +1634,7 @@
     {
         _editingProject           = project;
         _projectTitle             = project.Title;
+        _projectSlug              = project.Slug;
         _projectShortDescription  = project.ShortDescription;
         _projectDescription       = project.Description;
         _projectTechStack         = project.TechStack;
@@ -1637,6 +1657,7 @@
     private void ResetProjectForm()
     {
         _projectTitle            = string.Empty;
+        _projectSlug             = string.Empty;
         _projectShortDescription = string.Empty;
         _projectDescription      = string.Empty;
         _projectTechStack        = string.Empty;
@@ -1646,6 +1667,12 @@
         _projectCategory         = string.Empty;
         _projectIsFeatured       = false;
         _projectSortOrder        = (_projects?.Count ?? 0) + 1;
+    }
+
+    private void GenerateProjectSlugFromTitle()
+    {
+        if (_editingProject == null && !string.IsNullOrWhiteSpace(_projectTitle) && string.IsNullOrWhiteSpace(_projectSlug))
+            _projectSlug = GenerateSlug(_projectTitle);
     }
 
     private async Task SaveProject()
@@ -1658,6 +1685,7 @@
         if (_editingProject != null)
         {
             _editingProject.Title            = _projectTitle;
+            _editingProject.Slug             = _projectSlug;
             _editingProject.ShortDescription = _projectShortDescription;
             _editingProject.Description      = _projectDescription;
             _editingProject.TechStack        = _projectTechStack;
@@ -1675,6 +1703,7 @@
             var newProject = new Portfolio.Web.Data.PortfolioProject
             {
                 Title            = _projectTitle,
+                Slug             = _projectSlug,
                 ShortDescription = _projectShortDescription,
                 Description      = _projectDescription,
                 TechStack        = _projectTechStack,

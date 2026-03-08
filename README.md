@@ -68,9 +68,10 @@ Portfolio.slnx
         │   │   ├── Pages/
         │   │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
         │   │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
+        │   │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
         │   │   │   └── CmsPageView/   # Catch-all /{**slug} for custom CMS pages
         │   │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
-        │   ├── Data/                  # ApplicationDbContext, BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings
+        │   ├── Data/                  # ApplicationDbContext, BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
         │   ├── Infrastructure/        # DatabaseProviderFactory
         │   └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
         │                              #   PortfolioApiService, SmsSender, StaticSiteGeneratorService
@@ -90,6 +91,7 @@ Portfolio.slnx
 - **Featured images**: optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
 - **Tech chip badges**: technology tags displayed as chips on project cards and blog posts
 - **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set — editable via the admin Projects tab with a built-in URL validate button
+- **SEO-friendly project detail pages**: every project has an individual page at `/projects/{slug}` with full `<head>` injection (meta description, OG tags, canonical URL); slugs are auto-generated from the project title in the admin form and editable
 - **Contact form CAPTCHA**: server-side math challenge blocks spam without any external service or API key
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header
@@ -459,7 +461,8 @@ The Menus tab lists all current nav items (label, URL, sort order, visibility). 
 The Projects tab provides full CRUD management for your portfolio project cards. Each project supports:
 
 - **Title** and **Short Description** (shown on listing cards)
-- **Full Description** (shown on the projects detail page)
+- **Slug** — SEO-friendly URL segment auto-generated from the title when the field loses focus (editable); used as the permalink `/projects/{slug}` for the project detail page
+- **Full Description** (shown on the project detail page)
 - **Tech Stack** (comma-separated — rendered as chip badges)
 - **Category** (e.g. Work Project, Healthcare, AI, Security — drives the card icon and colour)
 - **GitHub Repository URL** — text field with a **Validate** button (opens the URL in a new tab so you can confirm the link works before saving)
@@ -467,7 +470,13 @@ The Projects tab provides full CRUD management for your portfolio project cards.
 - **Image URL** — optional project image
 - **Sort Order** and **Featured** toggle (featured projects appear on the home page)
 
-GitHub and Live Demo URLs entered here are displayed as styled buttons on the project cards across both the **home page** and the **My Projects** page.
+GitHub and Live Demo URLs are displayed as styled buttons on project cards across both the **home page** and the **My Projects** page. Each project card also shows a **Details** button that links to the individual project page at `/projects/{slug}`.
+
+Each project detail page (`/projects/{slug}`) includes:
+- Full `<meta>` description and Open Graph tags injected via `<HeadContent>` for search engine and social sharing optimisation
+- Canonical URL set to the project's own slug-based URL
+- GitHub and Live Demo buttons
+- A "More Projects" sidebar with links to other projects
 
 ---
 

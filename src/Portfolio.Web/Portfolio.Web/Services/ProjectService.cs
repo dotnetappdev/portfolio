@@ -12,6 +12,9 @@ public class ProjectService(ApplicationDbContext dbContext)
     public async Task<PortfolioProject?> GetByIdAsync(int id) =>
         await dbContext.Projects.FindAsync(id);
 
+    public async Task<PortfolioProject?> GetBySlugAsync(string slug) =>
+        await dbContext.Projects.FirstOrDefaultAsync(p => p.Slug == slug);
+
     public async Task CreateAsync(PortfolioProject project)
     {
         dbContext.Projects.Add(project);

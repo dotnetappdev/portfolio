@@ -7,6 +7,8 @@ public class Project
     public int Id { get; set; }
     [Required, MaxLength(200)]
     public string Title { get; set; } = string.Empty;
+    [Required, MaxLength(300)]
+    public string Slug { get; set; } = string.Empty;
     [Required, MaxLength(500)]
     public string ShortDescription { get; set; } = string.Empty;
     [Required]
