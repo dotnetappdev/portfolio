@@ -1,6 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Portfolio.Web.Data;
@@ -121,12 +119,6 @@ public class MenuItem
     public bool OpenInNewTab { get; set; }
 }
 
-public class ApplicationUser : IdentityUser
-{
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-}
-
 /// <summary>Admin-configurable general application settings (single row, Id = 1).</summary>
 public class AppSettings
 {
@@ -223,7 +215,7 @@ public class PortfolioProject
     public int SortOrder { get; set; }
 }
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 

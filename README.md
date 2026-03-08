@@ -58,24 +58,33 @@ Portfolio.slnx
     ├── Portfolio.Shared/              # Shared DTOs and models
     ├── Portfolio.Api/                 # REST Web API (.NET 10)
     │   └── Infrastructure/           # DatabaseProviderFactory
+    ├── Portfolio.Data.MySql/          # EF Core MySQL provider (Pomelo)
+    ├── Portfolio.Data.CosmosDb/       # EF Core Azure Cosmos DB provider
+    ├── Portfolio.Data.PostgreSql/     # EF Core PostgreSQL provider (Npgsql)
     ├── Portfolio.Sms.Abstractions/    # ISmsService, SmsMessage, SmsResult (no dependencies)
     ├── Portfolio.Sms.ClickSend/       # ClickSend REST API implementation
     ├── Portfolio.Sms.Twilio/          # Twilio REST API implementation
     └── Portfolio.Web/
-        ├── Portfolio.Web/             # Blazor Server App
-        │   ├── Components/
-        │   │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
-        │   │   ├── Pages/
-        │   │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
-        │   │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
-        │   │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
-        │   │   │   └── CmsPageView/   # Catch-all /{**slug} for custom CMS pages
-        │   │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
-        │   ├── Data/                  # ApplicationDbContext, BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
-        │   ├── Infrastructure/        # DatabaseProviderFactory
-        │   └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
-        │                              #   PortfolioApiService, SmsSender, StaticSiteGeneratorService
-        └── Portfolio.Web.Client/      # Blazor WASM Client
+        └── Portfolio.Web/             # Blazor Web App (server-side, single project)
+            ├── Components/
+            │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
+            │   ├── Pages/
+            │   │   ├── About/         # About page
+            │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
+            │   │   ├── Auth/          # Login and AccessDenied pages
+            │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
+            │   │   ├── Contact/       # Contact form with CAPTCHA
+            │   │   ├── Error/         # Error and NotFound pages
+            │   │   ├── Home/          # Home/landing page
+            │   │   ├── Projects/      # Projects listing (Index.razor) + SEO detail pages (Detail.razor at /projects/{slug})
+            │   │   ├── Skills/        # Skills page
+            │   │   └── CmsPageView.razor  # Catch-all /{**slug} for custom CMS pages
+            │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
+            ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
+            ├── Infrastructure/        # DatabaseProviderFactory
+            └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
+                                       #   PortfolioApiService, PortfolioApiAuthService, SmsSender,
+                                       #   StaticSiteGeneratorService, ProjectService
 ```
 
 ## Features
@@ -96,7 +105,8 @@ Portfolio.slnx
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header
 - **REST API with fallback**: Blazor app works standalone when API is offline
-- **Configurable database provider**: SQL Server, SQLite, or PostgreSQL via one setting
+- **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library
+- **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
 - **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, projects, and generate static exports
 - **In-app settings**: API base URL and SMS provider (with all API keys/tokens) configured through the admin Settings tab — stored in the database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
@@ -109,8 +119,8 @@ Portfolio.slnx
 |---|---|
 | Frontend | ASP.NET Core Blazor (.NET 10) + MudBlazor 8 |
 | Backend | ASP.NET Core REST Web API (.NET 10) |
-| Database | SQL Server / SQLite / PostgreSQL + EF Core 9 |
-| Auth (Web) | ASP.NET Identity with cookie auth |
+| Database | SQL Server / SQLite / PostgreSQL / MySQL / Cosmos DB + EF Core 9 |
+| Auth (Web) | Cookie auth backed by Portfolio.Api JWT (single Identity store) |
 | Auth (API) | JWT Bearer tokens |
 | AI Skills | Semantic Kernel, Azure OpenAI, RAG, ML.NET |
 | Security | OWASP, OAuth2/OIDC, Threat Modelling |
@@ -248,9 +258,7 @@ Add `SA_PASSWORD` to your `.env` file (must meet SQL Server complexity requireme
 
 #### PostgreSQL
 
-> **Note:** PostgreSQL requires installing `Npgsql.EntityFrameworkCore.PostgreSQL` in both `Portfolio.Api` and `Portfolio.Web` and uncommenting `UseNpgsql` in each project's `Infrastructure/DatabaseProviderFactory.cs`. See [Database Configuration](#database-configuration) for full instructions.
-
-Once the packages are installed, add a PostgreSQL service and update the env vars:
+Add a PostgreSQL service and update the env vars (no code changes needed — the provider library is already referenced):
 
 ```yaml
 services:
@@ -309,17 +317,18 @@ dotnet build Portfolio.slnx
 
 ## Database Configuration
 
-Set `DatabaseProvider` in `appsettings.json` (or override per environment):
+Set `DatabaseProvider` in `appsettings.json` (or override per environment).
+All providers are fully supported out of the box — no manual NuGet installs needed.
 
 | Value | Driver | Connection string format |
 |---|---|---|
 | `SqlServer` (default) | SQL Server / LocalDB | `Server=(localdb)\mssqllocaldb;Database=PortfolioDb;Trusted_Connection=True;` |
 | `Sqlite` | SQLite | `Data Source=portfolio.db` |
-| `PostgreSql` | PostgreSQL | `Host=localhost;Database=portfolio;Username=...;Password=...` |
+| `PostgreSql` or `Postgres` | PostgreSQL (Npgsql) | `Host=localhost;Database=portfolio;Username=...;Password=...` |
+| `MySql` | MySQL / MariaDB (Pomelo) | `Server=localhost;Database=portfolio;User=...;Password=...` |
+| `CosmosDb` or `Cosmos` | Azure Cosmos DB | `AccountEndpoint=https://...;AccountKey=...;Database=portfolio` |
 
-> **PostgreSQL:** install the `Npgsql.EntityFrameworkCore.PostgreSQL` NuGet package in both
-> `Portfolio.Api` and `Portfolio.Web`, then uncomment the `UseNpgsql` line in each project's
-> `Infrastructure/DatabaseProviderFactory.cs`.
+Each provider is isolated in its own class library (`Portfolio.Data.MySql`, `Portfolio.Data.CosmosDb`, `Portfolio.Data.PostgreSql`). SQL Server and SQLite are built into `Portfolio.Api` and `Portfolio.Web` via the standard EF Core packages already referenced.
 
 The database schema is created automatically on first run via `EnsureCreatedAsync`.
 
@@ -364,9 +373,7 @@ Update `appsettings.Development.json` in both projects:
 
 | Key | Description | Example |
 |---|---|---|
-| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql` |
-| `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `Jwt:Key` | JWT signing key (min 32 chars) | Set via secret or env var |
+| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
 | `Jwt:Issuer` | JWT issuer claim | `Portfolio.Api` |
 | `Jwt:Audience` | JWT audience claim | `Portfolio.Web` |
 | `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
@@ -377,10 +384,10 @@ Update `appsettings.Development.json` in both projects:
 
 | Key | Description | Example |
 |---|---|---|
-| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql` |
+| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
 | `ConnectionStrings:DefaultConnection` | Database connection | See above |
-| `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
-| `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
+| `DefaultAdmin:Email` | Seeded admin email | Unused — users are managed in Portfolio.Api |
+| `DefaultAdmin:Password` | Seeded admin password | Unused — users are managed in Portfolio.Api |
 
 > **API base URL** is now configured in the admin **Settings** tab (stored in the database), no longer an `appsettings.json` key.
 

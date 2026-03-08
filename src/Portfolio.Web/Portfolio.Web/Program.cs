@@ -1,10 +1,13 @@
-using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using Portfolio.Web.Components;
 using Portfolio.Web.Data;
 using Portfolio.Web.Services;
 using Portfolio.Web.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
@@ -15,28 +18,19 @@ builder.Services.AddMudServices();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     DatabaseProviderFactory.ConfigureDbContext(options, builder.Configuration));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-{
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 8;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequireUppercase = true;
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-    options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/login";
-    options.LogoutPath = "/logout";
-    options.AccessDeniedPath = "/access-denied";
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    options.SlidingExpiration = true;
-});
+// Cookie-based authentication — credentials are validated against Portfolio.Api (JWT).
+// This keeps a single Identity store (in the API) and avoids duplicating user tables.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.AccessDeniedPath = "/access-denied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
 
 // Named HTTP client for the Portfolio API — base URL is stored in AppSettings (DB)
 builder.Services.AddHttpClient("PortfolioApi");
@@ -52,6 +46,7 @@ builder.Services.AddScoped<Portfolio.Web.Services.CmsPageService>();
 builder.Services.AddScoped<Portfolio.Web.Services.MenuService>();
 builder.Services.AddScoped<Portfolio.Web.Services.AppSettingsService>();
 builder.Services.AddScoped<Portfolio.Web.Services.PortfolioApiService>();
+builder.Services.AddScoped<Portfolio.Web.Services.PortfolioApiAuthService>();
 builder.Services.AddScoped<Portfolio.Web.Services.StaticSiteGeneratorService>();
 builder.Services.AddScoped<Portfolio.Web.Services.ProjectService>();
 
@@ -79,67 +74,54 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Proper HTTP endpoint for login — Blazor Server circuits cannot set cookies,
-// so authentication must go through a standard HTTP POST handler.
+// ── Authentication endpoints ─────────────────────────────────────────────────
+// Login: validates credentials via Portfolio.Api and sets a cookie-based session.
+// The cookie stores the user's claims (including roles and the API JWT) so that
+// admin Blazor components can make authenticated API calls without re-logging in.
 app.MapPost("/account/login", async (
     HttpContext httpContext,
-    SignInManager<ApplicationUser> signInManager,
+    Portfolio.Web.Services.PortfolioApiAuthService authService,
     [Microsoft.AspNetCore.Mvc.FromForm] string email,
     [Microsoft.AspNetCore.Mvc.FromForm] string password,
     [Microsoft.AspNetCore.Mvc.FromForm] string? returnUrl) =>
 {
-    var result = await signInManager.PasswordSignInAsync(email, password, isPersistent: false, lockoutOnFailure: true);
-    if (result.Succeeded)
-        return Results.Redirect(returnUrl ?? "/admin");
-    if (result.IsLockedOut)
-        return Results.Redirect($"/login?error=locked&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
-    return Results.Redirect($"/login?error=invalid&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
+    var (principal, _) = await authService.LoginAsync(email, password);
+
+    if (principal == null)
+        return Results.Redirect(
+            $"/login?error=invalid&returnUrl={Uri.EscapeDataString(returnUrl ?? "")}");
+
+    var authProps = new AuthenticationProperties
+    {
+        IsPersistent = false,
+        ExpiresUtc   = DateTimeOffset.UtcNow.AddHours(8)
+    };
+
+    await httpContext.SignInAsync(
+        CookieAuthenticationDefaults.AuthenticationScheme, principal, authProps);
+
+    return Results.Redirect(returnUrl ?? "/admin");
 });
 
-app.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager) =>
+app.MapPost("/logout", async (HttpContext httpContext) =>
 {
-    await signInManager.SignOutAsync();
+    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Redirect("/");
 }).RequireAuthorization();
 
-// Seed admin user for web app — controlled by "SeedData": true in appsettings.json
+// Ensure the local CMS database tables exist on first run.
+// Users and roles live in Portfolio.Api — only CMS / portfolio data is seeded here.
 if (builder.Configuration.GetValue<bool>("SeedData"))
 {
     using var scope = app.Services.CreateScope();
-    var context  = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userMgr  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleMgr  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var logger   = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger  = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     await context.Database.EnsureCreatedAsync();
-
-    if (!await roleMgr.RoleExistsAsync("Admin"))
-        await roleMgr.CreateAsync(new IdentityRole("Admin"));
-
-    var adminEmail    = builder.Configuration["DefaultAdmin:Email"]    ?? "admin@portfolio.com";
-    var adminPassword = builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!";
-
-    if (await userMgr.FindByEmailAsync(adminEmail) == null)
-    {
-        var admin = new ApplicationUser
-        {
-            UserName       = adminEmail,
-            Email          = adminEmail,
-            FirstName      = "David",
-            LastName       = "Buckley",
-            EmailConfirmed = true
-        };
-        var result = await userMgr.CreateAsync(admin, adminPassword);
-        if (result.Succeeded)
-            await userMgr.AddToRoleAsync(admin, "Admin");
-    }
-
-    logger.LogInformation("Web seed complete. Admin account: {Email}", adminEmail);
+    logger.LogInformation("Web CMS database initialised.");
 }
 
 // Static site generator — auth-protected download endpoint.
-// The Blazor Server auth cookie is sent automatically by the browser when the
-// admin clicks the download link, so RequireAuthorization() is sufficient.
 app.MapGet("/admin/generate-static-site", async (
     StaticSiteGeneratorService generator,
     HttpContext ctx) =>

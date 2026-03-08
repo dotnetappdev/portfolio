@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Portfolio.Data.CosmosDb;
+using Portfolio.Data.MySql;
+using Portfolio.Data.PostgreSql;
 
 namespace Portfolio.Api.Infrastructure;
 
 /// <summary>
 /// Configures the EF Core database provider based on the "DatabaseProvider" appsetting.
-/// Supported values: "SqlServer" (default), "PostgreSql", "Sqlite".
+/// Supported values: "SqlServer" (default), "Sqlite", "PostgreSql", "MySql", "CosmosDb".
 /// </summary>
 public static class DatabaseProviderFactory
 {
@@ -21,11 +24,15 @@ public static class DatabaseProviderFactory
                 break;
             case "postgresql":
             case "postgres":
-                // Npgsql provider — add reference to Npgsql.EntityFrameworkCore.PostgreSQL
-                // and uncomment: options.UseNpgsql(connectionString);
-                throw new NotSupportedException(
-                    "PostgreSQL provider requires the Npgsql.EntityFrameworkCore.PostgreSQL NuGet package. " +
-                    "See README for setup instructions.");
+                options.UsePortfolioPostgreSql(connectionString);
+                break;
+            case "mysql":
+                options.UsePortfolioMySql(connectionString);
+                break;
+            case "cosmosdb":
+            case "cosmos":
+                options.UsePortfolioCosmosDb(connectionString);
+                break;
             case "sqlserver":
             default:
                 options.UseSqlServer(connectionString);

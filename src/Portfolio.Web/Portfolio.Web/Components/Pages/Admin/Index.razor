@@ -1,10 +1,10 @@
 @page "/admin"
 @rendermode InteractiveServer
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Portfolio.Web.Components.Shared
-@inject UserManager<Portfolio.Web.Data.ApplicationUser> UserManager
+@using Portfolio.Shared.Models
+@inject Portfolio.Web.Services.PortfolioApiAuthService ApiAuthService
 @inject Portfolio.Web.Data.ApplicationDbContext DbContext
 @inject Portfolio.Web.Services.SmsSender SmsSender
 @inject Portfolio.Web.Services.BlogService BlogService
@@ -15,6 +15,7 @@
 @inject Portfolio.Web.Services.ProjectService ProjectService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
 
@@ -1468,7 +1469,7 @@
     private string _firstName = string.Empty;
     private string _lastName = string.Empty;
     private Portfolio.Shared.Models.CreateUserDto _newUser = new();
-    private List<Portfolio.Web.Data.ApplicationUser>? _users;
+    private List<Portfolio.Shared.Models.UserDto>? _users;
 
     // ── Hero Stats ──────────────────────────────────────────
     private MudForm _statForm = null!;
@@ -1502,7 +1503,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _users = await UserManager.Users.ToListAsync();
+        var token = await GetAdminTokenAsync();
+        _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
         _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
         _appSettings = await AppSettingsService.GetAsync();
         _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
@@ -1520,31 +1522,40 @@
         if (!_isValid) return;
 
         _creating = true;
-        var user = new Portfolio.Web.Data.ApplicationUser
+        var dto = new Portfolio.Shared.Models.CreateUserDto
         {
-            UserName = _newUser.Email,
-            Email = _newUser.Email,
+            Email     = _newUser.Email,
+            Password  = _newUser.Password,
             FirstName = _firstName,
-            LastName = _lastName,
-            EmailConfirmed = true
+            LastName  = _lastName
         };
 
-        var result = await UserManager.CreateAsync(user, _newUser.Password);
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.CreateUserAsync(dto, token ?? string.Empty);
         _creating = false;
 
-        if (result.Succeeded)
+        if (success)
         {
             Snackbar.Add($"Account created for {_newUser.Email}", Severity.Success);
             _newUser = new Portfolio.Shared.Models.CreateUserDto();
             _firstName = string.Empty;
             _lastName = string.Empty;
-            _users = await UserManager.Users.ToListAsync();
+            _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
         }
         else
         {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            Snackbar.Add($"Failed to create account: {errors}", Severity.Error);
+            Snackbar.Add($"Failed to create account: {error}", Severity.Error);
         }
+    }
+
+    /// <summary>
+    /// Retrieves the JWT stored in the current user's cookie claims so that
+    /// admin components can make authenticated calls to Portfolio.Api.
+    /// </summary>
+    private async Task<string?> GetAdminTokenAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        return state.User.FindFirst("access_token")?.Value;
     }
 
     // ── Hero Stat management ────────────────────────────────

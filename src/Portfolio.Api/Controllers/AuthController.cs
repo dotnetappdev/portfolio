@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Models;
 using Portfolio.Shared.Models;
@@ -30,8 +31,25 @@ public class AuthController : ControllerBase
         if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
             return Unauthorized(new { message = "Invalid credentials" });
 
-        var token = GenerateJwtToken(user);
+        var token = await GenerateJwtTokenAsync(user);
         return Ok(new { token, email = user.Email });
+    }
+
+    [HttpGet("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetUsers()
+    {
+        var users = await _userManager.Users
+            .Select(u => new UserDto
+            {
+                Id        = u.Id,
+                Email     = u.Email,
+                FirstName = u.FirstName,
+                LastName  = u.LastName
+            })
+            .ToListAsync();
+
+        return Ok(users);
     }
 
     [HttpPost("users")]
@@ -54,7 +72,7 @@ public class AuthController : ControllerBase
         return Ok(new { message = "User created successfully", email = user.Email });
     }
 
-    private string GenerateJwtToken(ApplicationUser user)
+    private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
     {
         var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key not configured");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -63,9 +81,16 @@ public class AuthController : ControllerBase
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Email, user.Email!),
+            // Email is used as the unique display name (matches UserName in Identity).
+            new(ClaimTypes.Name,           user.Email!),
+            new(ClaimTypes.Email,          user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        // Include role claims so the Blazor Web app can enforce [Authorize(Roles = "Admin")].
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var role in roles)
+            claims.Add(new Claim(ClaimTypes.Role, role));
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],

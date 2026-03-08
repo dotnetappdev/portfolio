@@ -3,6 +3,11 @@
     <Project Path="src/Portfolio.Api/Portfolio.Api.csproj" />
     <Project Path="src/Portfolio.Shared/Portfolio.Shared.csproj" />
   </Folder>
+  <Folder Name="/src/Portfolio.Data/">
+    <Project Path="src/Portfolio.Data.CosmosDb/Portfolio.Data.CosmosDb.csproj" />
+    <Project Path="src/Portfolio.Data.MySql/Portfolio.Data.MySql.csproj" />
+    <Project Path="src/Portfolio.Data.PostgreSql/Portfolio.Data.PostgreSql.csproj" />
+  </Folder>
   <Folder Name="/src/Portfolio.Sms/">
     <Project Path="src/Portfolio.Sms.Abstractions/Portfolio.Sms.Abstractions.csproj" />
     <Project Path="src/Portfolio.Sms.ClickSend/Portfolio.Sms.ClickSend.csproj" />
