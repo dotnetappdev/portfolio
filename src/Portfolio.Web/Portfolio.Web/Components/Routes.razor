@@ -1,5 +1,5 @@
 ﻿@rendermode InteractiveServer
-<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Portfolio.Web.Client._Imports).Assembly }">
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
             <NotAuthorized>

@@ -8,8 +8,7 @@ using Portfolio.Web.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
 
@@ -61,11 +60,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
@@ -82,9 +77,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Portfolio.Web.Client._Imports).Assembly);
+    .AddInteractiveServerRenderMode();
 
 // Proper HTTP endpoint for login — Blazor Server circuits cannot set cookies,
 // so authentication must go through a standard HTTP POST handler.
