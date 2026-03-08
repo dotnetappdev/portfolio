@@ -184,6 +184,41 @@ public class HeroStat
     public int SortOrder { get; set; }
 }
 
+/// <summary>A portfolio project card managed through the admin dashboard.</summary>
+public class PortfolioProject
+{
+    public int Id { get; set; }
+
+    [Required, MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required, MaxLength(500)]
+    public string ShortDescription { get; set; } = string.Empty;
+
+    [Required]
+    public string Description { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string TechStack { get; set; } = string.Empty;
+
+    /// <summary>Optional link to the project's GitHub repository.</summary>
+    [MaxLength(500)]
+    public string? GitHubUrl { get; set; }
+
+    /// <summary>Optional link to a live demo or deployed version.</summary>
+    [MaxLength(500)]
+    public string? LiveUrl { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    [MaxLength(100)]
+    public string Category { get; set; } = string.Empty;
+
+    public bool IsFeatured { get; set; }
+    public int SortOrder { get; set; }
+}
+
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -194,6 +229,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
     public DbSet<CmsPage> CmsPages => Set<CmsPage>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<PortfolioProject> Projects => Set<PortfolioProject>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -502,6 +538,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     <p>TalentConnect is now the primary recruitment tool for the team that commissioned it. Spreadsheet use has dropped to zero and the monthly report now takes minutes rather than a working day.</p>
                     """
             }
+        );
+
+        // Seed portfolio projects with GitHub links
+        builder.Entity<PortfolioProject>().HasData(
+            new PortfolioProject { Id = 1, Title = "BookIt", ShortDescription = "A real-time Blazor booking management system", Description = "BookIt is a full-featured booking management system built with ASP.NET Core Blazor. Businesses use it to manage appointments, resources, and customer bookings through a modern interface with light and dark mode support. Built on a clean architecture with real-time availability tracking, SMS notifications for customers, and a responsive MudBlazor UI.", TechStack = "Blazor, ASP.NET Core, SQL Server, Entity Framework Core, MudBlazor, C# .NET 10", Category = "Work Project", IsFeatured = true, SortOrder = 1, ImageUrl = "/images/bookit.svg", GitHubUrl = "https://github.com/dotnetappdev/bookit" },
+            new PortfolioProject { Id = 2, Title = "MAUI Cross-Platform App", ShortDescription = "A .NET MAUI mobile and desktop application", Description = "A cross-platform mobile and desktop application built with .NET MAUI targeting iOS, Android, Windows, and macOS. Delivers a native experience across all platforms from a single shared codebase, with REST API integration and offline-friendly data handling.", TechStack = ".NET MAUI, C#, XAML, REST APIs", Category = "Mobile Application", IsFeatured = true, SortOrder = 2, ImageUrl = "/images/maui.png", GitHubUrl = "https://github.com/dotnetappdev/maui-app" },
+            new PortfolioProject { Id = 3, Title = "Curo", ShortDescription = "Healthcare care management platform", Description = "Curo is a healthcare care management platform that replaced a paper-based system used by community carers. Built with Blazor and ASP.NET Core, it gives carers a task-driven workflow on any device and provides care managers with a live dashboard showing real-time visit progress. Hosted on Azure with full audit logging and role-based access control.", TechStack = "ASP.NET Core, Blazor, SQL Server, Entity Framework Core, Azure, MudBlazor, C# .NET 10", Category = "Work Project", IsFeatured = true, SortOrder = 3, ImageUrl = "/images/curo.svg", GitHubUrl = "https://github.com/dotnetappdev/curo" },
+            new PortfolioProject { Id = 4, Title = "Patient CRM", ShortDescription = "Patient relationship management system (in development)", Description = "A Patient CRM currently in development, designed to help healthcare providers manage patient relationships, appointments, communications, and care history in one centralised platform. Built with .NET 10, Blazor, and a REST API backend.", TechStack = "ASP.NET Core .NET 10, Blazor, SQL Server, EF Core, REST API, MudBlazor", Category = "Healthcare", IsFeatured = true, SortOrder = 4, ImageUrl = "/images/patient-crm.png", GitHubUrl = "https://github.com/dotnetappdev/patient-crm" },
+            new PortfolioProject { Id = 5, Title = "AI Diagnostic Assistant", ShortDescription = "AI-powered clinical decision support tool", Description = "An AI assistant integrated into a healthcare platform that helps clinical staff surface relevant patient history, flag anomalies in test results, and draft care plan notes. Built on Semantic Kernel and Azure OpenAI with a strict evaluation layer that confidence-scores every response before it reaches clinical staff. All AI output is fully audited.", TechStack = "Semantic Kernel, Azure OpenAI, ASP.NET Core, Blazor, SQL Server, Vector Search, .NET 10", Category = "AI", IsFeatured = true, SortOrder = 5, ImageUrl = "/images/ai-assistant.png", GitHubUrl = "https://github.com/dotnetappdev/ai-diagnostic-assistant" },
+            new PortfolioProject { Id = 6, Title = "SecureAPI Framework", ShortDescription = "Hardened API security baseline for .NET", Description = "A reusable security baseline for ASP.NET Core APIs covering JWT authentication with algorithm pinning, OWASP Top Ten mitigations, rate limiting, structured security logging, and automated dependency vulnerability scanning in the CI pipeline. Used as the starting point for all new API projects so that security is built in from the first commit rather than retrofitted.", TechStack = "ASP.NET Core, JWT, OAuth2, OWASP, Rate Limiting, Polly, GitHub Actions", Category = "Security", IsFeatured = true, SortOrder = 6, ImageUrl = "/images/secure-api.png", GitHubUrl = "https://github.com/dotnetappdev/secure-api-framework" },
+            new PortfolioProject { Id = 7, Title = "TalentConnect", ShortDescription = "A Blazor recruitment management platform", Description = "TalentConnect is a full-featured recruitment management platform built with Blazor and ASP.NET Core. It streamlines the end-to-end hiring process with job posting management, a configurable multi-stage candidate pipeline, interview scheduling, automated notifications, and detailed recruitment analytics. Built for teams who want a data-driven hiring workflow without the spreadsheets.", TechStack = "Blazor, ASP.NET Core, SQL Server, Entity Framework Core, MudBlazor, REST API, C# .NET 10", Category = "Work Project", IsFeatured = true, SortOrder = 7, ImageUrl = "/images/talentconnect.svg", GitHubUrl = "https://github.com/dotnetappdev/talentconnect" }
         );
     }
 }

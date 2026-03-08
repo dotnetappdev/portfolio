@@ -135,9 +135,24 @@ else
                         </MudChipSet>
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/projects">
-                            View All Projects
-                        </MudButton>
+                        @if (project.GitHubUrl != null)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Custom.Brands.GitHub" Href="@project.GitHubUrl" Target="_blank" Size="Size.Small">
+                                GitHub
+                            </MudButton>
+                        }
+                        @if (project.LiveUrl != null)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Launch" Href="@project.LiveUrl" Target="_blank" Size="Size.Small">
+                                Live Demo
+                            </MudButton>
+                        }
+                        @if (project.GitHubUrl == null && project.LiveUrl == null)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/projects">
+                                View All Projects
+                            </MudButton>
+                        }
                     </MudCardActions>
                 </MudCard>
             </MudItem>

@@ -616,7 +616,18 @@ h2.section-title {
               </div>
 """));
 
-        var featuredProjects = string.Join("\n", projects.Take(4).Select(p => $"""
+        var featuredProjects = string.Join("\n", projects.Take(4).Select(p =>
+        {
+            var ghBtn = p.GitHubUrl is not null
+                ? $"""<a class="btn btn-outline btn-sm" href="{H(p.GitHubUrl)}" target="_blank" rel="noopener">GitHub</a>"""
+                : string.Empty;
+            var liveBtn = p.LiveUrl is not null
+                ? $"""<a class="btn btn-primary btn-sm" href="{H(p.LiveUrl)}" target="_blank" rel="noopener">Live Demo</a>"""
+                : string.Empty;
+            var actions = (ghBtn + liveBtn).Length > 0
+                ? $"""<div class="card-actions" style="margin-top:0.75rem;">{ghBtn}{liveBtn}</div>"""
+                : $"""<div class="card-actions" style="margin-top:0.75rem;"><a class="btn btn-outline btn-sm" href="{Root(depth)}projects/">View All Projects</a></div>""";
+            return $"""
             <div class="card">
               <div class="card-header">
                 <h3>{H(p.Title)}</h3>
@@ -626,8 +637,10 @@ h2.section-title {
               <div class="chip-set">
 {string.Join("\n", p.TechStack.Split(',').Take(3).Select(t => $"                <span class=\"chip chip-primary\">{H(t.Trim())}</span>"))}
               </div>
+              {actions}
             </div>
-"""));
+""";
+        }));
 
         var body = $$"""
     <section class="hero">

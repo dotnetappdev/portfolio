@@ -66,7 +66,7 @@ Portfolio.slnx
         │   ├── Components/
         │   │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
         │   │   ├── Pages/
-        │   │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus)
+        │   │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
         │   │   │   ├── Blog/          # Blog index + post view (SEO, OG tags, featured images)
         │   │   │   └── CmsPageView/   # Catch-all /{**slug} for custom CMS pages
         │   │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
@@ -89,12 +89,13 @@ Portfolio.slnx
 - **SEO and Open Graph**: per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
 - **Featured images**: optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
 - **Tech chip badges**: technology tags displayed as chips on project cards and blog posts
+- **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set — editable via the admin Projects tab with a built-in URL validate button
 - **Contact form CAPTCHA**: server-side math challenge blocks spam without any external service or API key
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header
 - **REST API with fallback**: Blazor app works standalone when API is offline
 - **Configurable database provider**: SQL Server, SQLite, or PostgreSQL via one setting
-- **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, and generate static exports
+- **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, projects, and generate static exports
 - **In-app settings**: API base URL and SMS provider (with all API keys/tokens) configured through the admin Settings tab — stored in the database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
 - **Account lockout**: 5 failed attempts triggers a 15-minute lockout
@@ -421,7 +422,7 @@ The development defaults (in `appsettings.Development.json`) are:
 
 ## Admin Area
 
-Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into seven tabs:
+Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into eight tabs:
 
 | Tab | What you can do |
 |---|---|
@@ -431,6 +432,7 @@ Navigate to `/login` and sign in to access `/admin`. The admin dashboard is orga
 | **Blog Posts** | Create, edit, publish/unpublish and delete blog posts using the Quill WYSIWYG editor; manage slug, excerpt, tags, read time, featured image and SEO metadata |
 | **Pages** | Create custom CMS pages at any slug (e.g. `/services`); same editor and SEO fields as blog posts |
 | **Menus** | Add, edit, reorder, show/hide and delete navigation menu items; changes appear immediately in the nav bar |
+| **Projects** | Add, edit and delete portfolio project cards; includes GitHub URL and Live Demo URL fields with a validate button that opens the link in a new tab to verify it works |
 | **Static Site** | Generate a complete dark-mode static HTML snapshot of the portfolio and download it as a deployable ZIP |
 
 There is no public registration page by design.
@@ -451,6 +453,21 @@ The Pages tab works identically to Blog Posts but creates stand-alone pages acce
 ### Navigation Menus
 
 The Menus tab lists all current nav items (label, URL, sort order, visibility). Changes, including adding new items or toggling visibility, are reflected live in the navigation bar without a page reload or restart.
+
+### Projects
+
+The Projects tab provides full CRUD management for your portfolio project cards. Each project supports:
+
+- **Title** and **Short Description** (shown on listing cards)
+- **Full Description** (shown on the projects detail page)
+- **Tech Stack** (comma-separated — rendered as chip badges)
+- **Category** (e.g. Work Project, Healthcare, AI, Security — drives the card icon and colour)
+- **GitHub Repository URL** — text field with a **Validate** button (opens the URL in a new tab so you can confirm the link works before saving)
+- **Live Demo URL** — text field with a **Validate** button
+- **Image URL** — optional project image
+- **Sort Order** and **Featured** toggle (featured projects appear on the home page)
+
+GitHub and Live Demo URLs entered here are displayed as styled buttons on the project cards across both the **home page** and the **My Projects** page.
 
 ---
 
