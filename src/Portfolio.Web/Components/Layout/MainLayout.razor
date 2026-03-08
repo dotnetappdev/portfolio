@@ -156,8 +156,6 @@
                 _menuItems = await MenuService.GetVisibleItemsAsync();
             }
 
-            // Dark mode is the portfolio default; intentionally not syncing to OS preference.
-            await _mudThemeProvider.GetSystemPreference();
             StateHasChanged();
         }
     }
