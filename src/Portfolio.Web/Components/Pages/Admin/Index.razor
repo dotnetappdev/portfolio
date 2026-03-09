@@ -7,6 +7,7 @@
 @inject Portfolio.Web.Services.PortfolioApiAuthService ApiAuthService
 @inject Portfolio.Web.Data.ApplicationDbContext DbContext
 @inject Portfolio.Web.Services.SmsSender SmsSender
+@inject Portfolio.Web.Services.EmailSender EmailSender
 @inject Portfolio.Web.Services.BlogService BlogService
 @inject Portfolio.Web.Services.CmsPageService CmsPageService
 @inject Portfolio.Web.Services.MenuService MenuService
@@ -436,6 +437,117 @@
                                 Must be in international E.164 format, e.g. <code>+447911123456</code>.
                             </MudText>
                         </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
+            <!-- ── Mail (SMTP) Settings ── -->
+            @if (_mailSettings == null)
+            {
+                <MudItem xs="12"><MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-4" /></MudItem>
+            }
+            else
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-2" />
+                                    Mail (SMTP) Settings
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudSwitch @bind-Value="_mailSettings.IsEnabled" Label="Enable outbound email"
+                                       Color="Color.Success" Class="mb-3" />
+                            <MudTextField @bind-Value="_mailSettings.SmtpHost"
+                                          Label="SMTP Host" Variant="Variant.Outlined" Class="mb-3"
+                                          Placeholder="smtp.gmail.com" />
+                            <MudNumericField @bind-Value="_mailSettings.SmtpPort"
+                                             Label="SMTP Port" Variant="Variant.Outlined" Class="mb-3"
+                                             Min="1" Max="65535" />
+                            <MudSwitch @bind-Value="_mailSettings.UseSsl" Label="Use SSL/TLS"
+                                       Color="Color.Primary" Class="mb-3" />
+                            <MudTextField @bind-Value="_mailSettings.SmtpUsername"
+                                          Label="Username" Variant="Variant.Outlined" Class="mb-3" />
+                            <MudTextField @bind-Value="_mailSettings.SmtpPassword"
+                                          Label="Password"
+                                          InputType="@(_showSmtpPassword ? InputType.Text : InputType.Password)"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(_showSmtpPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                          OnAdornmentClick="@(() => _showSmtpPassword = !_showSmtpPassword)" />
+                            <MudTextField @bind-Value="_mailSettings.FromAddress"
+                                          Label="From Address" Variant="Variant.Outlined" Class="mb-3"
+                                          Placeholder="noreply@example.com" />
+                            <MudTextField @bind-Value="_mailSettings.FromName"
+                                          Label="From Name" Variant="Variant.Outlined" Class="mb-3"
+                                          Placeholder="David Buckley Portfolio" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="@SaveMailSettings" Disabled="@_savingMail"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingMail ? "Saving..." : "Save Mail Settings")
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
+                                       OnClick="@SendTestEmail" Disabled="@(!_mailSettings.IsEnabled || _sendingTestEmail)"
+                                       StartIcon="@Icons.Material.Filled.Send" Class="ml-2">
+                                @(_sendingTestEmail ? "Sending..." : "Send Test Email")
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+
+                <!-- Visitor Notification Settings -->
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-2" />
+                                    Visitor Notifications
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (_appSettings == null)
+                            {
+                                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                            }
+                            else
+                            {
+                                <MudSwitch @bind-Value="_appSettings.VisitorNotificationsEnabled"
+                                           Label="Email me when a new visitor arrives"
+                                           Color="Color.Success" Class="mb-3" />
+                                <MudTextField @bind-Value="_appSettings.VisitorNotificationEmail"
+                                              Label="Notification Email Address"
+                                              Variant="Variant.Outlined" Class="mb-3"
+                                              HelperText="Leave blank to use the Mail Settings From Address"
+                                              Placeholder="you@example.com" />
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Email Template</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                    Available placeholders: <code>{{ip}}</code>, <code>{{page}}</code>, <code>{{time}}</code>
+                                </MudText>
+                                <MudTextField @bind-Value="_appSettings.VisitorEmailTemplate"
+                                              Label="HTML Email Body"
+                                              Variant="Variant.Outlined"
+                                              Lines="6"
+                                              Placeholder="@DefaultVisitorTemplate"
+                                              HelperText="Leave blank to use the default template" />
+                            }
+                        </MudCardContent>
+                        @if (_appSettings != null)
+                        {
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="@SaveAppSettings" Disabled="@_savingAppSettings"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingAppSettings ? "Saving..." : "Save Visitor Settings")
+                            </MudButton>
+                        </MudCardActions>
+                        }
                     </MudCard>
                 </MudItem>
             }
@@ -1559,6 +1671,8 @@
         _appSettings = await AppSettingsService.GetAsync();
         _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
                        ?? new Portfolio.Web.Data.SmsSettings();
+        _mailSettings = await DbContext.MailSettings.FirstOrDefaultAsync()
+                        ?? new Portfolio.Web.Data.MailSettings();
         _blogPosts = await BlogService.GetAllForAdminAsync();
         _cmsPages  = await CmsPageService.GetAllForAdminAsync();
         _menuItems = await MenuService.GetAllForAdminAsync();
@@ -2204,13 +2318,58 @@
     private Portfolio.Web.Data.AppSettings? _appSettings;
     private bool _savingAppSettings;
 
+    private const string DefaultVisitorTemplate =
+        "<p><strong>A new visitor has arrived on your portfolio site.</strong></p>" +
+        "<ul><li><strong>IP:</strong> {{ip}}</li><li><strong>Page:</strong> {{page}}</li><li><strong>Time (UTC):</strong> {{time}}</li></ul>";
+
     private async Task SaveAppSettings()
     {
         if (_appSettings == null) return;
         _savingAppSettings = true;
         await AppSettingsService.SaveAsync(_appSettings);
         _savingAppSettings = false;
-        Snackbar.Add("API settings saved.", Severity.Success);
+        Snackbar.Add("Settings saved.", Severity.Success);
+    }
+
+    // ── Mail Settings ────────────────────────────────────────
+    private Portfolio.Web.Data.MailSettings? _mailSettings;
+    private bool _savingMail;
+    private bool _sendingTestEmail;
+    private bool _showSmtpPassword;
+
+    private async Task SaveMailSettings()
+    {
+        if (_mailSettings == null) return;
+        _savingMail = true;
+
+        if (_mailSettings.Id == 0)
+            DbContext.MailSettings.Add(_mailSettings);
+        else
+            DbContext.MailSettings.Update(_mailSettings);
+
+        await DbContext.SaveChangesAsync();
+        _savingMail = false;
+        Snackbar.Add("Mail settings saved.", Severity.Success);
+    }
+
+    private async Task SendTestEmail()
+    {
+        if (_mailSettings == null || string.IsNullOrWhiteSpace(_mailSettings.FromAddress))
+        {
+            Snackbar.Add("Set a From Address before sending a test email.", Severity.Warning);
+            return;
+        }
+
+        _sendingTestEmail = true;
+        await SaveMailSettings();
+
+        var ok = await EmailSender.SendTestAsync(_mailSettings.FromAddress);
+        _sendingTestEmail = false;
+
+        if (ok)
+            Snackbar.Add("Test email sent successfully.", Severity.Success);
+        else
+            Snackbar.Add("Failed to send test email — check the SMTP settings and server logs.", Severity.Error);
     }
 
     // ── SMS Settings ────────────────────────────────────────

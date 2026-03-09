@@ -47,6 +47,7 @@ builder.Services.AddHttpClient("ClickSend");
 
 // SmsSender reads provider settings from the DB on each call — no restart needed
 builder.Services.AddScoped<SmsSender>();
+builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<Portfolio.Web.Services.BlogService>();
 builder.Services.AddScoped<Portfolio.Web.Services.CmsPageService>();
 builder.Services.AddScoped<Portfolio.Web.Services.MenuService>();
@@ -74,6 +75,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<Portfolio.Web.Infrastructure.VisitorNotificationMiddleware>();
 app.UseAntiforgery();
 app.MapStaticAssets();
 
