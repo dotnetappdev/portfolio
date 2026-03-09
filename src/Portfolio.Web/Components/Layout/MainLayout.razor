@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject Portfolio.Web.Services.MenuService MenuService
+@inject IDialogService DialogService
 
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -39,9 +40,17 @@
         <AuthorizeView>
             <Authorized>
                 <MudButton Color="Color.Inherit" Href="/admin">Admin</MudButton>
-                <MudButton Color="Color.Inherit" Href="/logout">Logout</MudButton>
+                <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit"
+                         AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight"
+                         aria-label="User menu">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Settings" Href="/admin">Settings</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Info" OnClick="@OpenAboutDialog">About</MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" Href="/logout">Logout</MudMenuItem>
+                </MudMenu>
             </Authorized>
             <NotAuthorized>
+                <MudButton Color="Color.Inherit" Href="/register">Register</MudButton>
                 <MudButton Color="Color.Inherit" Href="/login">Login</MudButton>
             </NotAuthorized>
         </AuthorizeView>
@@ -170,6 +179,13 @@
 
     private void ToggleDarkMode() => _isDarkMode = !_isDarkMode;
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task OpenAboutDialog()
+    {
+        var parameters = new DialogParameters<AboutDialog>();
+        await DialogService.ShowAsync<AboutDialog>("About This Portfolio", parameters,
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
 
     /// <summary>Returns true when the given href matches the current page path.</summary>
     private bool IsCurrentPage(string? href)

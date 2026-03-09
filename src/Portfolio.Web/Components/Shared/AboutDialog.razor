@@ -1,0 +1,47 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="py-2">
+            <MudAvatar Color="Color.Primary" Size="Size.Large" Style="width:80px;height:80px;">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size:40px;" />
+            </MudAvatar>
+            <MudStack AlignItems="AlignItems.Center" Spacing="0">
+                <MudText Typo="Typo.h5" Class="fw-bold">David Buckley</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Full-Stack .NET Developer</MudText>
+            </MudStack>
+            <MudDivider Style="width:100%" />
+            <MudStack Spacing="1" Style="width:100%">
+                <MudText Typo="Typo.body2">
+                    <MudIcon Icon="@Icons.Material.Filled.Code" Size="Size.Small" Class="mr-1" />
+                    Built with <strong>ASP.NET Core</strong>, <strong>Blazor</strong> and <strong>MudBlazor</strong>
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    <MudIcon Icon="@Icons.Material.Filled.Storage" Size="Size.Small" Class="mr-1" />
+                    Powered by <strong>Entity Framework Core</strong>
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    <MudIcon Icon="@Icons.Material.Filled.Cloud" Size="Size.Small" Class="mr-1" />
+                    Deployable to Azure, AWS, or any container host
+                </MudText>
+            </MudStack>
+            <MudStack Row="true" Spacing="2" Class="mt-1">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                           Href="https://github.com" Target="_blank"
+                           StartIcon="@Icons.Material.Filled.Code">GitHub</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
+                           Href="https://linkedin.com" Target="_blank"
+                           StartIcon="@Icons.Material.Filled.Link">LinkedIn</MudButton>
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Close" Color="Color.Primary">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private void Close() => MudDialog.Close();
+}
