@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Portfolio.Web.Data;
 
@@ -10,9 +11,11 @@ using Portfolio.Web.Data;
 namespace Portfolio.Web.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260308232052_UpdateSchema")]
+    partial class UpdateSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
@@ -27,20 +30,6 @@ namespace Portfolio.Web.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("GoogleAnalyticsId")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("VisitorEmailTemplate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("VisitorNotificationEmail")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("VisitorNotificationsEnabled")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.ToTable("AppSettings");
@@ -48,8 +37,7 @@ namespace Portfolio.Web.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            VisitorNotificationsEnabled = false
+                            Id = 1
                         });
                 });
 
@@ -353,55 +341,6 @@ namespace Portfolio.Web.Data.Migrations
                             Label = "Test-Focused Developer",
                             SortOrder = 4,
                             Value = "TDD/BDD"
-                        });
-                });
-
-            modelBuilder.Entity("Portfolio.Web.Data.MailSettings", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("FromAddress")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FromName")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SmtpHost")
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SmtpPassword")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SmtpPort")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SmtpUsername")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("UseSsl")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MailSettings");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsEnabled = false,
-                            SmtpPort = 587,
-                            UseSsl = true
                         });
                 });
 

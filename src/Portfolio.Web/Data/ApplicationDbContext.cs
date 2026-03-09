@@ -127,6 +127,53 @@ public class AppSettings
     /// <summary>Base URL of the Portfolio API used by PortfolioApiService (e.g. https://api.example.com/).</summary>
     [MaxLength(500)]
     public string? ApiBaseUrl { get; set; }
+
+    /// <summary>Google Analytics 4 Measurement ID (e.g. G-XXXXXXXXXX). Leave empty to disable GA.</summary>
+    [MaxLength(50)]
+    public string? GoogleAnalyticsId { get; set; }
+
+    // ── Visitor Notifications ─────────────────────────────────────────────────
+    /// <summary>Send an email to the admin when a new visitor lands on the site.</summary>
+    public bool VisitorNotificationsEnabled { get; set; }
+
+    /// <summary>Override email address for visitor notifications; falls back to MailSettings.FromAddress when empty.</summary>
+    [MaxLength(200)]
+    public string? VisitorNotificationEmail { get; set; }
+
+    /// <summary>Template for the visitor notification email body. Supports {{ip}}, {{page}}, {{time}} placeholders.</summary>
+    public string? VisitorEmailTemplate { get; set; }
+}
+
+/// <summary>Admin-configurable outbound SMTP settings (single row, Id = 1).</summary>
+public class MailSettings
+{
+    public int Id { get; set; }
+
+    /// <summary>Whether outbound email is enabled.</summary>
+    public bool IsEnabled { get; set; }
+
+    [MaxLength(300)]
+    public string? SmtpHost { get; set; }
+
+    public int SmtpPort { get; set; } = 587;
+
+    /// <summary>SMTP login username (often an email address).</summary>
+    [MaxLength(200)]
+    public string? SmtpUsername { get; set; }
+
+    [MaxLength(500)]
+    public string? SmtpPassword { get; set; }
+
+    /// <summary>The "From" email address shown to recipients.</summary>
+    [MaxLength(200)]
+    public string? FromAddress { get; set; }
+
+    /// <summary>Display name in the "From" field.</summary>
+    [MaxLength(100)]
+    public string? FromName { get; set; }
+
+    /// <summary>Whether to use SSL/TLS (true) or STARTTLS / no encryption (false).</summary>
+    public bool UseSsl { get; set; } = true;
 }
 
 /// <summary>Admin-configurable SMS provider settings (single row, Id = 1).</summary>
@@ -222,6 +269,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<HeroStat> HeroStats => Set<HeroStat>();
     public DbSet<AppSettings> AppSettings => Set<AppSettings>();
     public DbSet<SmsSettings> SmsSettings => Set<SmsSettings>();
+    public DbSet<MailSettings> MailSettings => Set<MailSettings>();
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
     public DbSet<CmsPage> CmsPages => Set<CmsPage>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
@@ -241,6 +289,11 @@ public class ApplicationDbContext : DbContext
         // Seed a default (disabled) SMS settings row so the admin page always has a record
         builder.Entity<SmsSettings>().HasData(
             new SmsSettings { Id = 1, Provider = "None", IsEnabled = false }
+        );
+
+        // Seed a default (disabled) mail settings row
+        builder.Entity<MailSettings>().HasData(
+            new MailSettings { Id = 1, IsEnabled = false, SmtpPort = 587, UseSsl = true }
         );
 
         // Seed a default app settings row

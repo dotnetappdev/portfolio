@@ -47,6 +47,7 @@ builder.Services.AddHttpClient("ClickSend");
 
 // SmsSender reads provider settings from the DB on each call — no restart needed
 builder.Services.AddScoped<SmsSender>();
+builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<Portfolio.Web.Services.BlogService>();
 builder.Services.AddScoped<Portfolio.Web.Services.CmsPageService>();
 builder.Services.AddScoped<Portfolio.Web.Services.MenuService>();
@@ -74,6 +75,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<Portfolio.Web.Infrastructure.VisitorNotificationMiddleware>();
 app.UseAntiforgery();
 app.MapStaticAssets();
 
@@ -124,7 +126,11 @@ if (builder.Configuration.GetValue<bool>("SeedData"))
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     await using var context = await contextFactory.CreateDbContextAsync();
-   // await context.Database.MigrateAsync();
+    var providerName = context.Database.ProviderName ?? "";
+    if (providerName.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+        await context.Database.EnsureCreatedAsync();
+    else
+        await context.Database.MigrateAsync();
     logger.LogInformation("Web CMS database migrated and initialised.");
 }
 

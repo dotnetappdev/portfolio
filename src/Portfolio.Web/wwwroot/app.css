@@ -301,9 +301,15 @@
     min-height: 200px;
 }
 
-/* ── AppBar (Navigation) - Dark Navy Purple ─────────────────── */
+/* ── AppBar (Navigation) ─────────────────────────────────────── */
+/* Light mode: dark navy purple brand colour */
 .mud-appbar {
     background: #262041 !important;
+}
+
+/* Dark mode: match the page background for a seamless look */
+:root[data-mud-theme="dark"] .mud-appbar {
+    background: #0F0A1E !important;
 }
 
 .mud-appbar .mud-typography,
