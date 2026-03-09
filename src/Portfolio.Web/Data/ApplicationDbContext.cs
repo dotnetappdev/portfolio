@@ -127,6 +127,10 @@ public class AppSettings
     /// <summary>Base URL of the Portfolio API used by PortfolioApiService (e.g. https://api.example.com/).</summary>
     [MaxLength(500)]
     public string? ApiBaseUrl { get; set; }
+
+    /// <summary>Google Analytics 4 Measurement ID (e.g. G-XXXXXXXXXX). Leave empty to disable GA.</summary>
+    [MaxLength(50)]
+    public string? GoogleAnalyticsId { get; set; }
 }
 
 /// <summary>Admin-configurable SMS provider settings (single row, Id = 1).</summary>

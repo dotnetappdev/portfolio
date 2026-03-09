@@ -230,7 +230,7 @@
         <MudGrid Class="mt-4">
 
             <!-- ── API Settings card ── -->
-            <MudItem xs="12">
+            <MudItem xs="12" md="6">
                 <MudCard Elevation="3">
                     <MudCardHeader>
                         <CardHeaderContent>
@@ -261,6 +261,56 @@
                                    OnClick="@SaveAppSettings" Disabled="@_savingAppSettings"
                                    StartIcon="@Icons.Material.Filled.Save">
                             @(_savingAppSettings ? "Saving..." : "Save API Settings")
+                        </MudButton>
+                    </MudCardActions>
+                    }
+                </MudCard>
+            </MudItem>
+
+            <!-- ── Google Analytics card ── -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+                                Google Analytics
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_appSettings == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else
+                        {
+                            <MudTextField @bind-Value="_appSettings.GoogleAnalyticsId"
+                                          Label="GA4 Measurement ID"
+                                          Variant="Variant.Outlined" Class="mb-3"
+                                          HelperText="Your Google Analytics 4 Measurement ID, e.g. G-XXXXXXXXXX. Leave empty to disable analytics."
+                                          Placeholder="G-XXXXXXXXXX" />
+                            @if (!string.IsNullOrWhiteSpace(_appSettings.GoogleAnalyticsId))
+                            {
+                                <MudAlert Severity="Severity.Success" Dense="true" Class="mt-2">
+                                    Analytics active — tracking ID: <strong>@_appSettings.GoogleAnalyticsId</strong>
+                                </MudAlert>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                                    Analytics disabled. Enter a Measurement ID to enable tracking.
+                                </MudAlert>
+                            }
+                        }
+                    </MudCardContent>
+                    @if (_appSettings != null)
+                    {
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="@SaveAppSettings" Disabled="@_savingAppSettings"
+                                   StartIcon="@Icons.Material.Filled.Save">
+                            @(_savingAppSettings ? "Saving..." : "Save Analytics Settings")
                         </MudButton>
                     </MudCardActions>
                     }
