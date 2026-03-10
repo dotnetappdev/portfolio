@@ -1,0 +1,99 @@
+@page "/register"
+@rendermode InteractiveServer
+@inject Portfolio.Web.Services.PortfolioApiAuthService ApiAuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Register | David Buckley Portfolio</PageTitle>
+
+<MudGrid Justify="Justify.Center" Class="mt-8">
+    <MudItem xs="12" sm="8" md="5">
+        <MudCard Elevation="4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Class="text-center fw-bold">Create Account</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center">
+                        Register a new portfolio account
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+                }
+
+                <MudForm @ref="_form" @bind-IsValid="_isValid">
+                    <MudTextField @bind-Value="_dto.FirstName" Label="First Name"
+                                  Variant="Variant.Outlined" Class="mb-3" />
+                    <MudTextField @bind-Value="_dto.LastName" Label="Last Name"
+                                  Variant="Variant.Outlined" Class="mb-3" />
+                    <MudTextField @bind-Value="_dto.Email" Label="Email Address"
+                                  Required="true" RequiredError="Email is required"
+                                  InputType="InputType.Email"
+                                  Variant="Variant.Outlined" Class="mb-3" />
+                    <MudTextField @bind-Value="_dto.Password" Label="Password"
+                                  Required="true" RequiredError="Password is required"
+                                  InputType="@(_showPw ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined" Class="mb-3"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showPw ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _showPw = !_showPw)"
+                                  HelperText="Min 8 chars, must include uppercase, number and special character" />
+                    <MudTextField @bind-Value="_dto.ConfirmPassword" Label="Confirm Password"
+                                  Required="true" RequiredError="Please confirm your password"
+                                  InputType="@(_showPw ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined" Class="mb-4" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                               Size="Size.Large" OnClick="@HandleRegister" Disabled="@_registering"
+                               StartIcon="@Icons.Material.Filled.PersonAdd">
+                        @(_registering ? "Registering..." : "Create Account")
+                    </MudButton>
+                </MudForm>
+            </MudCardContent>
+            <MudCardActions>
+                <MudText Typo="Typo.body2" Class="ml-2">
+                    Already have an account?
+                    <MudLink Href="/login">Sign in</MudLink>
+                </MudText>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private Portfolio.Shared.Models.RegisterDto _dto = new();
+    private MudForm _form = null!;
+    private bool _isValid;
+    private bool _registering;
+    private bool _showPw;
+    private string _errorMessage = string.Empty;
+
+    private async Task HandleRegister()
+    {
+        await _form.ValidateAsync();
+        if (!_isValid) return;
+
+        if (_dto.Password != _dto.ConfirmPassword)
+        {
+            _errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        _registering = true;
+        _errorMessage = string.Empty;
+
+        var (success, error) = await ApiAuthService.RegisterAsync(_dto);
+        _registering = false;
+
+        if (success)
+        {
+            Snackbar.Add("Account created successfully! You can now log in.", Severity.Success);
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            _errorMessage = error ?? "Registration failed. Please try again.";
+        }
+    }
+}

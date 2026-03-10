@@ -93,13 +93,13 @@ public class PortfolioApiAuthService(
         }
     }
 
-    /// <summary>Lists all user accounts via the API (requires admin JWT).</summary>
-    public async Task<List<UserDto>> GetUsersAsync(string adminToken)
+    /// <summary>Lists all user accounts with roles and claims via the API (requires admin JWT).</summary>
+    public async Task<List<UserWithRolesDto>> GetUsersAsync(string adminToken)
     {
         try
         {
             var client = await GetClientWithTokenAsync(adminToken);
-            return await client.GetFromJsonAsync<List<UserDto>>("api/auth/users")
+            return await client.GetFromJsonAsync<List<UserWithRolesDto>>("api/auth/users")
                    ?? [];
         }
         catch (Exception ex)
@@ -124,6 +124,215 @@ public class PortfolioApiAuthService(
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to create user via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Updates an existing user account via the API (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> UpdateUserAsync(string userId, UpdateUserDto dto, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.PutAsJsonAsync($"api/auth/users/{userId}", dto);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to update user via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Deletes a user account via the API (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> DeleteUserAsync(string userId, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.DeleteAsync($"api/auth/users/{userId}");
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to delete user via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Assigns a role to a user via the API (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> AddUserRoleAsync(string userId, string role, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.PostAsJsonAsync($"api/auth/users/{userId}/roles", role);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to add role to user via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Removes a role from a user via the API (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> RemoveUserRoleAsync(string userId, string role, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.DeleteAsync($"api/auth/users/{userId}/roles/{Uri.EscapeDataString(role)}");
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to remove role from user via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Lists all available roles via the API (requires admin JWT).</summary>
+    public async Task<List<RoleDto>> GetRolesAsync(string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            return await client.GetFromJsonAsync<List<RoleDto>>("api/roles") ?? [];
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to fetch roles from API");
+            return [];
+        }
+    }
+
+    /// <summary>Creates a new role via the API (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> CreateRoleAsync(string roleName, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.PostAsJsonAsync("api/roles", roleName);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to create role via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Deletes a role via the API (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> DeleteRoleAsync(string roleName, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.DeleteAsync($"api/roles/{Uri.EscapeDataString(roleName)}");
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to delete role via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Registers a new user account via the public API endpoint.</summary>
+    public async Task<(bool Success, string? Error)> RegisterAsync(RegisterDto dto)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            var response = await client.PostAsJsonAsync("api/auth/register", dto);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to register user via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Gets 2FA setup details (shared key and OTP URI) for a user (requires admin JWT).</summary>
+    public async Task<(string? SharedKey, string? AuthenticatorUri, string? Error)> GetTwoFactorSetupAsync(string userId, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            using var response = await client.GetAsync($"api/auth/users/{userId}/2fa/setup");
+            if (!response.IsSuccessStatusCode)
+                return (null, null, await response.Content.ReadAsStringAsync());
+
+            using var doc = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStreamAsync());
+            var sharedKey = doc.RootElement.GetProperty("sharedKey").GetString();
+            var uri = doc.RootElement.GetProperty("authenticatorUri").GetString();
+            return (sharedKey, uri, null);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to get 2FA setup from API");
+            return (null, null, ex.Message);
+        }
+    }
+
+    /// <summary>Verifies a TOTP code and enables 2FA for a user (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> EnableTwoFactorAsync(string userId, string code, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.PostAsJsonAsync($"api/auth/users/{userId}/2fa/enable",
+                new TwoFactorVerifyDto { UserId = userId, Code = code });
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to enable 2FA via API");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Disables 2FA for a user (requires admin JWT).</summary>
+    public async Task<(bool Success, string? Error)> DisableTwoFactorAsync(string userId, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientWithTokenAsync(adminToken);
+            var response = await client.PostAsync($"api/auth/users/{userId}/2fa/disable", null);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to disable 2FA via API");
             return (false, ex.Message);
         }
     }

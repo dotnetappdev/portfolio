@@ -17,6 +17,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IDialogService DialogService
 
 <PageTitle>Admin | David Buckley Portfolio</PageTitle>
 
@@ -147,13 +148,15 @@
     <!-- ── Users tab ──────────────────────────────────── -->
     <MudTabPanel Text="Users" Icon="@Icons.Material.Filled.People">
         <MudGrid Class="mt-4">
-            <MudItem xs="12" md="6">
+
+            <!-- ── Create / Edit User ── -->
+            <MudItem xs="12" md="5">
                 <MudCard Elevation="3">
                     <MudCardHeader>
                         <CardHeaderContent>
                             <MudText Typo="Typo.h6">
-                                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
-                                Create New Account
+                                <MudIcon Icon="@(_editingUser == null ? Icons.Material.Filled.PersonAdd : Icons.Material.Filled.Edit)" Class="mr-2" />
+                                @(_editingUser == null ? "Create New Account" : "Edit Account")
                             </MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
@@ -166,31 +169,100 @@
                                           Variant="Variant.Outlined" Class="mb-3" />
                             <MudTextField @bind-Value="_lastName" Label="Last Name"
                                           Variant="Variant.Outlined" Class="mb-3" />
-                            <MudTextField @bind-Value="_newUser.Password" Label="Password" Required="true"
-                                          RequiredError="Password is required"
-                                          InputType="@(_showPassword ? InputType.Text : InputType.Password)"
-                                          Variant="Variant.Outlined" Class="mb-3"
-                                          Adornment="Adornment.End"
-                                          AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                          OnAdornmentClick="@(() => _showPassword = !_showPassword)"
-                                          HelperText="Min 8 chars, must include uppercase, number and special character" />
+                            @if (_editingUser == null)
+                            {
+                                <MudTextField @bind-Value="_newUser.Password" Label="Password" Required="true"
+                                              RequiredError="Password is required"
+                                              InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                                              Variant="Variant.Outlined" Class="mb-3"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                              OnAdornmentClick="@(() => _showPassword = !_showPassword)"
+                                              HelperText="Min 8 chars, must include uppercase, number and special character" />
+                            }
+                            else
+                            {
+                                <MudTextField @bind-Value="_newPassword" Label="New Password (leave blank to keep current)"
+                                              InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                                              Variant="Variant.Outlined" Class="mb-3"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                              OnAdornmentClick="@(() => _showPassword = !_showPassword)" />
+                            }
+                        </MudForm>
+                    </MudCardContent>
+                    <MudCardActions>
+                        @if (_editingUser == null)
+                        {
                             <MudButton Variant="Variant.Filled" Color="Color.Primary"
                                        OnClick="@HandleCreateUser" Disabled="@_creating"
                                        StartIcon="@Icons.Material.Filled.PersonAdd">
                                 @(_creating ? "Creating..." : "Create Account")
                             </MudButton>
-                        </MudForm>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="@HandleUpdateUser" Disabled="@_creating"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_creating ? "Saving..." : "Save Changes")
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Default"
+                                       OnClick="@CancelEditUser" Class="ml-2">Cancel</MudButton>
+                        }
+                    </MudCardActions>
+                </MudCard>
+
+                <!-- ── Roles Management ── -->
+                <MudCard Elevation="3" Class="mt-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Badge" Class="mr-2" />
+                                Roles Management
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+                            <MudTextField @bind-Value="_newRoleName" Label="New Role Name"
+                                          Variant="Variant.Outlined" Style="flex:1" />
+                            <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                                       OnClick="@HandleCreateRole"
+                                       StartIcon="@Icons.Material.Filled.Add">Add</MudButton>
+                        </MudStack>
+                        @if (_roles == null)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            <MudList T="string" Dense="true">
+                                @foreach (var role in _roles)
+                                {
+                                    <MudListItem>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined">@role.Name</MudChip>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                                           OnClick="@(() => HandleDeleteRole(role.Name))"
+                                                           aria-label="@($"Delete role {role.Name}")" />
+                                        </MudStack>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
                     </MudCardContent>
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" md="6">
+            <!-- ── Existing Users ── -->
+            <MudItem xs="12" md="7">
                 <MudCard Elevation="3">
                     <MudCardHeader>
                         <CardHeaderContent>
                             <MudText Typo="Typo.h6">
                                 <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
-                                Existing Users
+                                Application Users
                             </MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
@@ -205,17 +277,66 @@
                                 @foreach (var user in _users)
                                 {
                                     <MudListItem>
-                                        <MudStack Row="true" AlignItems="AlignItems.Center">
-                                            <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                                <MudIcon Icon="@Icons.Material.Filled.Person" />
-                                            </MudAvatar>
-                                            <MudStack Spacing="0">
-                                                <MudText Typo="Typo.body2">@user.Email</MudText>
-                                                @if (!string.IsNullOrEmpty(user.FirstName))
+                                        <MudStack Spacing="1">
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                                    </MudAvatar>
+                                                    <MudStack Spacing="0">
+                                                        <MudText Typo="Typo.body2">@user.Email</MudText>
+                                                        @if (!string.IsNullOrEmpty(user.FirstName))
+                                                        {
+                                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@user.FirstName @user.LastName</MudText>
+                                                        }
+                                                    </MudStack>
+                                                </MudStack>
+                                                <MudStack Row="true" Spacing="0">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary"
+                                                                   OnClick="@(() => StartEditUser(user))"
+                                                                   aria-label="Edit user" />
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                                                   OnClick="@(() => HandleDeleteUser(user.Id))"
+                                                                   aria-label="Delete user" />
+                                                </MudStack>
+                                            </MudStack>
+                                            <!-- Roles row -->
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="ml-9">
+                                                @foreach (var role in user.Roles)
                                                 {
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@user.FirstName @user.LastName</MudText>
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled"
+                                                             OnClose="@(() => HandleRemoveUserRole(user.Id, role))"
+                                                             CloseIcon="@Icons.Material.Filled.Close">
+                                                        @role
+                                                    </MudChip>
+                                                }
+                                                <!-- Add role button -->
+                                                @if (_roles != null && _roles.Any(r => !user.Roles.Contains(r.Name)))
+                                                {
+                                                    <MudMenu Icon="@Icons.Material.Filled.AddCircleOutline" Size="Size.Small"
+                                                             Color="Color.Primary" Dense="true"
+                                                             aria-label="Assign role">
+                                                        @foreach (var role in _roles.Where(r => !user.Roles.Contains(r.Name)))
+                                                        {
+                                                            <MudMenuItem OnClick="@(() => HandleAddUserRole(user.Id, role.Name))">@role.Name</MudMenuItem>
+                                                        }
+                                                    </MudMenu>
                                                 }
                                             </MudStack>
+                                            <!-- Claims row -->
+                                            @if (user.Claims.Count > 0)
+                                            {
+                                                <MudStack Row="true" Spacing="1" Class="ml-9">
+                                                    @foreach (var claim in user.Claims)
+                                                    {
+                                                        <MudTooltip Text="@claim.Type">
+                                                            <MudChip T="string" Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Outlined">
+                                                                @claim.Value
+                                                            </MudChip>
+                                                        </MudTooltip>
+                                                    }
+                                                </MudStack>
+                                            }
                                         </MudStack>
                                     </MudListItem>
                                 }
@@ -1630,8 +1751,14 @@
     private bool _showPassword;
     private string _firstName = string.Empty;
     private string _lastName = string.Empty;
+    private string _newPassword = string.Empty;
     private Portfolio.Shared.Models.CreateUserDto _newUser = new();
-    private List<Portfolio.Shared.Models.UserDto>? _users;
+    private List<Portfolio.Shared.Models.UserWithRolesDto>? _users;
+    private Portfolio.Shared.Models.UserWithRolesDto? _editingUser;
+
+    // ── Roles ───────────────────────────────────────────────
+    private List<Portfolio.Shared.Models.RoleDto>? _roles;
+    private string _newRoleName = string.Empty;
 
     // ── Hero Stats ──────────────────────────────────────────
     private MudForm _statForm = null!;
@@ -1667,6 +1794,7 @@
     {
         var token = await GetAdminTokenAsync();
         _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
+        _roles = await ApiAuthService.GetRolesAsync(token ?? string.Empty);
         _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
         _appSettings = await AppSettingsService.GetAsync();
         _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
@@ -1680,6 +1808,24 @@
     }
 
     // ── User management ─────────────────────────────────────
+    private void StartEditUser(Portfolio.Shared.Models.UserWithRolesDto user)
+    {
+        _editingUser = user;
+        _newUser.Email = user.Email ?? string.Empty;
+        _firstName = user.FirstName ?? string.Empty;
+        _lastName = user.LastName ?? string.Empty;
+        _newPassword = string.Empty;
+    }
+
+    private void CancelEditUser()
+    {
+        _editingUser = null;
+        _newUser = new Portfolio.Shared.Models.CreateUserDto();
+        _firstName = string.Empty;
+        _lastName = string.Empty;
+        _newPassword = string.Empty;
+    }
+
     private async Task HandleCreateUser()
     {
         await _form.ValidateAsync();
@@ -1709,6 +1855,122 @@
         else
         {
             Snackbar.Add($"Failed to create account: {error}", Severity.Error);
+        }
+    }
+
+    private async Task HandleUpdateUser()
+    {
+        if (_editingUser == null) return;
+        _creating = true;
+        var dto = new Portfolio.Shared.Models.UpdateUserDto
+        {
+            Email     = _newUser.Email,
+            FirstName = _firstName,
+            LastName  = _lastName,
+            NewPassword = string.IsNullOrWhiteSpace(_newPassword) ? null : _newPassword
+        };
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.UpdateUserAsync(_editingUser.Id, dto, token ?? string.Empty);
+        _creating = false;
+
+        if (success)
+        {
+            Snackbar.Add("User updated successfully", Severity.Success);
+            CancelEditUser();
+            _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
+        }
+        else
+        {
+            Snackbar.Add($"Failed to update user: {error}", Severity.Error);
+        }
+    }
+
+    private async Task HandleDeleteUser(string userId)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Confirm Delete",
+            "Are you sure you want to delete this user? This action cannot be undone.",
+            yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true) return;
+
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.DeleteUserAsync(userId, token ?? string.Empty);
+        if (success)
+        {
+            Snackbar.Add("User deleted", Severity.Success);
+            _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
+        }
+        else
+        {
+            Snackbar.Add($"Failed to delete user: {error}", Severity.Error);
+        }
+    }
+
+    private async Task HandleAddUserRole(string userId, string role)
+    {
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.AddUserRoleAsync(userId, role, token ?? string.Empty);
+        if (success)
+        {
+            Snackbar.Add($"Role '{role}' assigned", Severity.Success);
+            _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
+        }
+        else
+        {
+            Snackbar.Add($"Failed to assign role: {error}", Severity.Error);
+        }
+    }
+
+    private async Task HandleRemoveUserRole(string userId, string role)
+    {
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.RemoveUserRoleAsync(userId, role, token ?? string.Empty);
+        if (success)
+        {
+            Snackbar.Add($"Role '{role}' removed", Severity.Success);
+            _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
+        }
+        else
+        {
+            Snackbar.Add($"Failed to remove role: {error}", Severity.Error);
+        }
+    }
+
+    private async Task HandleCreateRole()
+    {
+        if (string.IsNullOrWhiteSpace(_newRoleName)) return;
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.CreateRoleAsync(_newRoleName.Trim(), token ?? string.Empty);
+        if (success)
+        {
+            Snackbar.Add($"Role '{_newRoleName}' created", Severity.Success);
+            _newRoleName = string.Empty;
+            _roles = await ApiAuthService.GetRolesAsync(token ?? string.Empty);
+        }
+        else
+        {
+            Snackbar.Add($"Failed to create role: {error}", Severity.Error);
+        }
+    }
+
+    private async Task HandleDeleteRole(string roleName)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Confirm Delete",
+            $"Are you sure you want to delete the role '{roleName}'? Users with this role will lose it.",
+            yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true) return;
+
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiAuthService.DeleteRoleAsync(roleName, token ?? string.Empty);
+        if (success)
+        {
+            Snackbar.Add($"Role '{roleName}' deleted", Severity.Success);
+            _roles = await ApiAuthService.GetRolesAsync(token ?? string.Empty);
+        }
+        else
+        {
+            Snackbar.Add($"Failed to delete role: {error}", Severity.Error);
         }
     }
 
