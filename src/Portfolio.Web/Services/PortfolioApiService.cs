@@ -41,6 +41,80 @@ public class PortfolioApiService(
         return client;
     }
 
+    public async Task<List<HeroStatDto>> GetHeroStatsAsync()
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            return await client.GetFromJsonAsync<List<HeroStatDto>>("api/herostats") ?? new List<HeroStatDto>();
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "API unavailable when fetching hero stats. Using fallback data.");
+            return GetFallbackHeroStats();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error fetching hero stats. Using fallback data.");
+            return GetFallbackHeroStats();
+        }
+    }
+
+    public async Task<(HeroStatDto? Stat, string? Error)> CreateHeroStatAsync(HeroStatDto dto, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            using var request = CreateAuthorizedRequest(HttpMethod.Post, "api/herostats", adminToken, dto);
+            using var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+                return (await response.Content.ReadFromJsonAsync<HeroStatDto>(), null);
+            var body = await response.Content.ReadAsStringAsync();
+            return (null, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to create hero stat via API");
+            return (null, ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> UpdateHeroStatAsync(int id, HeroStatDto dto, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            using var request = CreateAuthorizedRequest(HttpMethod.Put, $"api/herostats/{id}", adminToken, dto);
+            using var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode) return (true, null);
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to update hero stat via API");
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> DeleteHeroStatAsync(int id, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            using var request = CreateAuthorizedRequest(HttpMethod.Delete, $"api/herostats/{id}", adminToken);
+            using var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode) return (true, null);
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to delete hero stat via API");
+            return (false, ex.Message);
+        }
+    }
+
     public async Task<List<ProjectDto>> GetProjectsAsync()
     {
         try
@@ -221,5 +295,13 @@ public class PortfolioApiService(
         new SkillDto { Id = 18, Name = "JWT Authentication", Category = "Security", Proficiency = 92 },
         new SkillDto { Id = 19, Name = "Threat Modelling", Category = "Security", Proficiency = 80 },
         new SkillDto { Id = 20, Name = "Penetration Testing", Category = "Security", Proficiency = 72 }
+    };
+
+    private static List<HeroStatDto> GetFallbackHeroStats() => new()
+    {
+        new HeroStatDto { Id = 1, Value = "30+",    Label = "Years in .NET",          Color = "Primary",   SortOrder = 1 },
+        new HeroStatDto { Id = 2, Value = "AI",     Label = "First Approach",         Color = "Secondary", SortOrder = 2 },
+        new HeroStatDto { Id = 3, Value = "SecOps", Label = "Security Built In",      Color = "Error",     SortOrder = 3 },
+        new HeroStatDto { Id = 4, Value = "TDD/BDD",Label = "Test-Focused Developer", Color = "Success",   SortOrder = 4 }
     };
 }

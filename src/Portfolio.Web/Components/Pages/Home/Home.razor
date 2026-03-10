@@ -1,7 +1,6 @@
 @page "/"
 @rendermode InteractiveServer
 @inject Portfolio.Web.Services.PortfolioApiService ApiService
-@inject Portfolio.Web.Data.ApplicationDbContext DbContext
 
 <PageTitle>David Buckley | AI & Security Engineer</PageTitle>
 
@@ -240,7 +239,7 @@ else
 
 @code {
     private List<Portfolio.Shared.Models.ProjectDto>? _projects;
-    private List<Portfolio.Web.Data.HeroStat>? _heroStats;
+    private List<Portfolio.Shared.Models.HeroStatDto>? _heroStats;
 
     private readonly string[] _coreSkills = {
         "C#", ".NET 10", "ASP.NET Core", "Blazor", "Semantic Kernel",
@@ -250,8 +249,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _projects = await ApiService.GetProjectsAsync();
-        _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        _projects   = await ApiService.GetProjectsAsync();
+        _heroStats  = await ApiService.GetHeroStatsAsync();
     }
 
     private Color GetProjectColor(string category) => category switch
