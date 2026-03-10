@@ -13,7 +13,7 @@
 @inject Portfolio.Web.Services.MenuService MenuService
 @inject Portfolio.Web.Services.AppSettingsService AppSettingsService
 @inject Portfolio.Web.Services.StaticSiteGeneratorService StaticSiteGenerator
-@inject Portfolio.Web.Services.ProjectService ProjectService
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthStateProvider
@@ -1764,8 +1764,8 @@
     private MudForm _statForm = null!;
     private bool _statFormValid;
     private bool _savingStat;
-    private List<Portfolio.Web.Data.HeroStat>? _heroStats;
-    private Portfolio.Web.Data.HeroStat? _editingStat;
+    private List<Portfolio.Shared.Models.HeroStatDto>? _heroStats;
+    private Portfolio.Shared.Models.HeroStatDto? _editingStat;
     private string _statValue = string.Empty;
     private string _statLabel = string.Empty;
     private string _statColor = "Primary";
@@ -1776,8 +1776,8 @@
     private bool _projectFormValid;
     private bool _savingProject;
     private bool _projectShowEditor;
-    private List<Portfolio.Web.Data.PortfolioProject>? _projects;
-    private Portfolio.Web.Data.PortfolioProject? _editingProject;
+    private List<Portfolio.Shared.Models.ProjectDto>? _projects;
+    private Portfolio.Shared.Models.ProjectDto? _editingProject;
     private string _projectTitle = string.Empty;
     private string _projectSlug = string.Empty;
     private string _projectShortDescription = string.Empty;
@@ -1795,7 +1795,7 @@
         var token = await GetAdminTokenAsync();
         _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
         _roles = await ApiAuthService.GetRolesAsync(token ?? string.Empty);
-        _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        _heroStats = await ApiService.GetHeroStatsAsync();
         _appSettings = await AppSettingsService.GetAsync();
         _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
                        ?? new Portfolio.Web.Data.SmsSettings();
@@ -1804,7 +1804,7 @@
         _blogPosts = await BlogService.GetAllForAdminAsync();
         _cmsPages  = await CmsPageService.GetAllForAdminAsync();
         _menuItems = await MenuService.GetAllForAdminAsync();
-        _projects  = await ProjectService.GetAllAsync();
+        _projects  = await ApiService.GetProjectsAsync();
     }
 
     // ── User management ─────────────────────────────────────
@@ -1985,7 +1985,7 @@
     }
 
     // ── Hero Stat management ────────────────────────────────
-    private void StartEditStat(Portfolio.Web.Data.HeroStat stat)
+    private void StartEditStat(Portfolio.Shared.Models.HeroStatDto stat)
     {
         _editingStat = stat;
         _statValue = stat.Value;
@@ -2009,44 +2009,50 @@
         if (!_statFormValid) return;
 
         _savingStat = true;
+        var token = await GetAdminTokenAsync();
 
         if (_editingStat != null)
         {
-            _editingStat.Value = _statValue;
-            _editingStat.Label = _statLabel;
-            _editingStat.Color = _statColor;
+            _editingStat.Value     = _statValue;
+            _editingStat.Label     = _statLabel;
+            _editingStat.Color     = _statColor;
             _editingStat.SortOrder = _statSortOrder;
-            DbContext.HeroStats.Update(_editingStat);
+            var (success, error) = await ApiService.UpdateHeroStatAsync(_editingStat.Id, _editingStat, token ?? string.Empty);
+            if (success)
+                Snackbar.Add("Stat card saved successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Failed to save stat: {error}", Severity.Error);
         }
         else
         {
-            var newStat = new Portfolio.Web.Data.HeroStat
+            var dto = new Portfolio.Shared.Models.HeroStatDto
             {
-                Value = _statValue,
-                Label = _statLabel,
-                Color = _statColor,
+                Value     = _statValue,
+                Label     = _statLabel,
+                Color     = _statColor,
                 SortOrder = _statSortOrder
             };
-            DbContext.HeroStats.Add(newStat);
+            var (created, error) = await ApiService.CreateHeroStatAsync(dto, token ?? string.Empty);
+            if (created != null)
+                Snackbar.Add("Stat card saved successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Failed to save stat: {error}", Severity.Error);
         }
 
-        await DbContext.SaveChangesAsync();
-        _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        _heroStats = await ApiService.GetHeroStatsAsync();
         _savingStat = false;
         CancelEditStat();
-        Snackbar.Add("Stat card saved successfully.", Severity.Success);
     }
 
     private async Task DeleteStat(int id)
     {
-        var stat = await DbContext.HeroStats.FindAsync(id);
-        if (stat != null)
-        {
-            DbContext.HeroStats.Remove(stat);
-            await DbContext.SaveChangesAsync();
-            _heroStats = await DbContext.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiService.DeleteHeroStatAsync(id, token ?? string.Empty);
+        if (success)
             Snackbar.Add("Stat card deleted.", Severity.Info);
-        }
+        else
+            Snackbar.Add($"Failed to delete stat: {error}", Severity.Error);
+        _heroStats = await ApiService.GetHeroStatsAsync();
     }
 
     private Color GetMudColor(string colorName) => colorName switch
@@ -2067,7 +2073,7 @@
         ResetProjectForm();
     }
 
-    private void StartEditProject(Portfolio.Web.Data.PortfolioProject project)
+    private void StartEditProject(Portfolio.Shared.Models.ProjectDto project)
     {
         _editingProject           = project;
         _projectTitle             = project.Title;
@@ -2118,6 +2124,7 @@
         if (!_projectFormValid) return;
 
         _savingProject = true;
+        var token = await GetAdminTokenAsync();
 
         if (_editingProject != null)
         {
@@ -2132,12 +2139,15 @@
             _editingProject.Category         = _projectCategory;
             _editingProject.IsFeatured       = _projectIsFeatured;
             _editingProject.SortOrder        = _projectSortOrder;
-            await ProjectService.UpdateAsync(_editingProject);
-            Snackbar.Add("Project updated successfully.", Severity.Success);
+            var (success, error) = await ApiService.UpdateProjectAsync(_editingProject.Id, _editingProject, token ?? string.Empty);
+            if (success)
+                Snackbar.Add("Project updated successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Failed to update project: {error}", Severity.Error);
         }
         else
         {
-            var newProject = new Portfolio.Web.Data.PortfolioProject
+            var newProject = new Portfolio.Shared.Models.ProjectDto
             {
                 Title            = _projectTitle,
                 Slug             = _projectSlug,
@@ -2151,20 +2161,27 @@
                 IsFeatured       = _projectIsFeatured,
                 SortOrder        = _projectSortOrder
             };
-            await ProjectService.CreateAsync(newProject);
-            Snackbar.Add("Project added successfully.", Severity.Success);
+            var (created, error) = await ApiService.CreateProjectAsync(newProject, token ?? string.Empty);
+            if (created != null)
+                Snackbar.Add("Project added successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Failed to add project: {error}", Severity.Error);
         }
 
-        _projects = await ProjectService.GetAllAsync();
+        _projects = await ApiService.GetProjectsAsync();
         _savingProject = false;
         CancelEditProject();
     }
 
     private async Task DeleteProject(int id)
     {
-        await ProjectService.DeleteAsync(id);
-        _projects = await ProjectService.GetAllAsync();
-        Snackbar.Add("Project deleted.", Severity.Info);
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiService.DeleteProjectAsync(id, token ?? string.Empty);
+        if (success)
+            Snackbar.Add("Project deleted.", Severity.Info);
+        else
+            Snackbar.Add($"Failed to delete project: {error}", Severity.Error);
+        _projects = await ApiService.GetProjectsAsync();
     }
 
     private async Task ValidateUrl(string? url)

@@ -1,7 +1,5 @@
 @page "/projects/{Slug}"
 @rendermode InteractiveServer
-@using Portfolio.Web.Data
-@inject Portfolio.Web.Services.ProjectService ProjectService
 @inject Portfolio.Web.Services.PortfolioApiService ApiService
 @inject NavigationManager Navigation
 
@@ -163,14 +161,14 @@ else
 
 @code {
     [Parameter] public string Slug { get; set; } = string.Empty;
-    private PortfolioProject? _project;
+    private Portfolio.Shared.Models.ProjectDto? _project;
     private List<Portfolio.Shared.Models.ProjectDto> _otherProjects = [];
     private bool _loading = true;
 
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
-        _project = await ProjectService.GetBySlugAsync(Slug);
+        _project = await ApiService.GetProjectBySlugAsync(Slug);
         if (_project is not null)
         {
             var all = await ApiService.GetProjectsAsync();

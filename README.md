@@ -113,11 +113,12 @@ Portfolio.slnx
         │   │   ├── Skills/        # Skills page
         │   │   └── CmsPageView.razor  # Catch-all /{**slug} for custom CMS pages
         │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
-        ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings, PortfolioProject
+        ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings
         ├── Infrastructure/        # DatabaseProviderFactory
         └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
                                    #   PortfolioApiService, PortfolioApiAuthService, SmsSender,
-                                   #   StaticSiteGeneratorService, ProjectService
+                                   #   PortfolioApiService (HttpClient wrapper for Portfolio.Api), PortfolioApiAuthService,
+                                   #   SmsSender, StaticSiteGeneratorService
 ```
 
 ## Features
@@ -132,12 +133,12 @@ Portfolio.slnx
 - **SEO and Open Graph**: per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
 - **Featured images**: optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
 - **Tech chip badges**: technology tags displayed as outlined chips on project cards and blog posts — consistent styling across all public pages
-- **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set — editable via the admin Projects tab with a built-in URL validate button
+- **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set — editable via the admin Projects tab (changes are persisted to Portfolio.Api) with a built-in URL validate button
 - **SEO-friendly project detail pages**: every project has an individual page at `/projects/{slug}` with full `<head>` injection (meta description, OG tags, canonical URL); slugs are auto-generated from the project title in the admin form and editable
 - **Contact form CAPTCHA**: server-side math challenge blocks spam without any external service or API key
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header; blog content readable in both modes
-- **REST API with fallback**: Blazor app works standalone when API is offline
+- **REST API with fallback**: all public pages (projects, skills, contact) call Portfolio.Api directly; when the API is unreachable the Blazor app uses built-in fallback data so the site remains visible
 - **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library
 - **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
 - **Swagger UI**: interactive API documentation available at `/swagger` on Portfolio.Api in all environments (including production); JWT auth wired in so you can test protected endpoints directly from the browser
