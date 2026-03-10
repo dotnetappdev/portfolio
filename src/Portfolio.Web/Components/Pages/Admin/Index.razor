@@ -13,7 +13,7 @@
 @inject Portfolio.Web.Services.MenuService MenuService
 @inject Portfolio.Web.Services.AppSettingsService AppSettingsService
 @inject Portfolio.Web.Services.StaticSiteGeneratorService StaticSiteGenerator
-@inject Portfolio.Web.Services.ProjectService ProjectService
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthStateProvider
@@ -1776,8 +1776,8 @@
     private bool _projectFormValid;
     private bool _savingProject;
     private bool _projectShowEditor;
-    private List<Portfolio.Web.Data.PortfolioProject>? _projects;
-    private Portfolio.Web.Data.PortfolioProject? _editingProject;
+    private List<Portfolio.Shared.Models.ProjectDto>? _projects;
+    private Portfolio.Shared.Models.ProjectDto? _editingProject;
     private string _projectTitle = string.Empty;
     private string _projectSlug = string.Empty;
     private string _projectShortDescription = string.Empty;
@@ -1804,7 +1804,7 @@
         _blogPosts = await BlogService.GetAllForAdminAsync();
         _cmsPages  = await CmsPageService.GetAllForAdminAsync();
         _menuItems = await MenuService.GetAllForAdminAsync();
-        _projects  = await ProjectService.GetAllAsync();
+        _projects  = await ApiService.GetProjectsAsync();
     }
 
     // ── User management ─────────────────────────────────────
@@ -2067,7 +2067,7 @@
         ResetProjectForm();
     }
 
-    private void StartEditProject(Portfolio.Web.Data.PortfolioProject project)
+    private void StartEditProject(Portfolio.Shared.Models.ProjectDto project)
     {
         _editingProject           = project;
         _projectTitle             = project.Title;
@@ -2118,6 +2118,7 @@
         if (!_projectFormValid) return;
 
         _savingProject = true;
+        var token = await GetAdminTokenAsync();
 
         if (_editingProject != null)
         {
@@ -2132,12 +2133,15 @@
             _editingProject.Category         = _projectCategory;
             _editingProject.IsFeatured       = _projectIsFeatured;
             _editingProject.SortOrder        = _projectSortOrder;
-            await ProjectService.UpdateAsync(_editingProject);
-            Snackbar.Add("Project updated successfully.", Severity.Success);
+            var (success, error) = await ApiService.UpdateProjectAsync(_editingProject.Id, _editingProject, token ?? string.Empty);
+            if (success)
+                Snackbar.Add("Project updated successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Failed to update project: {error}", Severity.Error);
         }
         else
         {
-            var newProject = new Portfolio.Web.Data.PortfolioProject
+            var newProject = new Portfolio.Shared.Models.ProjectDto
             {
                 Title            = _projectTitle,
                 Slug             = _projectSlug,
@@ -2151,20 +2155,27 @@
                 IsFeatured       = _projectIsFeatured,
                 SortOrder        = _projectSortOrder
             };
-            await ProjectService.CreateAsync(newProject);
-            Snackbar.Add("Project added successfully.", Severity.Success);
+            var (created, error) = await ApiService.CreateProjectAsync(newProject, token ?? string.Empty);
+            if (created != null)
+                Snackbar.Add("Project added successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Failed to add project: {error}", Severity.Error);
         }
 
-        _projects = await ProjectService.GetAllAsync();
+        _projects = await ApiService.GetProjectsAsync();
         _savingProject = false;
         CancelEditProject();
     }
 
     private async Task DeleteProject(int id)
     {
-        await ProjectService.DeleteAsync(id);
-        _projects = await ProjectService.GetAllAsync();
-        Snackbar.Add("Project deleted.", Severity.Info);
+        var token = await GetAdminTokenAsync();
+        var (success, error) = await ApiService.DeleteProjectAsync(id, token ?? string.Empty);
+        if (success)
+            Snackbar.Add("Project deleted.", Severity.Info);
+        else
+            Snackbar.Add($"Failed to delete project: {error}", Severity.Error);
+        _projects = await ApiService.GetProjectsAsync();
     }
 
     private async Task ValidateUrl(string? url)

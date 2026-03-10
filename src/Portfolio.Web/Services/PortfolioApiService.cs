@@ -43,29 +43,6 @@ public class PortfolioApiService(
 
     public async Task<List<ProjectDto>> GetProjectsAsync()
     {
-        // Use locally-managed projects when they exist (admin-editable via the Projects tab)
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var localProjects = await context.Projects.OrderBy(p => p.SortOrder).ToListAsync();
-        if (localProjects.Count > 0)
-        {
-            return localProjects.Select(p => new ProjectDto
-            {
-                Id = p.Id,
-                Title = p.Title,
-                Slug = p.Slug,
-                Description = p.Description,
-                ShortDescription = p.ShortDescription,
-                TechStack = p.TechStack,
-                GitHubUrl = p.GitHubUrl,
-                LiveUrl = p.LiveUrl,
-                ImageUrl = p.ImageUrl,
-                Category = p.Category,
-                IsFeatured = p.IsFeatured,
-                SortOrder = p.SortOrder
-            }).ToList();
-        }
-
-        // Fall back to the Portfolio API when no local projects are configured
         try
         {
             var client = await GetClientAsync();
@@ -81,6 +58,29 @@ public class PortfolioApiService(
             logger.LogError(ex, "Unexpected error fetching projects. Using fallback data.");
             return GetFallbackProjects();
         }
+    }
+
+    public async Task<ProjectDto?> GetProjectBySlugAsync(string slug)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            var response = await client.GetAsync($"api/projects/by-slug/{Uri.EscapeDataString(slug)}");
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadFromJsonAsync<ProjectDto>();
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "API unavailable when fetching project by slug '{Slug}'. Using fallback data.", slug);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error fetching project by slug '{Slug}'. Using fallback data.", slug);
+        }
+
+        // Fall back to searching the hardcoded list
+        return GetFallbackProjects().FirstOrDefault(p =>
+            string.Equals(p.Slug, slug, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task<List<SkillDto>> GetSkillsAsync()
@@ -119,6 +119,72 @@ public class PortfolioApiService(
         {
             logger.LogError(ex, "Unexpected error sending contact message.");
             return false;
+        }
+    }
+
+    private static HttpRequestMessage CreateAuthorizedRequest(
+        HttpMethod method, string url, string token, object? body = null)
+    {
+        var request = new HttpRequestMessage(method, url);
+        request.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        if (body != null)
+            request.Content = JsonContent.Create(body);
+        return request;
+    }
+
+    public async Task<(ProjectDto? Project, string? Error)> CreateProjectAsync(ProjectDto dto, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            using var request = CreateAuthorizedRequest(HttpMethod.Post, "api/projects", adminToken, dto);
+            using var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+                return (await response.Content.ReadFromJsonAsync<ProjectDto>(), null);
+            var body = await response.Content.ReadAsStringAsync();
+            return (null, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to create project via API");
+            return (null, ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> UpdateProjectAsync(int id, ProjectDto dto, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            using var request = CreateAuthorizedRequest(HttpMethod.Put, $"api/projects/{id}", adminToken, dto);
+            using var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode) return (true, null);
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to update project via API");
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> DeleteProjectAsync(int id, string adminToken)
+    {
+        try
+        {
+            var client = await GetClientAsync();
+            using var request = CreateAuthorizedRequest(HttpMethod.Delete, $"api/projects/{id}", adminToken);
+            using var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode) return (true, null);
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to delete project via API");
+            return (false, ex.Message);
         }
     }
 
