@@ -94,6 +94,35 @@ else
                 }
             </MudPaper>
 
+            @if (_post.GalleryImageList.Length > 0)
+            {
+                <MudDivider Class="mt-6 mb-4" />
+                <MudText Typo="Typo.h6" Class="fw-bold mb-3">Gallery</MudText>
+                <MudGrid Spacing="2">
+                    @foreach (var imgUrl in _post.GalleryImageList)
+                    {
+                        <MudItem xs="12" sm="6">
+                            <img src="@imgUrl" alt="Gallery image"
+                                 style="width:100%;border-radius:8px;object-fit:cover;max-height:280px;" />
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_post.GitHubUrl))
+            {
+                <MudDivider Class="mt-6 mb-4" />
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Custom.Brands.GitHub" Color="Color.Default" />
+                    <MudText Typo="Typo.body2">Source code available on GitHub:</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                               StartIcon="@Icons.Custom.Brands.GitHub"
+                               Href="@_post.GitHubUrl" Target="_blank" Size="Size.Small">
+                        View Repository
+                    </MudButton>
+                </MudStack>
+            }
+
             <MudDivider Class="mt-8 mb-6" />
 
             <MudPaper Class="pa-6" Elevation="2">
@@ -130,7 +159,7 @@ else
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">@related.Summary</MudText>
                             </MudCardContent>
                             <MudCardActions>
-                                <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                                            Href="@($"/blog/{related.Slug}")">Read Post</MudButton>
                             </MudCardActions>
                         </MudCard>

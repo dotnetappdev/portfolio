@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Portfolio.Api.Data;
 
@@ -11,9 +12,11 @@ using Portfolio.Api.Data;
 namespace Portfolio.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310190053_AddBlogSlugAndFixProjectLinks")]
+    partial class AddBlogSlugAndFixProjectLinks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,18 +174,6 @@ namespace Portfolio.Api.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("PrimaryColor")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SecondaryColor")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("TertiaryColor")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("VisitorEmailTemplate")
                         .HasColumnType("nvarchar(max)");
 
@@ -293,13 +284,6 @@ namespace Portfolio.Api.Data.Migrations
                     b.Property<string>("FeaturedImage")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("GalleryImages")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GitHubUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
@@ -779,15 +763,15 @@ namespace Portfolio.Api.Data.Migrations
                             Id = 2,
                             BlogSlug = "building-bookit-blazor-booking-management-system",
                             Category = "Mobile Application",
-                            Description = "A cross-platform mobile and desktop application built with .NET MAUI targeting iOS, Android, Windows, and macOS. Delivers a native experience across all platforms from a single shared codebase, with REST API integration and offline-friendly data handling.",
+                            Description = "BookIt Mobile is the .NET MAUI companion to the BookIt platform, targeting iOS, Android, Windows, and macOS from a single codebase. Customers use it to browse services, check live availability, and book or reschedule appointments with real-time confirmations and SMS reminders. Staff get a full daily schedule view, customer check-in, and a built-in POS screen to process card payments and issue digital receipts on the spot. The app supports offline-friendly data caching so carers and staff can keep working even when signal drops, syncing changes automatically when connectivity returns. Push notifications keep everyone up to date on booking changes without polling.",
                             GitHubUrl = "https://github.com/dotnetappdev/BookIt",
                             ImageUrl = "/images/maui.png",
                             IsFeatured = true,
-                            ShortDescription = "A .NET MAUI mobile and desktop application",
+                            ShortDescription = "The BookIt companion app for customers and staff on any device",
                             Slug = "maui-cross-platform-app",
                             SortOrder = 2,
-                            TechStack = ".NET MAUI, C#, XAML, REST APIs",
-                            Title = "MAUI Cross-Platform App"
+                            TechStack = ".NET MAUI, C#, XAML, REST APIs, MudBlazor, Push Notifications, POS, Offline Cache",
+                            Title = "BookIt Mobile (MAUI)"
                         },
                         new
                         {

@@ -84,7 +84,7 @@ else
                             }
                         </MudChipSet>
                     </MudCardContent>
-                    @if (_project.GitHubUrl != null || _project.LiveUrl != null)
+                    @if (_project.GitHubUrl != null || _project.LiveUrl != null || !string.IsNullOrWhiteSpace(_project.BlogSlug))
                     {
                         <MudCardActions>
                             @if (_project.GitHubUrl != null)
@@ -97,10 +97,18 @@ else
                             }
                             @if (_project.LiveUrl != null)
                             {
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.Launch"
                                            Href="@_project.LiveUrl" Target="_blank" Class="ml-2">
                                     Live Demo
+                                </MudButton>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(_project.BlogSlug))
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
+                                           StartIcon="@Icons.Material.Filled.Article"
+                                           Href="@($"/blog/{_project.BlogSlug}")" Class="ml-2">
+                                    Read the Story
                                 </MudButton>
                             }
                         </MudCardActions>

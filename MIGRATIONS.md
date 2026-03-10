@@ -10,7 +10,7 @@ Both `Portfolio.Api` and `Portfolio.Web` use **Entity Framework Core** with code
 |---|---|
 | Brand-new database | EF Core creates the database and applies all migrations |
 | Existing database, pending migrations | EF Core applies the missing migrations |
-| Database already up to date | Nothing — the app starts normally |
+| Database already up to date | Nothing - the app starts normally |
 
 This is controlled by `Database.MigrateAsync()` called during startup whenever `"SeedData": true` is set in `appsettings.json` (the default).
 
@@ -103,7 +103,7 @@ dotnet ef database update 0
 
 ## Provider-specific notes
 
-The `DatabaseProvider` setting in `appsettings.json` controls which EF Core provider is used. Migrations are provider-agnostic — the same migration files work with all supported providers.
+The `DatabaseProvider` setting in `appsettings.json` controls which EF Core provider is used. Migrations are provider-agnostic - the same migration files work with all supported providers.
 
 | `DatabaseProvider` value | Provider | Notes |
 |---|---|---|
@@ -146,7 +146,7 @@ The Web CMS database (blog posts, CMS pages, menus, app settings) is initialised
 
 ## Docker
 
-When running via `docker compose up`, both containers apply migrations automatically on startup — no manual steps required. The databases persist in named Docker volumes (`api-data` and `web-data`).
+When running via `docker compose up`, both containers apply migrations automatically on startup - no manual steps required. The databases persist in named Docker volumes (`api-data` and `web-data`).
 
 To reset and re-seed from scratch:
 

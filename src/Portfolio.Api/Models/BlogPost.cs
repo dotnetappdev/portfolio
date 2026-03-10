@@ -38,6 +38,13 @@ public class BlogPost
     [MaxLength(1000)]
     public string? FeaturedImage { get; set; }
 
+    /// <summary>Optional link to the source repository for this post.</summary>
+    [MaxLength(500)]
+    public string? GitHubUrl { get; set; }
+
+    /// <summary>Newline-separated list of additional image URLs shown as a gallery below the post body.</summary>
+    public string? GalleryImages { get; set; }
+
     // ── SEO ──────────────────────────────────────────────────────────────────
     /// <summary>Overrides the browser tab title and og:title for this post.</summary>
     [MaxLength(300)]

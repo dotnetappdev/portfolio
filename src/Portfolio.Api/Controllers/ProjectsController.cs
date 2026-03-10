@@ -31,6 +31,7 @@ public class ProjectsController : ControllerBase
                 GitHubUrl = p.GitHubUrl,
                 LiveUrl = p.LiveUrl,
                 ImageUrl = p.ImageUrl,
+                BlogSlug = p.BlogSlug,
                 Category = p.Category,
                 IsFeatured = p.IsFeatured,
                 SortOrder = p.SortOrder
@@ -53,6 +54,7 @@ public class ProjectsController : ControllerBase
             GitHubUrl = project.GitHubUrl,
             LiveUrl = project.LiveUrl,
             ImageUrl = project.ImageUrl,
+            BlogSlug = project.BlogSlug,
             Category = project.Category,
             IsFeatured = project.IsFeatured,
             SortOrder = project.SortOrder
@@ -77,6 +79,7 @@ public class ProjectsController : ControllerBase
             GitHubUrl = project.GitHubUrl,
             LiveUrl = project.LiveUrl,
             ImageUrl = project.ImageUrl,
+            BlogSlug = project.BlogSlug,
             Category = project.Category,
             IsFeatured = project.IsFeatured,
             SortOrder = project.SortOrder
@@ -100,6 +103,7 @@ public class ProjectsController : ControllerBase
                 GitHubUrl = p.GitHubUrl,
                 LiveUrl = p.LiveUrl,
                 ImageUrl = p.ImageUrl,
+                BlogSlug = p.BlogSlug,
                 Category = p.Category,
                 IsFeatured = p.IsFeatured,
                 SortOrder = p.SortOrder
@@ -125,6 +129,7 @@ public class ProjectsController : ControllerBase
             GitHubUrl        = dto.GitHubUrl,
             LiveUrl          = dto.LiveUrl,
             ImageUrl         = dto.ImageUrl,
+            BlogSlug         = dto.BlogSlug,
             Category         = dto.Category,
             IsFeatured       = dto.IsFeatured,
             SortOrder        = dto.SortOrder
@@ -158,6 +163,7 @@ public class ProjectsController : ControllerBase
         project.GitHubUrl        = dto.GitHubUrl;
         project.LiveUrl          = dto.LiveUrl;
         project.ImageUrl         = dto.ImageUrl;
+        project.BlogSlug         = dto.BlogSlug;
         project.Category         = dto.Category;
         project.IsFeatured       = dto.IsFeatured;
         project.SortOrder        = dto.SortOrder;

@@ -8,4 +8,9 @@ public class AppSettingsDto
     public bool VisitorNotificationsEnabled { get; set; }
     public string? VisitorNotificationEmail { get; set; }
     public string? VisitorEmailTemplate { get; set; }
+
+    // Theme
+    public string? PrimaryColor { get; set; }
+    public string? SecondaryColor { get; set; }
+    public string? TertiaryColor { get; set; }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Portfolio.Api.Data;
 
@@ -11,9 +12,11 @@ using Portfolio.Api.Data;
 namespace Portfolio.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310184344_UpdateMauiGitHubUrl")]
+    partial class UpdateMauiGitHubUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,18 +174,6 @@ namespace Portfolio.Api.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("PrimaryColor")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SecondaryColor")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("TertiaryColor")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("VisitorEmailTemplate")
                         .HasColumnType("nvarchar(max)");
 
@@ -293,13 +284,6 @@ namespace Portfolio.Api.Data.Migrations
                     b.Property<string>("FeaturedImage")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("GalleryImages")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GitHubUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
@@ -703,10 +687,6 @@ namespace Portfolio.Api.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("BlogSlug")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -762,10 +742,9 @@ namespace Portfolio.Api.Data.Migrations
                         new
                         {
                             Id = 1,
-                            BlogSlug = "building-bookit-blazor-booking-management-system",
                             Category = "Work Project",
                             Description = "BookIt is a full-featured booking management system built with ASP.NET Core Blazor. Businesses use it to manage appointments, resources, and customer bookings through a modern interface with light and dark mode support. Built on a clean architecture with real-time availability tracking, SMS notifications for customers, and a responsive MudBlazor UI.",
-                            GitHubUrl = "https://github.com/dotnetappdev/BookIt",
+                            GitHubUrl = "https://github.com/dotnetappdev/bookit",
                             ImageUrl = "/images/bookit.svg",
                             IsFeatured = true,
                             ShortDescription = "A real-time Blazor booking management system",
@@ -777,7 +756,6 @@ namespace Portfolio.Api.Data.Migrations
                         new
                         {
                             Id = 2,
-                            BlogSlug = "building-bookit-blazor-booking-management-system",
                             Category = "Mobile Application",
                             Description = "A cross-platform mobile and desktop application built with .NET MAUI targeting iOS, Android, Windows, and macOS. Delivers a native experience across all platforms from a single shared codebase, with REST API integration and offline-friendly data handling.",
                             GitHubUrl = "https://github.com/dotnetappdev/BookIt",
@@ -792,9 +770,9 @@ namespace Portfolio.Api.Data.Migrations
                         new
                         {
                             Id = 3,
-                            BlogSlug = "building-curo-healthcare-care-management-platform",
                             Category = "Work Project",
                             Description = "Curo is a healthcare care management platform that replaced a paper-based system used by community carers. Built with Blazor and ASP.NET Core, it gives carers a task-driven workflow on any device and provides care managers with a live dashboard showing real-time visit progress. Hosted on Azure with full audit logging and role-based access control.",
+                            GitHubUrl = "https://github.com/dotnetappdev/curo",
                             ImageUrl = "/images/curo.svg",
                             IsFeatured = true,
                             ShortDescription = "Healthcare care management platform",
@@ -808,7 +786,7 @@ namespace Portfolio.Api.Data.Migrations
                             Id = 4,
                             Category = "Healthcare",
                             Description = "A Patient CRM currently in development, designed to help healthcare providers manage patient relationships, appointments, communications, and care history in one centralised platform. Built with .NET 10, Blazor, and a REST API backend.",
-                            GitHubUrl = "https://github.com/dotnetappdev/PatientCrm",
+                            GitHubUrl = "https://github.com/dotnetappdev/patient-crm",
                             ImageUrl = "/images/patient-crm.png",
                             IsFeatured = true,
                             ShortDescription = "Patient relationship management system (in development)",
@@ -820,9 +798,9 @@ namespace Portfolio.Api.Data.Migrations
                         new
                         {
                             Id = 5,
-                            BlogSlug = "building-ai-into-dotnet-without-losing-your-mind",
                             Category = "AI",
                             Description = "An AI assistant integrated into a healthcare platform that helps clinical staff surface relevant patient history, flag anomalies in test results, and draft care plan notes. Built on Semantic Kernel and Azure OpenAI with a strict evaluation layer that confidence-scores every response before it reaches clinical staff. All AI output is fully audited.",
+                            GitHubUrl = "https://github.com/dotnetappdev/ai-diagnostic-assistant",
                             ImageUrl = "/images/ai-assistant.png",
                             IsFeatured = true,
                             ShortDescription = "AI-powered clinical decision support tool",
@@ -834,9 +812,9 @@ namespace Portfolio.Api.Data.Migrations
                         new
                         {
                             Id = 6,
-                            BlogSlug = "owasp-top-ten-is-not-a-checklist-it-is-a-story",
                             Category = "Security",
                             Description = "A reusable security baseline for ASP.NET Core APIs covering JWT authentication with algorithm pinning, OWASP Top Ten mitigations, rate limiting, structured security logging, and automated dependency vulnerability scanning in the CI pipeline. Used as the starting point for all new API projects so that security is built in from the first commit rather than retrofitted.",
+                            GitHubUrl = "https://github.com/dotnetappdev/secure-api-framework",
                             ImageUrl = "/images/secure-api.png",
                             IsFeatured = true,
                             ShortDescription = "Hardened API security baseline for .NET",
@@ -848,10 +826,9 @@ namespace Portfolio.Api.Data.Migrations
                         new
                         {
                             Id = 7,
-                            BlogSlug = "building-talentconnect-blazor-recruitment-platform",
                             Category = "Work Project",
                             Description = "TalentConnect is a full-featured recruitment management platform built with Blazor and ASP.NET Core. It streamlines the end-to-end hiring process with job posting management, a configurable multi-stage candidate pipeline, interview scheduling, automated notifications, and detailed recruitment analytics. Built for teams who want a data-driven hiring workflow without the spreadsheets.",
-                            GitHubUrl = "https://github.com/dotnetappdev/rexrutmentportal",
+                            GitHubUrl = "https://github.com/dotnetappdev/talentconnect",
                             ImageUrl = "/images/talentconnect.svg",
                             IsFeatured = true,
                             ShortDescription = "A Blazor recruitment management platform",
