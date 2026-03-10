@@ -10,6 +10,15 @@ using Portfolio.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = builder.Configuration["Sentry:Dsn"] ?? string.Empty;
+    o.TracesSampleRate = builder.Configuration.GetValue<double?>("Sentry:TracesSampleRate") ?? 0.2;
+    o.MinimumBreadcrumbLevel = LogLevel.Information;
+    o.MinimumEventLevel      = LogLevel.Warning;
+    o.SendDefaultPii         = false;
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -44,6 +53,7 @@ builder.Services.AddHttpClient("PortfolioApi", client =>
 // Named HTTP clients for SMS providers
 builder.Services.AddHttpClient("Twilio");
 builder.Services.AddHttpClient("ClickSend");
+builder.Services.AddHttpClient("MailerSend");
 
 // SmsSender reads provider settings from the DB on each call — no restart needed
 builder.Services.AddScoped<SmsSender>();

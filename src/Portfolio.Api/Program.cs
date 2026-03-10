@@ -140,8 +140,13 @@ try
         if (!await roleMgr.RoleExistsAsync("Admin"))
             await roleMgr.CreateAsync(new IdentityRole("Admin"));
 
-        var adminEmail    = builder.Configuration["DefaultAdmin:Email"]    ?? "admin@portfolio.com";
-        var adminPassword = builder.Configuration["DefaultAdmin:Password"] ?? "Admin@123456!";
+        var adminEmail    = builder.Configuration["DefaultAdmin:Email"];
+        var adminPassword = builder.Configuration["DefaultAdmin:Password"];
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            throw new InvalidOperationException(
+                "DefaultAdmin:Email and DefaultAdmin:Password must be set via environment variables " +
+                "(DefaultAdmin__Email / DefaultAdmin__Password) or user secrets. " +
+                "Do not store credentials in appsettings.json.");
 
         if (await userMgr.FindByEmailAsync(adminEmail) == null)
         {
