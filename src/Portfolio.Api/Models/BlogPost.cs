@@ -45,6 +45,11 @@ public class BlogPost
     /// <summary>Newline-separated list of additional image URLs shown as a gallery below the post body.</summary>
     public string? GalleryImages { get; set; }
 
+    /// <summary>JSON-serialised list of <see cref="Portfolio.Shared.Models.BlogMediaItem"/> objects
+    /// (images and videos) with per-item position ("before_article" | "after_article") and sort order.
+    /// Replaces the flat GalleryImages field for new posts; GalleryImages is retained for back-compat.</summary>
+    public string? MediaItemsJson { get; set; }
+
     // ── SEO ──────────────────────────────────────────────────────────────────
     /// <summary>Overrides the browser tab title and og:title for this post.</summary>
     [MaxLength(300)]
