@@ -489,3 +489,6 @@ nohup.out
 src/Portfolio.Web/appsettings.Development.json
 src/Portfolio.Web/bin\Debug/
 src/Portfolio.Web/bin/
+src/Portfolio.Api/bin/
+src/Portfolio.Api/bin\Debug/
+src/Portfolio.Api/obj/
