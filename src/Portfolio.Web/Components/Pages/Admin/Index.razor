@@ -960,6 +960,78 @@
                         </MudCardContent>
                     </MudCard>
 
+                    <!-- GitHub URL card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Custom.Brands.GitHub" Size="Size.Small" Class="mr-1" />
+                                    Source Repository
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudTextField @bind-Value="_postGitHubUrl" Label="GitHub URL"
+                                          Variant="Variant.Outlined"
+                                          Placeholder="https://github.com/dotnetappdev/..."
+                                          HelperText="Optional link shown on the blog post page" />
+                            @if (!string.IsNullOrWhiteSpace(_postGitHubUrl))
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                           StartIcon="@Icons.Custom.Brands.GitHub"
+                                           Href="@_postGitHubUrl" Target="_blank" Class="mt-2" Size="Size.Small">
+                                    Preview link
+                                </MudButton>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Gallery Images card -->
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Small" Class="mr-1" />
+                                    Image Gallery
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2 d-block">
+                                Add image URLs one per line. Use the arrows to reorder. These appear as a gallery below the post.
+                            </MudText>
+                            @{
+                                var galleryLines = (_postGalleryImages ?? string.Empty)
+                                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                    .ToList();
+                            }
+                            @for (int gi = 0; gi < galleryLines.Count; gi++)
+                            {
+                                var idx = gi;
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2">
+                                    <MudTextField Value="@galleryLines[idx]"
+                                                  ValueChanged="@((string v) => UpdateGalleryLine(idx, v))"
+                                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  Placeholder="https://..." Style="flex:1;" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small"
+                                                   Disabled="@(idx == 0)"
+                                                   OnClick="@(() => MoveGalleryLine(idx, -1))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small"
+                                                   Disabled="@(idx == galleryLines.Count - 1)"
+                                                   OnClick="@(() => MoveGalleryLine(idx, 1))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => RemoveGalleryLine(idx))" />
+                                </MudStack>
+                            }
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="@AddGalleryLine" Class="mt-1">
+                                Add Image URL
+                            </MudButton>
+                        </MudCardContent>
+                    </MudCard>
+
                     <!-- SEO card -->
                     <MudExpansionPanel Text="SEO & Social" Icon="@Icons.Material.Filled.TravelExplore"
                                        Class="mb-4">
@@ -1645,6 +1717,12 @@
                                           Variant="Variant.Outlined"
                                           Placeholder="/images/project.png"
                                           HelperText="Optional project image" />
+
+                            <!-- Blog Story Slug -->
+                            <MudTextField @bind-Value="_projectBlogSlug" Label="Blog Story Slug" Class="mt-3"
+                                          Variant="Variant.Outlined"
+                                          Placeholder="building-my-project-story"
+                                          HelperText="Slug of the blog post that tells this project's story (adds a 'Read Story' button)" />
                         </MudCardContent>
                     </MudCard>
 
@@ -1784,6 +1862,7 @@
     private string? _projectGitHubUrl;
     private string? _projectLiveUrl;
     private string? _projectImageUrl;
+    private string? _projectBlogSlug;
     private string _projectCategory = string.Empty;
     private bool _projectIsFeatured;
     private int _projectSortOrder = 1;
@@ -2080,6 +2159,7 @@
         _projectGitHubUrl         = project.GitHubUrl;
         _projectLiveUrl           = project.LiveUrl;
         _projectImageUrl          = project.ImageUrl;
+        _projectBlogSlug          = project.BlogSlug;
         _projectCategory          = project.Category;
         _projectIsFeatured        = project.IsFeatured;
         _projectSortOrder         = project.SortOrder;
@@ -2103,6 +2183,7 @@
         _projectGitHubUrl        = null;
         _projectLiveUrl          = null;
         _projectImageUrl         = null;
+        _projectBlogSlug         = null;
         _projectCategory         = string.Empty;
         _projectIsFeatured       = false;
         _projectSortOrder        = (_projects?.Count ?? 0) + 1;
@@ -2132,6 +2213,7 @@
             _editingProject.GitHubUrl        = string.IsNullOrWhiteSpace(_projectGitHubUrl) ? null : _projectGitHubUrl;
             _editingProject.LiveUrl          = string.IsNullOrWhiteSpace(_projectLiveUrl) ? null : _projectLiveUrl;
             _editingProject.ImageUrl         = string.IsNullOrWhiteSpace(_projectImageUrl) ? null : _projectImageUrl;
+            _editingProject.BlogSlug         = string.IsNullOrWhiteSpace(_projectBlogSlug) ? null : _projectBlogSlug;
             _editingProject.Category         = _projectCategory;
             _editingProject.IsFeatured       = _projectIsFeatured;
             _editingProject.SortOrder        = _projectSortOrder;
@@ -2153,6 +2235,7 @@
                 GitHubUrl        = string.IsNullOrWhiteSpace(_projectGitHubUrl) ? null : _projectGitHubUrl,
                 LiveUrl          = string.IsNullOrWhiteSpace(_projectLiveUrl) ? null : _projectLiveUrl,
                 ImageUrl         = string.IsNullOrWhiteSpace(_projectImageUrl) ? null : _projectImageUrl,
+                BlogSlug         = string.IsNullOrWhiteSpace(_projectBlogSlug) ? null : _projectBlogSlug,
                 Category         = _projectCategory,
                 IsFeatured       = _projectIsFeatured,
                 SortOrder        = _projectSortOrder
@@ -2215,6 +2298,8 @@
     private bool    _postIsPublished      = true;
     private string  _postPublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
     private string? _postFeaturedImage;
+    private string? _postGitHubUrl;
+    private string? _postGalleryImages;
     // SEO
     private string? _postMetaTitle;
     private string? _postMetaDescription;
@@ -2248,6 +2333,8 @@
         _postIsPublished      = post.IsPublished;
         _postPublishedDateStr = post.PublishedDate.ToString("yyyy-MM-dd");
         _postFeaturedImage    = post.FeaturedImage;
+        _postGitHubUrl        = post.GitHubUrl;
+        _postGalleryImages    = post.GalleryImages;
         _postMetaTitle        = post.MetaTitle;
         _postMetaDescription  = post.MetaDescription;
         _postOgImage          = post.OgImage;
@@ -2273,6 +2360,8 @@
         _postIsPublished     = true;
         _postPublishedDateStr   = DateTime.Today.ToString("yyyy-MM-dd");
         _postFeaturedImage   = null;
+        _postGitHubUrl       = null;
+        _postGalleryImages   = null;
         _postMetaTitle       = null;
         _postMetaDescription = null;
         _postOgImage         = null;
@@ -2303,6 +2392,8 @@
             _editingPost.IsPublished      = _postIsPublished;
             _editingPost.PublishedDate    = publishedDate;
             _editingPost.FeaturedImage    = NullIfEmpty(_postFeaturedImage);
+            _editingPost.GitHubUrl        = NullIfEmpty(_postGitHubUrl);
+            _editingPost.GalleryImages    = NullIfEmpty(_postGalleryImages);
             _editingPost.MetaTitle        = NullIfEmpty(_postMetaTitle);
             _editingPost.MetaDescription  = NullIfEmpty(_postMetaDescription);
             _editingPost.OgImage          = NullIfEmpty(_postOgImage);
@@ -2324,6 +2415,8 @@
                 IsPublished      = _postIsPublished,
                 PublishedDate    = publishedDate,
                 FeaturedImage    = NullIfEmpty(_postFeaturedImage),
+                GitHubUrl        = NullIfEmpty(_postGitHubUrl),
+                GalleryImages    = NullIfEmpty(_postGalleryImages),
                 MetaTitle        = NullIfEmpty(_postMetaTitle),
                 MetaDescription  = NullIfEmpty(_postMetaDescription),
                 OgImage          = NullIfEmpty(_postOgImage),
@@ -2592,6 +2685,48 @@
 
     private static string? NullIfEmpty(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private void AddGalleryLine()
+    {
+        var lines = (_postGalleryImages ?? string.Empty)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        lines.Add(string.Empty);
+        _postGalleryImages = string.Join('\n', lines);
+    }
+
+    private void RemoveGalleryLine(int index)
+    {
+        var lines = (_postGalleryImages ?? string.Empty)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        if (index >= 0 && index < lines.Count)
+        {
+            lines.RemoveAt(index);
+            _postGalleryImages = lines.Count > 0 ? string.Join('\n', lines) : null;
+        }
+    }
+
+    private void UpdateGalleryLine(int index, string value)
+    {
+        var lines = (_postGalleryImages ?? string.Empty)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        while (lines.Count <= index) lines.Add(string.Empty);
+        lines[index] = value;
+        _postGalleryImages = string.Join('\n', lines);
+    }
+
+    private void MoveGalleryLine(int index, int direction)
+    {
+        var lines = (_postGalleryImages ?? string.Empty)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        var target = index + direction;
+        if (target < 0 || target >= lines.Count) return;
+        (lines[index], lines[target]) = (lines[target], lines[index]);
+        _postGalleryImages = string.Join('\n', lines);
+    }
 
     private static DateTime ParseDate(string dateStr) =>
         DateTime.TryParse(dateStr, out var dt)

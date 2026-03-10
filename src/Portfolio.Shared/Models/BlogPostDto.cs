@@ -14,6 +14,8 @@ public class BlogPostDto
     public string Body { get; set; } = string.Empty;
     public bool IsPublished { get; set; }
     public string? FeaturedImage { get; set; }
+    public string? GitHubUrl { get; set; }
+    public string? GalleryImages { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
     public string? OgImage { get; set; }
@@ -21,4 +23,7 @@ public class BlogPostDto
 
     public string[] TagList =>
         Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    public string[] GalleryImageList =>
+        GalleryImages?.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
 }

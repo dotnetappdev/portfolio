@@ -73,6 +73,8 @@ public class BlogController : ControllerBase
         post.Body             = dto.Body;
         post.IsPublished      = dto.IsPublished;
         post.FeaturedImage    = dto.FeaturedImage;
+        post.GitHubUrl        = dto.GitHubUrl;
+        post.GalleryImages    = dto.GalleryImages;
         post.MetaTitle        = dto.MetaTitle;
         post.MetaDescription  = dto.MetaDescription;
         post.OgImage          = dto.OgImage;
@@ -107,6 +109,8 @@ public class BlogController : ControllerBase
         Body             = p.Body,
         IsPublished      = p.IsPublished,
         FeaturedImage    = p.FeaturedImage,
+        GitHubUrl        = p.GitHubUrl,
+        GalleryImages    = p.GalleryImages,
         MetaTitle        = p.MetaTitle,
         MetaDescription  = p.MetaDescription,
         OgImage          = p.OgImage,
@@ -126,6 +130,8 @@ public class BlogController : ControllerBase
         Body             = dto.Body,
         IsPublished      = dto.IsPublished,
         FeaturedImage    = dto.FeaturedImage,
+        GitHubUrl        = dto.GitHubUrl,
+        GalleryImages    = dto.GalleryImages,
         MetaTitle        = dto.MetaTitle,
         MetaDescription  = dto.MetaDescription,
         OgImage          = dto.OgImage,

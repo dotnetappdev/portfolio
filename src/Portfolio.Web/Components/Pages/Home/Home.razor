@@ -144,31 +144,31 @@ else
                     <MudCardActions>
                         @if (!string.IsNullOrWhiteSpace(project.Slug))
                         {
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.OpenInNew" Href="@($"/projects/{project.Slug}")" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.OpenInNew" Href="@($"/projects/{project.Slug}")" Size="Size.Small">
                                 Details
                             </MudButton>
                         }
                         @if (!string.IsNullOrWhiteSpace(project.BlogSlug))
                         {
-                            <MudButton Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Article" Href="@($"/blog/{project.BlogSlug}")" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Article" Href="@($"/blog/{project.BlogSlug}")" Size="Size.Small">
                                 Story
                             </MudButton>
                         }
                         @if (project.GitHubUrl != null)
                         {
-                            <MudButton Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Custom.Brands.GitHub" Href="@project.GitHubUrl" Target="_blank" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Custom.Brands.GitHub" Href="@project.GitHubUrl" Target="_blank" Size="Size.Small">
                                 GitHub
                             </MudButton>
                         }
                         @if (project.LiveUrl != null)
                         {
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Launch" Href="@project.LiveUrl" Target="_blank" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Launch" Href="@project.LiveUrl" Target="_blank" Size="Size.Small">
                                 Live Demo
                             </MudButton>
                         }
                         @if (string.IsNullOrWhiteSpace(project.Slug) && project.GitHubUrl == null && project.LiveUrl == null)
                         {
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/projects">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/projects" Size="Size.Small">
                                 View All Projects
                             </MudButton>
                         }
