@@ -31,21 +31,14 @@ jobs:
 
       - name: Run database migrations
         working-directory: src/Portfolio.Api
-        env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.API_DB_CONNECTION_STRING }}
         run: dotnet ef database update --configuration Release
 
       - name: Publish and deploy API
-        shell: bash
-        run: |
-          dotnet publish src/Portfolio.Api/Portfolio.Api.csproj \
-            --configuration Release \
-            /p:PublishProfile=WebDeploy \
-            "/p:MSDeployServiceURL=${{ secrets.API_MSDEPLOY_URL }}" \
-            "/p:DeployIisAppPath=${{ secrets.API_DEPLOY_IISAPP_PATH }}" \
-            "/p:UserName=${{ secrets.API_MSDEPLOY_USERNAME }}" \
-            "/p:Password=${{ secrets.API_MSDEPLOY_PASSWORD }}" \
-            /p:AllowUntrustedCertificate=true
+        run: >
+          dotnet publish src/Portfolio.Api/Portfolio.Api.csproj
+          --configuration Release
+          /p:PublishProfile=WebDeploy
+          "/p:Password=${{ secrets.MSDEPLOY_PASSWORD }}"
 
   deploy-web:
     name: Deploy Portfolio Web
@@ -67,13 +60,9 @@ jobs:
         run: dotnet restore src/Portfolio.Web/Portfolio.Web.csproj
 
       - name: Publish and deploy Web
-        shell: bash
-        run: |
-          dotnet publish src/Portfolio.Web/Portfolio.Web.csproj \
-            --configuration Release \
-            /p:PublishProfile=WebDeploy \
-            "/p:MSDeployServiceURL=${{ secrets.WEB_MSDEPLOY_URL }}" \
-            "/p:DeployIisAppPath=${{ secrets.WEB_DEPLOY_IISAPP_PATH }}" \
-            "/p:UserName=${{ secrets.WEB_MSDEPLOY_USERNAME }}" \
-            "/p:Password=${{ secrets.WEB_MSDEPLOY_PASSWORD }}" \
-            /p:AllowUntrustedCertificate=true
+        run: >
+          dotnet publish src/Portfolio.Web/Portfolio.Web.csproj
+          --configuration Release
+          /p:PublishProfile=WebDeploy
+          "/p:Password=${{ secrets.MSDEPLOY_PASSWORD }}"
+
