@@ -193,6 +193,9 @@ publish/
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
+# Allow PublishProfiles pubxml files to be committed — they contain build settings only;
+# all sensitive values (URLs, usernames, passwords) are supplied via GitHub Actions secrets.
+!**/PublishProfiles/*.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
