@@ -150,12 +150,13 @@ try
         var adminEmail    = builder.Configuration["DefaultAdmin:Email"];
         var adminPassword = builder.Configuration["DefaultAdmin:Password"];
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
-            throw new InvalidOperationException(
-                "DefaultAdmin:Email and DefaultAdmin:Password must be set via environment variables " +
-                "(DefaultAdmin__Email / DefaultAdmin__Password) or user secrets. " +
-                "Do not store credentials in appsettings.json.");
-
-        if (await userMgr.FindByEmailAsync(adminEmail) == null)
+        {
+            logger.LogWarning(
+                "DefaultAdmin:Email / DefaultAdmin:Password not configured. " +
+                "Skipping admin seed — set DefaultAdmin__Email and DefaultAdmin__Password " +
+                "environment variables to seed an admin account.");
+        }
+        else if (await userMgr.FindByEmailAsync(adminEmail) == null)
         {
             var admin = new ApplicationUser
             {
@@ -168,9 +169,9 @@ try
             var result = await userMgr.CreateAsync(admin, adminPassword);
             if (result.Succeeded)
                 await userMgr.AddToRoleAsync(admin, "Admin");
-        }
 
-        logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
+            logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
+        }
     }
 
     app.Run();

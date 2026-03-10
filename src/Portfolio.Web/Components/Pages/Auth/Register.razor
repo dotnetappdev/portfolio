@@ -44,9 +44,9 @@
                                   Required="true" RequiredError="Please confirm your password"
                                   InputType="@(_showPw ? InputType.Text : InputType.Password)"
                                   Variant="Variant.Outlined" Class="mb-4" />
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true"
                                Size="Size.Large" OnClick="@HandleRegister" Disabled="@_registering"
-                               StartIcon="@Icons.Material.Filled.PersonAdd">
+                               StartIcon="@Icons.Material.Filled.PersonAdd" Class="hero-outline-btn">
                         @(_registering ? "Registering..." : "Create Account")
                     </MudButton>
                 </MudForm>
