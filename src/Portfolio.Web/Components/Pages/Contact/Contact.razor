@@ -1,7 +1,6 @@
 @page "/contact"
 @rendermode InteractiveServer
 @inject Portfolio.Web.Services.PortfolioApiService ApiService
-@inject Portfolio.Web.Services.SmsSender SmsSender
 @inject ISnackbar Snackbar
 
 <PageTitle>Contact | David Buckley</PageTitle>
@@ -105,12 +104,6 @@
 
         if (success)
         {
-            // Fire-and-forget SMS alert — SmsSender handles all exceptions internally
-            _ = SmsSender.SendToAdminAsync(
-                    $"New contact from {_model.Name} ({_model.Email}): {_model.Subject}")
-                .ContinueWith(t => { /* exceptions are caught and logged inside SmsSender */ },
-                    TaskContinuationOptions.OnlyOnFaulted);
-
             Snackbar.Add("Message sent successfully! I'll get back to you soon.", Severity.Success);
             _model = new Portfolio.Shared.Models.ContactMessageDto();
             await _form.ResetAsync();

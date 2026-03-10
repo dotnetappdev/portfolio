@@ -1,6 +1,6 @@
 @page "/blog/{Slug}"
 @rendermode InteractiveServer
-@using Portfolio.Web.Data
+@using Portfolio.Shared.Models
 @inject Portfolio.Web.Services.BlogService BlogService
 @inject NavigationManager Navigation
 
@@ -144,8 +144,8 @@ else
 
 @code {
     [Parameter] public string Slug { get; set; } = string.Empty;
-    private BlogPost? _post;
-    private IReadOnlyList<BlogPost> _relatedPosts = [];
+    private BlogPostDto? _post;
+    private IReadOnlyList<BlogPostDto> _relatedPosts = [];
     private bool _loading = true;
 
     protected override async Task OnParametersSetAsync()

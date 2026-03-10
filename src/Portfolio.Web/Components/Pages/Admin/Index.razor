@@ -1,11 +1,9 @@
 @page "/admin"
 @rendermode InteractiveServer
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
-@using Microsoft.EntityFrameworkCore
 @using Portfolio.Web.Components.Shared
 @using Portfolio.Shared.Models
 @inject Portfolio.Web.Services.PortfolioApiAuthService ApiAuthService
-@inject Portfolio.Web.Data.ApplicationDbContext DbContext
 @inject Portfolio.Web.Services.SmsSender SmsSender
 @inject Portfolio.Web.Services.EmailSender EmailSender
 @inject Portfolio.Web.Services.BlogService BlogService
@@ -1796,14 +1794,12 @@
         _users = await ApiAuthService.GetUsersAsync(token ?? string.Empty);
         _roles = await ApiAuthService.GetRolesAsync(token ?? string.Empty);
         _heroStats = await ApiService.GetHeroStatsAsync();
-        _appSettings = await AppSettingsService.GetAsync();
-        _smsSettings = await DbContext.SmsSettings.FirstOrDefaultAsync()
-                       ?? new Portfolio.Web.Data.SmsSettings();
-        _mailSettings = await DbContext.MailSettings.FirstOrDefaultAsync()
-                        ?? new Portfolio.Web.Data.MailSettings();
-        _blogPosts = await BlogService.GetAllForAdminAsync();
-        _cmsPages  = await CmsPageService.GetAllForAdminAsync();
-        _menuItems = await MenuService.GetAllForAdminAsync();
+        _appSettings = await AppSettingsService.GetAsync(token ?? string.Empty) ?? new Portfolio.Shared.Models.AppSettingsDto();
+        _smsSettings = await ApiService.GetSmsSettingsAsync(token ?? string.Empty) ?? new Portfolio.Shared.Models.SmsSettingsDto();
+        _mailSettings = await ApiService.GetMailSettingsAsync(token ?? string.Empty) ?? new Portfolio.Shared.Models.MailSettingsDto();
+        _blogPosts = await BlogService.GetAllForAdminAsync(token ?? string.Empty);
+        _cmsPages  = await CmsPageService.GetAllForAdminAsync(token ?? string.Empty);
+        _menuItems = await MenuService.GetAllForAdminAsync(token ?? string.Empty);
         _projects  = await ApiService.GetProjectsAsync();
     }
 
@@ -2206,8 +2202,8 @@
     private bool _savingPost;
     private bool _postShowEditor;
     private string _postStatusFilter = "All";
-    private List<Portfolio.Web.Data.BlogPost>? _blogPosts;
-    private Portfolio.Web.Data.BlogPost? _editingPost;
+    private List<Portfolio.Shared.Models.BlogPostDto>? _blogPosts;
+    private Portfolio.Shared.Models.BlogPostDto? _editingPost;
     private RichTextEditor _postBodyEditor = null!;
 
     private string  _postTitle            = string.Empty;
@@ -2240,7 +2236,7 @@
     private static string GenerateSlug(string title) =>
         System.Text.RegularExpressions.Regex.Replace(title.ToLowerInvariant().Trim(), @"[^a-z0-9]+", "-").Trim('-');
 
-    private async Task StartEditPost(Portfolio.Web.Data.BlogPost post)
+    private async Task StartEditPost(Portfolio.Shared.Models.BlogPostDto post)
     {
         _editingPost          = post;
         _postTitle            = post.Title;
@@ -2293,6 +2289,7 @@
 
         var body          = await _postBodyEditor.GetValueAsync();
         var publishedDate = ParseDate(_postPublishedDateStr);
+        var token         = await GetAdminTokenAsync();
 
         if (_editingPost != null)
         {
@@ -2310,12 +2307,12 @@
             _editingPost.MetaDescription  = NullIfEmpty(_postMetaDescription);
             _editingPost.OgImage          = NullIfEmpty(_postOgImage);
             _editingPost.CanonicalUrl     = NullIfEmpty(_postCanonicalUrl);
-            await BlogService.UpdateAsync(_editingPost);
+            await BlogService.UpdateAsync(_editingPost, token ?? string.Empty);
             Snackbar.Add("Blog post updated.", Severity.Success);
         }
         else
         {
-            var newPost = new Portfolio.Web.Data.BlogPost
+            var newPost = new Portfolio.Shared.Models.BlogPostDto
             {
                 Title            = _postTitle,
                 Slug             = _postSlug,
@@ -2332,27 +2329,29 @@
                 OgImage          = NullIfEmpty(_postOgImage),
                 CanonicalUrl     = NullIfEmpty(_postCanonicalUrl)
             };
-            await BlogService.CreateAsync(newPost);
+            await BlogService.CreateAsync(newPost, token ?? string.Empty);
             Snackbar.Add("Blog post created.", Severity.Success);
         }
 
-        _blogPosts  = await BlogService.GetAllForAdminAsync();
+        _blogPosts  = await BlogService.GetAllForAdminAsync(token ?? string.Empty);
         _savingPost = false;
         await CancelEditPost();
     }
 
-    private async Task TogglePublishPost(Portfolio.Web.Data.BlogPost post)
+    private async Task TogglePublishPost(Portfolio.Shared.Models.BlogPostDto post)
     {
         post.IsPublished = !post.IsPublished;
-        await BlogService.UpdateAsync(post);
-        _blogPosts = await BlogService.GetAllForAdminAsync();
+        var token = await GetAdminTokenAsync();
+        await BlogService.UpdateAsync(post, token ?? string.Empty);
+        _blogPosts = await BlogService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add(post.IsPublished ? "Post published." : "Post moved to draft.", Severity.Info);
     }
 
     private async Task DeletePost(int id)
     {
-        await BlogService.DeleteAsync(id);
-        _blogPosts = await BlogService.GetAllForAdminAsync();
+        var token = await GetAdminTokenAsync();
+        await BlogService.DeleteAsync(id, token ?? string.Empty);
+        _blogPosts = await BlogService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add("Blog post deleted.", Severity.Info);
     }
 
@@ -2370,8 +2369,8 @@
     private bool _savingPage;
     private bool _pageShowEditor;
     private string _pageStatusFilter = "All";
-    private List<Portfolio.Web.Data.CmsPage>? _cmsPages;
-    private Portfolio.Web.Data.CmsPage? _editingPage;
+    private List<Portfolio.Shared.Models.CmsPageDto>? _cmsPages;
+    private Portfolio.Shared.Models.CmsPageDto? _editingPage;
     private RichTextEditor _pageBodyEditor = null!;
 
     private string  _pageTitle            = string.Empty;
@@ -2397,7 +2396,7 @@
             _pageSlug = GenerateSlug(_pageTitle);
     }
 
-    private async Task StartEditPage(Portfolio.Web.Data.CmsPage page)
+    private async Task StartEditPage(Portfolio.Shared.Models.CmsPageDto page)
     {
         _editingPage         = page;
         _pageTitle           = page.Title;
@@ -2441,6 +2440,7 @@
 
         var body          = await _pageBodyEditor.GetValueAsync();
         var publishedDate = ParseDate(_pagePublishedDateStr);
+        var token         = await GetAdminTokenAsync();
 
         if (_editingPage != null)
         {
@@ -2454,12 +2454,12 @@
             _editingPage.MetaDescription = NullIfEmpty(_pageMetaDescription);
             _editingPage.OgImage         = NullIfEmpty(_pageOgImage);
             _editingPage.CanonicalUrl    = NullIfEmpty(_pageCanonicalUrl);
-            await CmsPageService.UpdateAsync(_editingPage);
+            await CmsPageService.UpdateAsync(_editingPage, token ?? string.Empty);
             Snackbar.Add("Page updated.", Severity.Success);
         }
         else
         {
-            var newPage = new Portfolio.Web.Data.CmsPage
+            var newPage = new Portfolio.Shared.Models.CmsPageDto
             {
                 Title           = _pageTitle,
                 Slug            = _pageSlug,
@@ -2472,27 +2472,29 @@
                 OgImage         = NullIfEmpty(_pageOgImage),
                 CanonicalUrl    = NullIfEmpty(_pageCanonicalUrl)
             };
-            await CmsPageService.CreateAsync(newPage);
+            await CmsPageService.CreateAsync(newPage, token ?? string.Empty);
             Snackbar.Add("Page created.", Severity.Success);
         }
 
-        _cmsPages  = await CmsPageService.GetAllForAdminAsync();
+        _cmsPages  = await CmsPageService.GetAllForAdminAsync(token ?? string.Empty);
         _savingPage = false;
         await CancelEditPage();
     }
 
-    private async Task TogglePublishPage(Portfolio.Web.Data.CmsPage page)
+    private async Task TogglePublishPage(Portfolio.Shared.Models.CmsPageDto page)
     {
         page.IsPublished = !page.IsPublished;
-        await CmsPageService.UpdateAsync(page);
-        _cmsPages = await CmsPageService.GetAllForAdminAsync();
+        var token = await GetAdminTokenAsync();
+        await CmsPageService.UpdateAsync(page, token ?? string.Empty);
+        _cmsPages = await CmsPageService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add(page.IsPublished ? "Page published." : "Page moved to draft.", Severity.Info);
     }
 
     private async Task DeletePage(int id)
     {
-        await CmsPageService.DeleteAsync(id);
-        _cmsPages = await CmsPageService.GetAllForAdminAsync();
+        var token = await GetAdminTokenAsync();
+        await CmsPageService.DeleteAsync(id, token ?? string.Empty);
+        _cmsPages = await CmsPageService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add("Page deleted.", Severity.Info);
     }
 
@@ -2500,8 +2502,8 @@
     private MudForm _menuForm = null!;
     private bool _menuFormValid;
     private bool _savingMenuItem;
-    private List<Portfolio.Web.Data.MenuItem>? _menuItems;
-    private Portfolio.Web.Data.MenuItem? _editingMenuItem;
+    private List<Portfolio.Shared.Models.MenuItemDto>? _menuItems;
+    private Portfolio.Shared.Models.MenuItemDto? _editingMenuItem;
 
     private string _menuLabel       = string.Empty;
     private string _menuUrl         = string.Empty;
@@ -2510,7 +2512,7 @@
     private bool   _menuIsVisible   = true;
     private bool   _menuOpenInNewTab;
 
-    private void StartEditMenuItem(Portfolio.Web.Data.MenuItem item)
+    private void StartEditMenuItem(Portfolio.Shared.Models.MenuItemDto item)
     {
         _editingMenuItem   = item;
         _menuLabel         = item.Label;
@@ -2538,6 +2540,7 @@
         if (!_menuFormValid) return;
 
         _savingMenuItem = true;
+        var token = await GetAdminTokenAsync();
 
         if (_editingMenuItem != null)
         {
@@ -2547,12 +2550,12 @@
             _editingMenuItem.SortOrder   = _menuSortOrder;
             _editingMenuItem.IsVisible   = _menuIsVisible;
             _editingMenuItem.OpenInNewTab = _menuOpenInNewTab;
-            await MenuService.UpdateAsync(_editingMenuItem);
+            await MenuService.UpdateAsync(_editingMenuItem, token ?? string.Empty);
             Snackbar.Add("Menu item updated.", Severity.Success);
         }
         else
         {
-            var item = new Portfolio.Web.Data.MenuItem
+            var item = new Portfolio.Shared.Models.MenuItemDto
             {
                 Label       = _menuLabel,
                 Url         = _menuUrl,
@@ -2561,27 +2564,29 @@
                 IsVisible   = _menuIsVisible,
                 OpenInNewTab = _menuOpenInNewTab
             };
-            await MenuService.CreateAsync(item);
+            await MenuService.CreateAsync(item, token ?? string.Empty);
             Snackbar.Add("Menu item added.", Severity.Success);
         }
 
-        _menuItems      = await MenuService.GetAllForAdminAsync();
+        _menuItems      = await MenuService.GetAllForAdminAsync(token ?? string.Empty);
         _savingMenuItem = false;
         CancelEditMenuItem();
     }
 
-    private async Task ToggleMenuItemVisibility(Portfolio.Web.Data.MenuItem item)
+    private async Task ToggleMenuItemVisibility(Portfolio.Shared.Models.MenuItemDto item)
     {
         item.IsVisible = !item.IsVisible;
-        await MenuService.UpdateAsync(item);
-        _menuItems = await MenuService.GetAllForAdminAsync();
+        var token = await GetAdminTokenAsync();
+        await MenuService.UpdateAsync(item, token ?? string.Empty);
+        _menuItems = await MenuService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add(item.IsVisible ? "Menu item shown." : "Menu item hidden.", Severity.Info);
     }
 
     private async Task DeleteMenuItem(int id)
     {
-        await MenuService.DeleteAsync(id);
-        _menuItems = await MenuService.GetAllForAdminAsync();
+        var token = await GetAdminTokenAsync();
+        await MenuService.DeleteAsync(id, token ?? string.Empty);
+        _menuItems = await MenuService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add("Menu item deleted.", Severity.Info);
     }
 
@@ -2594,7 +2599,7 @@
             : DateTime.UtcNow;
 
     // ── App Settings ─────────────────────────────────────────
-    private Portfolio.Web.Data.AppSettings? _appSettings;
+    private Portfolio.Shared.Models.AppSettingsDto? _appSettings;
     private bool _savingAppSettings;
 
     private const string DefaultVisitorTemplate =
@@ -2605,13 +2610,14 @@
     {
         if (_appSettings == null) return;
         _savingAppSettings = true;
-        await AppSettingsService.SaveAsync(_appSettings);
+        var token = await GetAdminTokenAsync();
+        await AppSettingsService.SaveAsync(_appSettings, token ?? string.Empty);
         _savingAppSettings = false;
         Snackbar.Add("Settings saved.", Severity.Success);
     }
 
     // ── Mail Settings ────────────────────────────────────────
-    private Portfolio.Web.Data.MailSettings? _mailSettings;
+    private Portfolio.Shared.Models.MailSettingsDto? _mailSettings;
     private bool _savingMail;
     private bool _sendingTestEmail;
     private bool _showSmtpPassword;
@@ -2620,13 +2626,8 @@
     {
         if (_mailSettings == null) return;
         _savingMail = true;
-
-        if (_mailSettings.Id == 0)
-            DbContext.MailSettings.Add(_mailSettings);
-        else
-            DbContext.MailSettings.Update(_mailSettings);
-
-        await DbContext.SaveChangesAsync();
+        var token = await GetAdminTokenAsync();
+        await ApiService.SaveMailSettingsAsync(_mailSettings, token ?? string.Empty);
         _savingMail = false;
         Snackbar.Add("Mail settings saved.", Severity.Success);
     }
@@ -2642,7 +2643,8 @@
         _sendingTestEmail = true;
         await SaveMailSettings();
 
-        var ok = await EmailSender.SendTestAsync(_mailSettings.FromAddress);
+        var token = await GetAdminTokenAsync();
+        var ok = await EmailSender.SendTestAsync(_mailSettings.FromAddress, token ?? string.Empty);
         _sendingTestEmail = false;
 
         if (ok)
@@ -2652,7 +2654,7 @@
     }
 
     // ── SMS Settings ────────────────────────────────────────
-    private Portfolio.Web.Data.SmsSettings? _smsSettings;
+    private Portfolio.Shared.Models.SmsSettingsDto? _smsSettings;
     private bool _savingSms;
     private bool _sendingTestSms;
     private bool _showTwilioToken;
@@ -2662,13 +2664,8 @@
     {
         if (_smsSettings == null) return;
         _savingSms = true;
-
-        if (_smsSettings.Id == 0)
-            DbContext.SmsSettings.Add(_smsSettings);
-        else
-            DbContext.SmsSettings.Update(_smsSettings);
-
-        await DbContext.SaveChangesAsync();
+        var token = await GetAdminTokenAsync();
+        await ApiService.SaveSmsSettingsAsync(_smsSettings, token ?? string.Empty);
         _savingSms = false;
         Snackbar.Add("SMS settings saved.", Severity.Success);
     }
@@ -2682,16 +2679,16 @@
         }
 
         _sendingTestSms = true;
-        // Persist first so SmsSender reads the latest values
         await SaveSmsSettings();
 
-        var result = await SmsSender.SendToAdminAsync("Test SMS from Portfolio admin: everything is working!");
+        var token = await GetAdminTokenAsync();
+        var result = await SmsSender.SendTestAsync(token ?? string.Empty);
         _sendingTestSms = false;
 
-        if (result.Succeeded)
-            Snackbar.Add($"Test SMS sent (id: {result.MessageId ?? "n/a"}).", Severity.Success);
+        if (result)
+            Snackbar.Add("Test SMS sent successfully.", Severity.Success);
         else
-            Snackbar.Add($"Test SMS failed: {result.Error}", Severity.Error);
+            Snackbar.Add("Test SMS failed — check the SMS settings and server logs.", Severity.Error);
     }
 
     // ── Static Site Generator ────────────────────────────────

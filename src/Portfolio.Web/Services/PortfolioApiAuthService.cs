@@ -1,9 +1,7 @@
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Portfolio.Shared.Models;
-using Portfolio.Web.Data;
 
 namespace Portfolio.Web.Services;
 
@@ -13,45 +11,13 @@ namespace Portfolio.Web.Services;
 /// </summary>
 public class PortfolioApiAuthService(
     IHttpClientFactory httpClientFactory,
-    ApplicationDbContext dbContext,
     ILogger<PortfolioApiAuthService> logger)
 {
-    // Cached for the lifetime of this scoped service instance (one per request).
-    // Thread-safety is not a concern because scoped services are never shared across requests.
-    // null  → not yet resolved
-    // ""    → resolved; no DB override — use the HttpClient base address from appsettings
-    // other → resolved DB override
-    private string? _cachedDbBaseUrl;
-    private bool _dbBaseUrlResolved;
+    private HttpClient GetClient() => httpClientFactory.CreateClient("PortfolioApi");
 
-    /// <summary>
-    /// Resolves the base URL once (DB override takes priority over appsettings).
-    /// After calling this, <see cref="_cachedDbBaseUrl"/> is either null (use factory address) or the DB override.
-    /// </summary>
-    private async Task ResolveBaseUrlAsync()
+    private HttpClient GetClientWithToken(string token)
     {
-        if (_dbBaseUrlResolved) return;
-        var settings = await dbContext.AppSettings.AsNoTracking().FirstOrDefaultAsync();
-        _cachedDbBaseUrl = string.IsNullOrWhiteSpace(settings?.ApiBaseUrl) ? null : settings.ApiBaseUrl;
-        _dbBaseUrlResolved = true;
-    }
-
-    /// <summary>
-    /// Returns an HttpClient pre-configured with the correct base address.
-    /// Uses the appsettings <c>BaseApiUrl</c> by default; the admin-panel DB value overrides if set.
-    /// </summary>
-    private async Task<HttpClient> GetClientAsync()
-    {
-        await ResolveBaseUrlAsync();
-        var client = httpClientFactory.CreateClient("PortfolioApi");
-        if (_cachedDbBaseUrl != null)
-            client.BaseAddress = new Uri(_cachedDbBaseUrl.TrimEnd('/') + "/");
-        return client;
-    }
-
-    private async Task<HttpClient> GetClientWithTokenAsync(string token)
-    {
-        var client = await GetClientAsync();
+        var client = GetClient();
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         return client;
@@ -66,7 +32,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientAsync();
+            var client = GetClient();
             var response = await client.PostAsJsonAsync("api/auth/login",
                 new LoginDto { Email = email, Password = password });
 
@@ -98,7 +64,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             return await client.GetFromJsonAsync<List<UserWithRolesDto>>("api/auth/users")
                    ?? [];
         }
@@ -114,7 +80,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.PostAsJsonAsync("api/auth/users", dto);
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -133,7 +99,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.PutAsJsonAsync($"api/auth/users/{userId}", dto);
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -152,7 +118,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.DeleteAsync($"api/auth/users/{userId}");
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -171,7 +137,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.PostAsJsonAsync($"api/auth/users/{userId}/roles", role);
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -190,7 +156,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.DeleteAsync($"api/auth/users/{userId}/roles/{Uri.EscapeDataString(role)}");
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -209,7 +175,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             return await client.GetFromJsonAsync<List<RoleDto>>("api/roles") ?? [];
         }
         catch (Exception ex)
@@ -224,7 +190,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.PostAsJsonAsync("api/roles", roleName);
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -243,7 +209,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.DeleteAsync($"api/roles/{Uri.EscapeDataString(roleName)}");
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -262,7 +228,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientAsync();
+            var client = GetClient();
             var response = await client.PostAsJsonAsync("api/auth/register", dto);
             if (response.IsSuccessStatusCode) return (true, null);
 
@@ -281,7 +247,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             using var response = await client.GetAsync($"api/auth/users/{userId}/2fa/setup");
             if (!response.IsSuccessStatusCode)
                 return (null, null, await response.Content.ReadAsStringAsync());
@@ -303,7 +269,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.PostAsJsonAsync($"api/auth/users/{userId}/2fa/enable",
                 new TwoFactorVerifyDto { UserId = userId, Code = code });
             if (response.IsSuccessStatusCode) return (true, null);
@@ -323,7 +289,7 @@ public class PortfolioApiAuthService(
     {
         try
         {
-            var client = await GetClientWithTokenAsync(adminToken);
+            var client = GetClientWithToken(adminToken);
             var response = await client.PostAsync($"api/auth/users/{userId}/2fa/disable", null);
             if (response.IsSuccessStatusCode) return (true, null);
 

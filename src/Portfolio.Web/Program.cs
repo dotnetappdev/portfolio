@@ -1,12 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using Portfolio.Web.Components;
-using Portfolio.Web.Data;
 using Portfolio.Web.Services;
-using Portfolio.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +20,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
-
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-    DatabaseProviderFactory.ConfigureDbContext(options, builder.Configuration));
 
 // Cookie-based authentication — credentials are validated against Portfolio.Api (JWT).
 // This keeps a single Identity store (in the API) and avoids duplicating user tables.
@@ -50,7 +44,7 @@ builder.Services.AddHttpClient("PortfolioApi", client =>
         client.BaseAddress = new Uri(baseApiUrl.TrimEnd('/') + "/");
 });
 
-// Named HTTP clients for SMS providers
+// Named HTTP clients for SMS providers (kept in case needed by future extensions)
 builder.Services.AddHttpClient("Twilio");
 builder.Services.AddHttpClient("ClickSend");
 builder.Services.AddHttpClient("MailerSend");
@@ -125,23 +119,6 @@ app.MapPost("/logout", async (HttpContext httpContext) =>
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Redirect("/");
 }).RequireAuthorization();
-
-// Apply pending EF Core migrations and initialise the CMS database on first run.
-// Users and roles live in Portfolio.Api — only CMS / portfolio data is seeded here.
-if (builder.Configuration.GetValue<bool>("SeedData"))
-{
-    using var scope = app.Services.CreateScope();
-    var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-    await using var context = await contextFactory.CreateDbContextAsync();
-    var providerName = context.Database.ProviderName ?? "";
-    if (providerName.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
-        await context.Database.EnsureCreatedAsync();
-    else
-        await context.Database.MigrateAsync();
-    logger.LogInformation("Web CMS database migrated and initialised.");
-}
 
 // Static site generator — auth-protected download endpoint.
 app.MapGet("/admin/generate-static-site", async (

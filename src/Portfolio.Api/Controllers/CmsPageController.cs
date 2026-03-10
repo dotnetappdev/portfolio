@@ -15,6 +15,16 @@ public class CmsPageController : ControllerBase
 
     public CmsPageController(ApplicationDbContext context) => _context = context;
 
+    [HttpGet]
+    public async Task<IEnumerable<CmsPageDto>> GetPublished()
+    {
+        return await _context.CmsPages
+            .Where(p => p.IsPublished)
+            .OrderByDescending(p => p.PublishedDate)
+            .Select(p => ToDto(p))
+            .ToListAsync();
+    }
+
     [HttpGet("{slug}")]
     public async Task<ActionResult<CmsPageDto>> GetBySlug(string slug)
     {

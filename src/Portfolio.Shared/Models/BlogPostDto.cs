@@ -18,4 +18,7 @@ public class BlogPostDto
     public string? MetaDescription { get; set; }
     public string? OgImage { get; set; }
     public string? CanonicalUrl { get; set; }
+
+    public string[] TagList =>
+        Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
