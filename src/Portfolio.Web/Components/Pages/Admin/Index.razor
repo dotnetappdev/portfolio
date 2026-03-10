@@ -668,6 +668,57 @@
                         </MudCardActions>
                         }
                     </MudCard>
+
+                    <!-- Theme Colors card -->
+                    @if (_appSettings != null)
+                    {
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Palette" Class="mr-2" />
+                                    Site Theme Colors
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                Customise the primary, secondary, and tertiary brand colours. Leave blank to use the default BookIt palette.
+                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                                <MudTextField @bind-Value="_appSettings.PrimaryColor" Label="Primary Color"
+                                              Variant="Variant.Outlined" Placeholder="#5B5BD6" Style="flex:1;" />
+                                @if (!string.IsNullOrWhiteSpace(_appSettings.PrimaryColor))
+                                {
+                                    <div style="width:32px;height:32px;border-radius:50%;background:@_appSettings.PrimaryColor;border:1px solid rgba(0,0,0,0.2);flex-shrink:0;"></div>
+                                }
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                                <MudTextField @bind-Value="_appSettings.SecondaryColor" Label="Secondary Color"
+                                              Variant="Variant.Outlined" Placeholder="#0EA5E9" Style="flex:1;" />
+                                @if (!string.IsNullOrWhiteSpace(_appSettings.SecondaryColor))
+                                {
+                                    <div style="width:32px;height:32px;border-radius:50%;background:@_appSettings.SecondaryColor;border:1px solid rgba(0,0,0,0.2);flex-shrink:0;"></div>
+                                }
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                                <MudTextField @bind-Value="_appSettings.TertiaryColor" Label="Tertiary / Accent Color"
+                                              Variant="Variant.Outlined" Placeholder="#10B981" Style="flex:1;" />
+                                @if (!string.IsNullOrWhiteSpace(_appSettings.TertiaryColor))
+                                {
+                                    <div style="width:32px;height:32px;border-radius:50%;background:@_appSettings.TertiaryColor;border:1px solid rgba(0,0,0,0.2);flex-shrink:0;"></div>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="@SaveAppSettings" Disabled="@_savingAppSettings"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingAppSettings ? "Saving..." : "Save Theme Colors")
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                    }
                 </MudItem>
             }
 

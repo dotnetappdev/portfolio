@@ -5,6 +5,7 @@ public class UserWithRolesDto : UserDto
 {
     public List<string> Roles { get; set; } = [];
     public List<ClaimDto> Claims { get; set; } = [];
+    public bool TwoFactorEnabled { get; set; }
 }
 
 /// <summary>Represents a single identity claim on a user.</summary>

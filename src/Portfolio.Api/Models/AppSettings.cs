@@ -25,4 +25,17 @@ public class AppSettings
 
     /// <summary>Template for the visitor notification email body. Supports {{ip}}, {{page}}, {{time}} placeholders.</summary>
     public string? VisitorEmailTemplate { get; set; }
+
+    // ── Site Theme ────────────────────────────────────────────────────────────
+    /// <summary>Primary brand colour (CSS hex, e.g. #5B5BD6). Defaults to indigo when null.</summary>
+    [MaxLength(20)]
+    public string? PrimaryColor { get; set; }
+
+    /// <summary>Secondary brand colour (CSS hex). Defaults to sky-blue when null.</summary>
+    [MaxLength(20)]
+    public string? SecondaryColor { get; set; }
+
+    /// <summary>Tertiary/accent colour (CSS hex). Defaults to emerald when null.</summary>
+    [MaxLength(20)]
+    public string? TertiaryColor { get; set; }
 }

@@ -32,7 +32,10 @@ public class AppSettingsController : ControllerBase
         var settings = await _context.AppSettings.FirstOrDefaultAsync();
         return new PublicAppSettingsDto
         {
-            GoogleAnalyticsId = settings?.GoogleAnalyticsId
+            GoogleAnalyticsId = settings?.GoogleAnalyticsId,
+            PrimaryColor      = settings?.PrimaryColor,
+            SecondaryColor    = settings?.SecondaryColor,
+            TertiaryColor     = settings?.TertiaryColor
         };
     }
 
@@ -51,6 +54,9 @@ public class AppSettingsController : ControllerBase
         settings.VisitorNotificationsEnabled = dto.VisitorNotificationsEnabled;
         settings.VisitorNotificationEmail    = dto.VisitorNotificationEmail;
         settings.VisitorEmailTemplate        = dto.VisitorEmailTemplate;
+        settings.PrimaryColor                = string.IsNullOrWhiteSpace(dto.PrimaryColor) ? null : dto.PrimaryColor;
+        settings.SecondaryColor              = string.IsNullOrWhiteSpace(dto.SecondaryColor) ? null : dto.SecondaryColor;
+        settings.TertiaryColor               = string.IsNullOrWhiteSpace(dto.TertiaryColor) ? null : dto.TertiaryColor;
 
         await _context.SaveChangesAsync();
         return NoContent();
@@ -63,6 +69,9 @@ public class AppSettingsController : ControllerBase
         GoogleAnalyticsId            = s.GoogleAnalyticsId,
         VisitorNotificationsEnabled  = s.VisitorNotificationsEnabled,
         VisitorNotificationEmail     = s.VisitorNotificationEmail,
-        VisitorEmailTemplate         = s.VisitorEmailTemplate
+        VisitorEmailTemplate         = s.VisitorEmailTemplate,
+        PrimaryColor                 = s.PrimaryColor,
+        SecondaryColor               = s.SecondaryColor,
+        TertiaryColor                = s.TertiaryColor
     };
 }

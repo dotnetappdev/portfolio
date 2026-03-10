@@ -265,22 +265,29 @@ public class PortfolioApiAuthService(
     }
 
     /// <summary>Verifies a TOTP code and enables 2FA for a user (requires admin JWT).</summary>
-    public async Task<(bool Success, string? Error)> EnableTwoFactorAsync(string userId, string code, string adminToken)
+    public async Task<(bool Success, IReadOnlyList<string> RecoveryCodes, string? Error)> EnableTwoFactorAsync(string userId, string code, string adminToken)
     {
         try
         {
             var client = GetClientWithToken(adminToken);
             var response = await client.PostAsJsonAsync($"api/auth/users/{userId}/2fa/enable",
                 new TwoFactorVerifyDto { UserId = userId, Code = code });
-            if (response.IsSuccessStatusCode) return (true, null);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                var codes = json.TryGetProperty("recoveryCodes", out var arr)
+                    ? arr.EnumerateArray().Select(e => e.GetString()).Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s!).ToList()
+                    : (IReadOnlyList<string>)[];
+                return (true, codes, null);
+            }
 
             var body = await response.Content.ReadAsStringAsync();
-            return (false, body);
+            return (false, [], body);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to enable 2FA via API");
-            return (false, ex.Message);
+            return (false, [], ex.Message);
         }
     }
 

@@ -1,8 +1,9 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
-@* Remove @using Portfolio.Web.Data - no longer needed in MainLayout *@
 @inject Portfolio.Web.Services.MenuService MenuService
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
 @inject IDialogService DialogService
+@inject ILogger<MainLayout> Logger
 
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -44,7 +45,8 @@
                 <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit"
                          AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight"
                          aria-label="User menu">
-                    <MudMenuItem Icon="@Icons.Material.Filled.Settings" Href="/admin">Settings</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Tune" OnClick="@OpenSettingsDialog">Quick Settings</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.AdminPanelSettings" Href="/admin">Admin Panel</MudMenuItem>
                     <MudMenuItem Icon="@Icons.Material.Filled.Info" OnClick="@OpenAboutDialog">About</MudMenuItem>
                     <MudDivider />
                     <MudMenuItem Icon="@Icons.Material.Filled.Logout" Href="/logout">Logout</MudMenuItem>
@@ -94,6 +96,7 @@
     private bool _drawerOpen = false;
     private MudThemeProvider _mudThemeProvider = null!;
     private List<Portfolio.Shared.Models.MenuItemDto> _menuItems = [];
+    private MudTheme _theme = BuildTheme(null, null, null);
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,49 +122,68 @@
         _                    => Icons.Material.Filled.NavigateNext,
     };
 
-    private readonly MudTheme _theme = new()
+    private static MudTheme BuildTheme(string? primary, string? secondary, string? tertiary)
     {
-        PaletteLight = new PaletteLight
+        // Default BookIt brand colours
+        var lightPrimary  = primary   ?? "#5B5BD6";
+        var lightSecondary = secondary ?? "#0EA5E9";
+        var lightTertiary  = tertiary  ?? "#10B981";
+        // Dark palette uses lighter tints for readability; keep them proportionally brighter.
+        var darkPrimary  = primary   ?? "#C4B5FD";
+        var darkSecondary = secondary ?? "#67E8F9";
+        var darkTertiary  = tertiary  ?? "#6EE7B7";
+
+        return new MudTheme
         {
-            // BookIt brand — indigo/violet primary, sky secondary, emerald tertiary
-            Primary = "#5B5BD6",
-            Secondary = "#0EA5E9",
-            Tertiary = "#10B981",
-            AppbarBackground = "#5B5BD6",
-            Background = "#F5F5FF",
-            Surface = "#FFFFFF",
-            DrawerBackground = "#F0F0FA",
-            DrawerText = "#1A1A3E",
-            TextPrimary = "#11111A",
-            TextSecondary = "#6B6B8C",
-            ActionDefault = "#9595A8",
-            Divider = "#E4E4F0",
-            LinesDefault = "#E4E4F0",
-            LinesInputs = "#C4C4D8",
-            TableLines = "#E4E4F0",
-            OverlayLight = "rgba(255,255,255,0.75)",
-        },
-        PaletteDark = new PaletteDark
-        {
-            // BookIt dark — rich purple backgrounds, bright violet accents
-            Primary = "#C4B5FD",
-            Secondary = "#67E8F9",
-            Tertiary = "#6EE7B7",
-            AppbarBackground = "#0F0A1E",
-            Background = "#0F0A1E",
-            Surface = "#1E1335",
-            DrawerBackground = "#180E2C",
-            DrawerText = "#EDE9FE",
-            TextPrimary = "#F5F0FF",
-            TextSecondary = "#A78BFA",
-            ActionDefault = "#7C3AED",
-            Divider = "#3B2A6E",
-            LinesDefault = "#3B2A6E",
-            LinesInputs = "#4C3A82",
-            TableLines = "#3B2A6E",
-            OverlayDark = "rgba(0,0,0,0.75)",
-        }
-    };
+            PaletteLight = new PaletteLight
+            {
+                Primary          = lightPrimary,
+                Secondary        = lightSecondary,
+                Tertiary         = lightTertiary,
+                AppbarBackground = lightPrimary,
+                Background       = "#F5F5FF",
+                Surface          = "#FFFFFF",
+                DrawerBackground = "#F0F0FA",
+                DrawerText       = "#1A1A3E",
+                TextPrimary      = "#11111A",
+                TextSecondary    = "#6B6B8C",
+                ActionDefault    = "#9595A8",
+                Divider          = "#E4E4F0",
+                LinesDefault     = "#E4E4F0",
+                LinesInputs      = "#C4C4D8",
+                TableLines       = "#E4E4F0",
+                OverlayLight     = "rgba(255,255,255,0.75)",
+            },
+            PaletteDark = new PaletteDark
+            {
+                Primary          = darkPrimary,
+                Secondary        = darkSecondary,
+                Tertiary         = darkTertiary,
+                AppbarBackground = "#0F0A1E",
+                Background       = "#0F0A1E",
+                Surface          = "#1E1335",
+                DrawerBackground = "#180E2C",
+                DrawerText       = "#EDE9FE",
+                TextPrimary      = "#F5F0FF",
+                TextSecondary    = "#A78BFA",
+                ActionDefault    = "#7C3AED",
+                Divider          = "#3B2A6E",
+                LinesDefault     = "#3B2A6E",
+                LinesInputs      = "#4C3A82",
+                TableLines       = "#3B2A6E",
+                OverlayDark      = "rgba(0,0,0,0.75)",
+            }
+        };
+    }
+
+    private readonly MudTheme _defaultTheme = BuildTheme(null, null, null);
+
+    /// <summary>Notifies MainLayout that theme colors have changed so the UI can refresh.</summary>
+    public void RefreshTheme(string? primary, string? secondary, string? tertiary)
+    {
+        _theme = BuildTheme(primary, secondary, tertiary);
+        StateHasChanged();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -173,6 +195,19 @@
             {
                 _menuItems = await MenuService.GetVisibleItemsAsync();
             }
+
+            // Load custom theme colors from DB.
+            try
+            {
+                var pub = await ApiService.GetPublicAppSettingsAsync();
+                if (pub is not null && (!string.IsNullOrWhiteSpace(pub.PrimaryColor) ||
+                                        !string.IsNullOrWhiteSpace(pub.SecondaryColor) ||
+                                        !string.IsNullOrWhiteSpace(pub.TertiaryColor)))
+                {
+                    _theme = BuildTheme(pub.PrimaryColor, pub.SecondaryColor, pub.TertiaryColor);
+                }
+            }
+            catch (Exception ex) { Logger.LogWarning(ex, "Failed to load theme colors from public settings"); }
 
             StateHasChanged();
         }
@@ -186,6 +221,13 @@
         var parameters = new DialogParameters<AboutDialog>();
         await DialogService.ShowAsync<AboutDialog>("About This Portfolio", parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
+    private async Task OpenSettingsDialog()
+    {
+        await DialogService.ShowAsync<SettingsDialog>("Quick Settings",
+            new DialogParameters(),
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
     }
 
     /// <summary>Returns true when the given href matches the current page path.</summary>

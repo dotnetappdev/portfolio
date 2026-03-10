@@ -166,12 +166,13 @@ public class AuthController : ControllerBase
             var claims = await _userManager.GetClaimsAsync(u);
             result.Add(new UserWithRolesDto
             {
-                Id        = u.Id,
-                Email     = u.Email,
-                FirstName = u.FirstName,
-                LastName  = u.LastName,
-                Roles     = [.. roles],
-                Claims    = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList()
+                Id               = u.Id,
+                Email            = u.Email,
+                FirstName        = u.FirstName,
+                LastName         = u.LastName,
+                Roles            = [.. roles],
+                Claims           = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
+                TwoFactorEnabled = u.TwoFactorEnabled
             });
         }
 

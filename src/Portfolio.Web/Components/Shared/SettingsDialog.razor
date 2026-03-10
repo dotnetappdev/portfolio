@@ -1,0 +1,443 @@
+@using MudBlazor
+@using Portfolio.Shared.Models
+@using System.Security.Claims
+@inject Portfolio.Web.Services.PortfolioApiAuthService ApiAuthService
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Tune" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Quick Settings</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" Class="mb-2">
+
+            <!-- ── Password ── -->
+            <MudTabPanel Text="Password" Icon="@Icons.Material.Filled.Lock">
+                <MudStack Spacing="3" Class="pt-4">
+                    @if (!string.IsNullOrWhiteSpace(_pwError))
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true">@_pwError</MudAlert>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(_pwSuccess))
+                    {
+                        <MudAlert Severity="Severity.Success" Dense="true">@_pwSuccess</MudAlert>
+                    }
+                    <MudTextField @bind-Value="_currentPassword" Label="Current Password"
+                                  InputType="@(_showCurrentPw ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showCurrentPw ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _showCurrentPw = !_showCurrentPw)" />
+                    <MudTextField @bind-Value="_newPassword" Label="New Password"
+                                  InputType="@(_showNewPw ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showNewPw ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _showNewPw = !_showNewPw)" />
+                    <MudTextField @bind-Value="_confirmPassword" Label="Confirm New Password"
+                                  InputType="@(_showConfirmPw ? InputType.Text : InputType.Password)"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showConfirmPw ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="@(() => _showConfirmPw = !_showConfirmPw)" />
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="@_savingPw"
+                               OnClick="@ChangePasswordAsync">
+                        @(_savingPw ? "Saving..." : "Change Password")
+                    </MudButton>
+                </MudStack>
+            </MudTabPanel>
+
+            <!-- ── 2FA ── -->
+            <MudTabPanel Text="Two-Factor Auth" Icon="@Icons.Material.Filled.Security">
+                <MudStack Spacing="3" Class="pt-4">
+                    @if (_twoFaEnabled)
+                    {
+                        <MudAlert Severity="Severity.Success" Icon="@Icons.Material.Filled.VerifiedUser">
+                            Two-factor authentication is <strong>enabled</strong> on your account.
+                        </MudAlert>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.LockOpen"
+                                   Disabled="@_saving2fa"
+                                   OnClick="@DisableTwoFactorAsync">
+                            @(_saving2fa ? "Disabling..." : "Disable 2FA")
+                        </MudButton>
+                    }
+                    else if (_backupCodes.Count > 0)
+                    {
+                        <MudAlert Severity="Severity.Success">2FA has been enabled. Save these backup codes - they will not be shown again.</MudAlert>
+                        <MudPaper Elevation="1" Class="pa-3">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Key" Size="Size.Small" Class="mr-1" />
+                                Backup Codes
+                            </MudText>
+                            <MudGrid Spacing="1">
+                                @foreach (var backupCode in _backupCodes)
+                                {
+                                    <MudItem xs="6">
+                                        <MudText Typo="Typo.body2" Style="font-family:monospace;font-size:0.9rem;">@backupCode</MudText>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudPaper>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                   StartIcon="@Icons.Material.Filled.ContentCopy"
+                                   OnClick="@CopyBackupCodes">
+                            Copy All Codes
+                        </MudButton>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(_twoFaSetupKey))
+                    {
+                        <MudText Typo="Typo.body2">
+                            Enter the setup key below into your authenticator app (Google Authenticator, Authy, Microsoft Authenticator, etc.), then enter the 6-digit code to verify and enable 2FA.
+                        </MudText>
+                        <MudPaper Elevation="1" Class="pa-3">
+                            <MudText Typo="Typo.subtitle2" Class="mb-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Key" Size="Size.Small" Class="mr-1" />
+                                Setup Key (enter manually in your app)
+                            </MudText>
+                            <MudText Typo="Typo.body1" Style="font-family:monospace;letter-spacing:0.15em;font-size:1.05rem;word-break:break-all;">
+                                @_twoFaSetupKey
+                            </MudText>
+                        </MudPaper>
+                        @if (!string.IsNullOrWhiteSpace(_twoFaError))
+                        {
+                            <MudAlert Severity="Severity.Error" Dense="true">@_twoFaError</MudAlert>
+                        }
+                        <MudTextField @bind-Value="_twoFaCode" Label="Verification Code"
+                                      Variant="Variant.Outlined" MaxLength="6"
+                                      Placeholder="000000" InputType="InputType.Number"
+                                      HelperText="Enter the 6-digit code from your app" />
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.VerifiedUser"
+                                   Disabled="@_saving2fa"
+                                   OnClick="@EnableTwoFactorAsync">
+                            @(_saving2fa ? "Verifying..." : "Enable 2FA")
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
+                            Two-factor authentication is <strong>not enabled</strong>. Add an extra layer of security to your account.
+                        </MudAlert>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.QrCode"
+                                   Disabled="@_saving2fa"
+                                   OnClick="@LoadTwoFactorSetupAsync">
+                            @(_saving2fa ? "Loading..." : "Set Up 2FA")
+                        </MudButton>
+                    }
+                </MudStack>
+            </MudTabPanel>
+
+            <!-- ── Mail ── -->
+            <MudTabPanel Text="Mail" Icon="@Icons.Material.Filled.Email">
+                @if (_mailSettings is null)
+                {
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-4" />
+                }
+                else
+                {
+                    <MudStack Spacing="3" Class="pt-4">
+                        <MudSwitch @bind-Value="_mailSettings.IsEnabled" Label="@(_mailSettings.IsEnabled ? "Mail sending enabled" : "Mail sending disabled")"
+                                   Color="Color.Success" />
+                        <MudSelect @bind-Value="_mailSettings.Provider" Label="Provider" Variant="Variant.Outlined">
+                            <MudSelectItem Value="@("Smtp")">SMTP</MudSelectItem>
+                            <MudSelectItem Value="@("MailerSend")">MailerSend</MudSelectItem>
+                        </MudSelect>
+                        <MudTextField @bind-Value="_mailSettings.FromAddress" Label="From Address"
+                                      Variant="Variant.Outlined" InputType="InputType.Email" />
+                        <MudTextField @bind-Value="_mailSettings.FromName" Label="From Name"
+                                      Variant="Variant.Outlined" />
+                        @if (_mailSettings.Provider == "MailerSend")
+                        {
+                            <MudTextField @bind-Value="_mailSettings.MailerSendApiKey" Label="MailerSend API Key"
+                                          Variant="Variant.Outlined"
+                                          InputType="@(_showMailKey ? InputType.Text : InputType.Password)"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(_showMailKey ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                          OnAdornmentClick="@(() => _showMailKey = !_showMailKey)" />
+                        }
+                        else
+                        {
+                            <MudTextField @bind-Value="_mailSettings.SmtpHost" Label="SMTP Host"
+                                          Variant="Variant.Outlined" Placeholder="smtp.example.com" />
+                            <MudNumericField @bind-Value="_mailSettings.SmtpPort" Label="SMTP Port"
+                                             Variant="Variant.Outlined" Min="1" Max="65535" />
+                            <MudTextField @bind-Value="_mailSettings.SmtpUsername" Label="SMTP Username"
+                                          Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_mailSettings.SmtpPassword" Label="SMTP Password"
+                                          Variant="Variant.Outlined"
+                                          InputType="@(_showMailKey ? InputType.Text : InputType.Password)"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@(_showMailKey ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                          OnAdornmentClick="@(() => _showMailKey = !_showMailKey)" />
+                            <MudSwitch @bind-Value="_mailSettings.UseSsl" Label="Use SSL/TLS" Color="Color.Primary" />
+                        }
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Save"
+                                   Disabled="@_savingMail"
+                                   OnClick="@SaveMailAsync">
+                            @(_savingMail ? "Saving..." : "Save Mail Settings")
+                        </MudButton>
+                    </MudStack>
+                }
+            </MudTabPanel>
+
+            <!-- ── Theme ── -->
+            <MudTabPanel Text="Theme" Icon="@Icons.Material.Filled.Palette">
+                @if (_appSettings is null)
+                {
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-4" />
+                }
+                else
+                {
+                    <MudStack Spacing="3" Class="pt-4">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Set CSS hex colours (e.g. #5B5BD6) to customise the site palette. Leave blank to use the default BookIt brand colours.
+                        </MudText>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudTextField @bind-Value="_appSettings.PrimaryColor" Label="Primary Color"
+                                          Variant="Variant.Outlined" Placeholder="#5B5BD6"
+                                          Style="flex:1;" />
+                            @if (!string.IsNullOrWhiteSpace(_appSettings.PrimaryColor))
+                            {
+                                <div style="width:32px;height:32px;border-radius:50%;background:@_appSettings.PrimaryColor;border:1px solid rgba(0,0,0,0.2);"></div>
+                            }
+                        </MudStack>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudTextField @bind-Value="_appSettings.SecondaryColor" Label="Secondary Color"
+                                          Variant="Variant.Outlined" Placeholder="#0EA5E9"
+                                          Style="flex:1;" />
+                            @if (!string.IsNullOrWhiteSpace(_appSettings.SecondaryColor))
+                            {
+                                <div style="width:32px;height:32px;border-radius:50%;background:@_appSettings.SecondaryColor;border:1px solid rgba(0,0,0,0.2);"></div>
+                            }
+                        </MudStack>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudTextField @bind-Value="_appSettings.TertiaryColor" Label="Tertiary Color"
+                                          Variant="Variant.Outlined" Placeholder="#10B981"
+                                          Style="flex:1;" />
+                            @if (!string.IsNullOrWhiteSpace(_appSettings.TertiaryColor))
+                            {
+                                <div style="width:32px;height:32px;border-radius:50%;background:@_appSettings.TertiaryColor;border:1px solid rgba(0,0,0,0.2);"></div>
+                            }
+                        </MudStack>
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       Disabled="@_savingTheme"
+                                       OnClick="@SaveThemeAsync">
+                                @(_savingTheme ? "Saving..." : "Apply Theme")
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                                       StartIcon="@Icons.Material.Filled.RestartAlt"
+                                       OnClick="@ResetThemeColors">
+                                Reset to Default
+                            </MudButton>
+                        </MudStack>
+                    </MudStack>
+                }
+            </MudTabPanel>
+
+        </MudTabs>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    // ── Password state ──────────────────────────────────────
+    private string _currentPassword = string.Empty;
+    private string _newPassword     = string.Empty;
+    private string _confirmPassword = string.Empty;
+    private bool _showCurrentPw;
+    private bool _showNewPw;
+    private bool _showConfirmPw;
+    private bool _savingPw;
+    private string? _pwError;
+    private string? _pwSuccess;
+
+    // ── 2FA state ────────────────────────────────────────────
+    private bool _twoFaEnabled;
+    private bool _saving2fa;
+    private string? _twoFaSetupKey;
+    private string? _twoFaCode;
+    private string? _twoFaError;
+    private List<string> _backupCodes = [];
+
+    // ── Mail state ───────────────────────────────────────────
+    private MailSettingsDto? _mailSettings;
+    private bool _savingMail;
+    private bool _showMailKey;
+
+    // ── Theme state ──────────────────────────────────────────
+    private AppSettingsDto? _appSettings;
+    private bool _savingTheme;
+
+    private string? _currentUserId;
+    private string? _adminToken;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        _currentUserId = state.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _adminToken    = state.User.FindFirst("access_token")?.Value;
+
+        if (string.IsNullOrWhiteSpace(_adminToken)) return;
+
+        // Determine 2FA status
+        var users = await ApiAuthService.GetUsersAsync(_adminToken);
+        var me    = users?.FirstOrDefault(u => u.Id == _currentUserId);
+        if (me is not null)
+            _twoFaEnabled = me.TwoFactorEnabled;
+
+        // Load mail settings
+        _mailSettings = await ApiService.GetMailSettingsAsync(_adminToken) ?? new MailSettingsDto();
+
+        // Load app settings (for theme)
+        _appSettings = await ApiService.GetAppSettingsAsync(_adminToken) ?? new AppSettingsDto();
+    }
+
+    private void Close() => MudDialog.Close();
+
+    // ── Password ─────────────────────────────────────────────
+    private async Task ChangePasswordAsync()
+    {
+        _pwError   = null;
+        _pwSuccess = null;
+        if (string.IsNullOrWhiteSpace(_newPassword))    { _pwError = "New password is required."; return; }
+        if (_newPassword != _confirmPassword)           { _pwError = "Passwords do not match."; return; }
+        if (string.IsNullOrWhiteSpace(_currentUserId) || string.IsNullOrWhiteSpace(_adminToken)) return;
+
+        _savingPw = true;
+        var dto = new UpdateUserDto { NewPassword = _newPassword };
+        var (success, error) = await ApiAuthService.UpdateUserAsync(_currentUserId, dto, _adminToken);
+        _savingPw = false;
+        if (success)
+        {
+            _pwSuccess       = "Password changed successfully.";
+            _currentPassword = string.Empty;
+            _newPassword     = string.Empty;
+            _confirmPassword = string.Empty;
+        }
+        else
+        {
+            _pwError = error ?? "Failed to change password.";
+        }
+    }
+
+    // ── 2FA ──────────────────────────────────────────────────
+    private async Task LoadTwoFactorSetupAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_currentUserId) || string.IsNullOrWhiteSpace(_adminToken)) return;
+        _saving2fa = true;
+        var (key, _, err) = await ApiAuthService.GetTwoFactorSetupAsync(_currentUserId, _adminToken);
+        _saving2fa = false;
+        if (err is not null)  { Snackbar.Add(err, Severity.Error); return; }
+        _twoFaSetupKey = key;
+    }
+
+    private async Task EnableTwoFactorAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_twoFaCode)) { _twoFaError = "Enter the code from your app."; return; }
+        if (string.IsNullOrWhiteSpace(_currentUserId) || string.IsNullOrWhiteSpace(_adminToken)) return;
+        _twoFaError = null;
+        _saving2fa  = true;
+        var (success, recoveryCodes, error) = await ApiAuthService.EnableTwoFactorAsync(_currentUserId, _twoFaCode, _adminToken);
+        _saving2fa = false;
+        if (success)
+        {
+            _twoFaEnabled  = true;
+            _twoFaSetupKey = null;
+            _backupCodes   = [.. recoveryCodes];
+            Snackbar.Add("2FA enabled successfully!", Severity.Success);
+        }
+        else
+        {
+            _twoFaError = error ?? "Invalid code. Please try again.";
+        }
+    }
+
+    private async Task DisableTwoFactorAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_currentUserId) || string.IsNullOrWhiteSpace(_adminToken)) return;
+        _saving2fa = true;
+        var (success, error) = await ApiAuthService.DisableTwoFactorAsync(_currentUserId, _adminToken);
+        _saving2fa = false;
+        if (success)
+        {
+            _twoFaEnabled = false;
+            _backupCodes  = [];
+            Snackbar.Add("2FA disabled.", Severity.Info);
+        }
+        else
+        {
+            Snackbar.Add(error ?? "Failed to disable 2FA.", Severity.Error);
+        }
+    }
+
+    private async Task CopyBackupCodes()
+    {
+        if (_backupCodes.Count == 0) return;
+        var text = string.Join("\n", _backupCodes);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            Snackbar.Add("Backup codes copied to clipboard.", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Could not copy automatically - please select and copy the codes manually.", Severity.Warning);
+        }
+    }
+
+    // ── Mail ─────────────────────────────────────────────────
+    private async Task SaveMailAsync()
+    {
+        if (_mailSettings is null || string.IsNullOrWhiteSpace(_adminToken)) return;
+        _savingMail = true;
+        var (success, error) = await ApiService.SaveMailSettingsAsync(_mailSettings, _adminToken);
+        _savingMail = false;
+        if (success) Snackbar.Add("Mail settings saved.", Severity.Success);
+        else Snackbar.Add(error ?? "Failed to save mail settings.", Severity.Error);
+    }
+
+    // ── Theme ────────────────────────────────────────────────
+    private async Task SaveThemeAsync()
+    {
+        if (_appSettings is null || string.IsNullOrWhiteSpace(_adminToken)) return;
+        _savingTheme = true;
+        var (success, error) = await ApiService.SaveAppSettingsAsync(_appSettings, _adminToken);
+        _savingTheme = false;
+        if (success)
+        {
+            Snackbar.Add("Theme saved. Refreshing...", Severity.Success);
+            // Reload the page so the new theme takes effect
+            await Task.Delay(600);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add(error ?? "Failed to save theme.", Severity.Error);
+        }
+    }
+
+    private void ResetThemeColors()
+    {
+        if (_appSettings is null) return;
+        _appSettings.PrimaryColor   = null;
+        _appSettings.SecondaryColor = null;
+        _appSettings.TertiaryColor  = null;
+    }
+}
