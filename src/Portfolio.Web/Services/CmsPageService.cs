@@ -1,54 +1,22 @@
-using Microsoft.EntityFrameworkCore;
-using Portfolio.Web.Data;
-
 namespace Portfolio.Web.Services;
 
-public class CmsPageService(IDbContextFactory<ApplicationDbContext> dbContextFactory)
+public class CmsPageService(PortfolioApiService apiService)
 {
-    /// <summary>Returns a published CMS page by its URL slug, or null if not found.</summary>
-    public async Task<CmsPage?> GetBySlugAsync(string slug)
+    public async Task<Portfolio.Shared.Models.CmsPageDto?> GetBySlugAsync(string slug)
+        => await apiService.GetCmsPageBySlugAsync(slug);
+
+    public async Task<List<Portfolio.Shared.Models.CmsPageDto>> GetAllForAdminAsync(string adminToken)
+        => await apiService.GetCmsPagesForAdminAsync(adminToken);
+
+    public async Task<Portfolio.Shared.Models.CmsPageDto> CreateAsync(Portfolio.Shared.Models.CmsPageDto page, string adminToken)
     {
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        return await dbContext.CmsPages
-            .FirstOrDefaultAsync(p => p.Slug == slug && p.IsPublished);
+        var (result, _) = await apiService.CreateCmsPageAsync(page, adminToken);
+        return result ?? page;
     }
 
-    /// <summary>Returns all pages (including drafts) for the admin CMS.</summary>
-    public async Task<List<CmsPage>> GetAllForAdminAsync()
-    {
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        return await dbContext.CmsPages
-            .OrderByDescending(p => p.PublishedDate)
-            .ToListAsync();
-    }
+    public async Task UpdateAsync(Portfolio.Shared.Models.CmsPageDto page, string adminToken)
+        => await apiService.UpdateCmsPageAsync(page.Id, page, adminToken);
 
-    /// <summary>Creates a new CMS page and returns it with the assigned Id.</summary>
-    public async Task<CmsPage> CreateAsync(CmsPage page)
-    {
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        dbContext.CmsPages.Add(page);
-        await dbContext.SaveChangesAsync();
-        return page;
-    }
-
-    /// <summary>Persists changes to an existing CMS page.</summary>
-    public async Task UpdateAsync(CmsPage page)
-    {
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        page.UpdatedAt = DateTime.UtcNow;
-        dbContext.CmsPages.Update(page);
-        await dbContext.SaveChangesAsync();
-    }
-
-    /// <summary>Deletes a CMS page by Id. No-op if not found.</summary>
-    public async Task DeleteAsync(int id)
-    {
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-        var page = await dbContext.CmsPages.FindAsync(id);
-        if (page is not null)
-        {
-            dbContext.CmsPages.Remove(page);
-            await dbContext.SaveChangesAsync();
-        }
-    }
+    public async Task DeleteAsync(int id, string adminToken)
+        => await apiService.DeleteCmsPageAsync(id, adminToken);
 }

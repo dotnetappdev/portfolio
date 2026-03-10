@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Portfolio.Data.CosmosDb;
 // using Portfolio.Data.MySql; // Disabled until Pomelo supports EF Core 10
 using Portfolio.Data.PostgreSql;
@@ -16,6 +17,11 @@ public static class DatabaseProviderFactory
         var provider = configuration["DatabaseProvider"] ?? "SqlServer";
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+        // Migrations are generated against SQLite types. When running against other providers the
+        // model fingerprint differs, producing PendingModelChangesWarning. Suppress it intentionally —
+        // migrations are provider-aware and the schema is correct for each supported provider.
+        options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 
         switch (provider.Trim().ToLowerInvariant())
         {

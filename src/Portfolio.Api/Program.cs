@@ -22,6 +22,7 @@ builder.WebHost.UseSentry(o =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 // Swashbuckle Swagger — active in all environments so the UI is available after deployment.
 builder.Services.AddSwaggerGen(options =>
@@ -129,7 +130,13 @@ try
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var logger  = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    await context.Database.MigrateAsync();
+    // SQLite migrations are generated from SQL Server DDL; use EnsureCreated for
+    // SQLite so the schema is built directly from the current model instead.
+    var providerName = context.Database.ProviderName ?? "";
+    if (providerName.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+        await context.Database.EnsureCreatedAsync();
+    else
+        await context.Database.MigrateAsync();
     logger.LogInformation("Database migrations applied successfully.");
 
     if (builder.Configuration.GetValue<bool>("SeedData"))

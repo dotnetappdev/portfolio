@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@* Remove @using Portfolio.Web.Data - no longer needed in MainLayout *@
 @inject Portfolio.Web.Services.MenuService MenuService
 @inject IDialogService DialogService
 
@@ -92,7 +93,7 @@
     private bool _isDarkMode = true;
     private bool _drawerOpen = false;
     private MudThemeProvider _mudThemeProvider = null!;
-    private List<Portfolio.Web.Data.MenuItem> _menuItems = [];
+    private List<Portfolio.Shared.Models.MenuItemDto> _menuItems = [];
 
     protected override async Task OnInitializedAsync()
     {

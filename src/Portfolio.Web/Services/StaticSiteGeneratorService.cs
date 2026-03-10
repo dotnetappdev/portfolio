@@ -1,8 +1,6 @@
 using System.IO.Compression;
 using System.Net;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Portfolio.Web.Data;
 using Portfolio.Shared.Models;
 
 namespace Portfolio.Web.Services;
@@ -13,7 +11,6 @@ namespace Portfolio.Web.Services;
 /// </summary>
 public class StaticSiteGeneratorService
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly BlogService _blogService;
     private readonly MenuService _menuService;
     private readonly PortfolioApiService _apiService;
@@ -21,14 +18,12 @@ public class StaticSiteGeneratorService
     private readonly ILogger<StaticSiteGeneratorService> _logger;
 
     public StaticSiteGeneratorService(
-        IDbContextFactory<ApplicationDbContext> dbContextFactory,
         BlogService blogService,
         MenuService menuService,
         PortfolioApiService apiService,
         IWebHostEnvironment env,
         ILogger<StaticSiteGeneratorService> logger)
     {
-        _dbContextFactory = dbContextFactory;
         _blogService = blogService;
         _menuService = menuService;
         _apiService = apiService;
@@ -46,10 +41,8 @@ public class StaticSiteGeneratorService
         var menuItems  = await _menuService.GetVisibleItemsAsync();
         var projects   = await _apiService.GetProjectsAsync() ?? [];
         var skills     = await _apiService.GetSkillsAsync()   ?? [];
-
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
-        var heroStats  = await db.HeroStats.OrderBy(s => s.SortOrder).ToListAsync();
-        var cmsPages   = await db.CmsPages.Where(p => p.IsPublished).ToListAsync();
+        var heroStats  = await _apiService.GetHeroStatsAsync();
+        var cmsPages   = await _apiService.GetPublishedCmsPagesAsync();
 
         using var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
@@ -157,7 +150,7 @@ public class StaticSiteGeneratorService
     private static string PageShell(
         string title,
         string bodyContent,
-        IReadOnlyList<MenuItem> menuItems,
+        IReadOnlyList<MenuItemDto> menuItems,
         int depth,
         string? metaDescription = null)
     {
@@ -199,7 +192,7 @@ public class StaticSiteGeneratorService
 """;
     }
 
-    private static string BuildNavLinks(IReadOnlyList<MenuItem> menuItems, string root)
+    private static string BuildNavLinks(IReadOnlyList<MenuItemDto> menuItems, string root)
     {
         var sb = new StringBuilder();
         foreach (var item in menuItems)
@@ -611,8 +604,8 @@ h2.section-title {
     // ─── Home page ────────────────────────────────────────────────────────────
 
     private static string BuildHomePage(
-        IReadOnlyList<MenuItem> menuItems,
-        List<HeroStat> heroStats,
+        IReadOnlyList<MenuItemDto> menuItems,
+        List<HeroStatDto> heroStats,
         List<ProjectDto> projects,
         int depth)
     {
@@ -763,7 +756,7 @@ h2.section-title {
 
     // ─── About page ───────────────────────────────────────────────────────────
 
-    private static string BuildAboutPage(IReadOnlyList<MenuItem> menuItems, int depth)
+    private static string BuildAboutPage(IReadOnlyList<MenuItemDto> menuItems, int depth)
     {
         var body = """
     <div class="page-banner">
@@ -828,7 +821,7 @@ h2.section-title {
     // ─── Projects page ────────────────────────────────────────────────────────
 
     private static string BuildProjectsPage(
-        IReadOnlyList<MenuItem> menuItems,
+        IReadOnlyList<MenuItemDto> menuItems,
         List<ProjectDto> projects,
         int depth)
     {
@@ -896,7 +889,7 @@ h2.section-title {
     // ─── Project detail page ──────────────────────────────────────────────────
 
     private static string BuildProjectDetailPage(
-        IReadOnlyList<MenuItem> menuItems,
+        IReadOnlyList<MenuItemDto> menuItems,
         ProjectDto project,
         List<ProjectDto> others,
         int depth)
@@ -963,7 +956,7 @@ h2.section-title {
     // ─── Skills page ──────────────────────────────────────────────────────────
 
     private static string BuildSkillsPage(
-        IReadOnlyList<MenuItem> menuItems,
+        IReadOnlyList<MenuItemDto> menuItems,
         List<SkillDto> skills,
         int depth)
     {
@@ -1011,8 +1004,8 @@ h2.section-title {
     // ─── Blog list page ───────────────────────────────────────────────────────
 
     private static string BuildBlogListPage(
-        IReadOnlyList<MenuItem> menuItems,
-        IReadOnlyList<BlogPost> posts,
+        IReadOnlyList<MenuItemDto> menuItems,
+        IReadOnlyList<BlogPostDto> posts,
         int depth)
     {
         var r = Root(depth);
@@ -1065,9 +1058,9 @@ h2.section-title {
     // ─── Blog post page ───────────────────────────────────────────────────────
 
     private static string BuildBlogPostPage(
-        IReadOnlyList<MenuItem> menuItems,
-        BlogPost post,
-        IReadOnlyList<BlogPost> related,
+        IReadOnlyList<MenuItemDto> menuItems,
+        BlogPostDto post,
+        IReadOnlyList<BlogPostDto> related,
         int depth)
     {
         var r = Root(depth);
@@ -1144,7 +1137,7 @@ h2.section-title {
 
     // ─── Contact page ─────────────────────────────────────────────────────────
 
-    private static string BuildContactPage(IReadOnlyList<MenuItem> menuItems, int depth)
+    private static string BuildContactPage(IReadOnlyList<MenuItemDto> menuItems, int depth)
     {
         var body = """
     <div class="page-banner">
@@ -1178,8 +1171,8 @@ h2.section-title {
     // ─── CMS page ─────────────────────────────────────────────────────────────
 
     private static string BuildCmsPage(
-        IReadOnlyList<MenuItem> menuItems,
-        CmsPage page,
+        IReadOnlyList<MenuItemDto> menuItems,
+        CmsPageDto page,
         int depth)
     {
         var imgHtml = !string.IsNullOrWhiteSpace(page.FeaturedImage)

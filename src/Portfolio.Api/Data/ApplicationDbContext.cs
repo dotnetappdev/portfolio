@@ -13,6 +13,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<HeroStat> HeroStats => Set<HeroStat>();
+    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+    public DbSet<CmsPage> CmsPages => Set<CmsPage>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<AppSettings> AppSettings => Set<AppSettings>();
+    public DbSet<SmsSettings> SmsSettings => Set<SmsSettings>();
+    public DbSet<MailSettings> MailSettings => Set<MailSettings>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

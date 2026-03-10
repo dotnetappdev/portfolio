@@ -28,18 +28,10 @@ services:
     ports:
       - "5072:8080"
     environment:
-      - DatabaseProvider=Sqlite
-      - ConnectionStrings__DefaultConnection=Data Source=/app/data/portfolio-web.db
       - BaseApiUrl=${BASE_API_URL:-http://portfolio-api:8080/}
-      - SeedData=true
-      - DefaultAdmin__Email=${ADMIN_EMAIL:-admin@portfolio.com}
-      - DefaultAdmin__Password=${ADMIN_PASSWORD:-Admin@123456!}
-    volumes:
-      - web-data:/app/data
     restart: unless-stopped
     depends_on:
       - portfolio-api
 
 volumes:
   api-data:
-  web-data:

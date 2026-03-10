@@ -1,6 +1,6 @@
 @page "/blog"
 @rendermode InteractiveServer
-@using Portfolio.Web.Data
+@using Portfolio.Shared.Models
 @inject Portfolio.Web.Services.BlogService BlogService
 
 <PageTitle>Blog | David Buckley</PageTitle>
@@ -86,7 +86,7 @@ else
 @code {
     private const int PageSize = 5;
 
-    private IReadOnlyList<BlogPost>? _posts;
+    private IReadOnlyList<BlogPostDto>? _posts;
     private int _currentPage = 1;
     private int _totalPages = 1;
 
