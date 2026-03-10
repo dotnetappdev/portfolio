@@ -11,7 +11,7 @@ RUN dotnet restore Portfolio.Web/Portfolio.Web.csproj
 COPY Portfolio.Shared/ Portfolio.Shared/
 COPY Portfolio.Web/ Portfolio.Web/
 
-RUN dotnet publish Portfolio.Web/Portfolio.Web.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish Portfolio.Web/Portfolio.Web.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

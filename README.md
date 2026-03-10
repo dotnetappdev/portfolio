@@ -5,16 +5,25 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ## Screenshots
 
 ### Home Page
-![Home Page](https://github.com/user-attachments/assets/54921805-ad54-4c4f-9e72-ea7fdd847a6e)
+![Home Page](https://github.com/user-attachments/assets/488fa9f8-d67a-432d-a661-2525ffc8dcd9)
 
-### Projects (with improved descriptions and tech chips)
-![Projects](https://github.com/user-attachments/assets/6bfc6b2d-b810-4bc8-b7e1-0a13e81362ab)
+### Projects
+![Projects](https://github.com/user-attachments/assets/d1e65cb1-0169-4012-b404-9b78e6bfbc14)
+
+### Admin Dashboard: Hero Stats
+![Admin Dashboard — Hero Stats](https://github.com/user-attachments/assets/b192afc0-c4b9-4648-b748-cf8d06b94192)
+
+### Admin Dashboard: Settings (API, Google Analytics, SMS, Mail, Visitor Notifications)
+![Admin Dashboard — Settings](https://github.com/user-attachments/assets/29af299a-cc92-4a3f-bb5a-63f3de6d6fa7)
+
+### Admin Dashboard: Blog Posts
+![Admin Dashboard — Blog Posts](https://github.com/user-attachments/assets/193d1c1c-2f78-4beb-807d-59ab42418c45)
+
+### Admin Dashboard: Projects (7 seeded projects, full CRUD)
+![Admin Dashboard — Projects](https://github.com/user-attachments/assets/12170bcb-55c1-449d-85c2-fb468b60da62)
 
 ### Blog listing (paginated, each with a themed featured image)
 ![Blog Listing](https://github.com/user-attachments/assets/79f8970a-62d7-4f92-8217-278be3d16c14)
-
-### Blog Post: BookIt (dark mode — top bar matches background)
-![Blog Post BookIt](https://github.com/user-attachments/assets/f1aa95cb-37cb-44d3-b0fc-d33ba4f35ff2)
 
 ### Skills (with AI and Security categories)
 ![Skills](https://github.com/user-attachments/assets/32b07fca-e8fa-4c56-927e-d068e730adcd)
@@ -24,12 +33,6 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 
 ### Contact (with math CAPTCHA)
 ![Contact](https://github.com/user-attachments/assets/e3a8b864-ac24-4574-a588-7a99c247fdc3)
-
-### Chip styling — Outlined across all public pages (light & dark)
-
-All public-facing chips (Core Technologies, blog category chips, project tags, "Featured" badges) use `Variant.Outlined` consistently across both themes:
-
-![Chip styling — outlined in light and dark mode](https://github.com/user-attachments/assets/14abc934-d154-4e32-a8d0-a9effa43bb15)
 
 ### Blog post readability — light mode
 
@@ -70,37 +73,28 @@ All interactive elements follow UK Government Design System (GDS) accessibility 
 
 ---
 
-## CMS Screenshots
-
-### Admin Dashboard: Hero Stats
-![Admin Dashboard](https://github.com/user-attachments/assets/8475c135-b188-4736-9978-d0ae288fb129)
-
-### Admin: SMS Provider Settings (Twilio / ClickSend credentials stored in the database, managed entirely in-app)
-
-The Settings tab shows a two-column layout: on the left, the SMS Provider form with an Enable toggle, provider selector, Admin receiver number, and provider-specific credential fields (Account SID, Auth Token, From number for Twilio; Username, API Key, Sender ID for ClickSend). On the right, a concise Setup Guide card with links to each provider's console. A **Save SMS Settings** button and a **Send Test SMS** button sit at the bottom of the form.
-
-### Admin: Static Site Generator
-![Admin Static Site](https://github.com/user-attachments/assets/c781f737-e6be-41d3-b93c-7b42823e240e)
-
----
-
 ## Solution Structure
 
 ```
 Portfolio.slnx
 └── src/
     ├── Portfolio.Shared/              # Shared DTOs and models
-    ├── Portfolio.Api/                 # REST Web API (.NET 10)
-    │   └── Infrastructure/           # DatabaseProviderFactory
-    ├── Portfolio.Data.MySql/          # EF Core MySQL provider (Pomelo)
+    ├── Portfolio.Api/                 # REST Web API (.NET 10) — sole DB owner
+    │   ├── Controllers/           # Auth, HeroStats, Projects, Skills, Contact,
+    │   │                          #   Blog, CmsPages, MenuItems, AppSettings,
+    │   │                          #   MailSettings, SmsSettings, Notifications
+    │   ├── Data/                  # ApplicationDbContext + EF Core migrations
+    │   ├── Infrastructure/        # DatabaseProviderFactory
+    │   └── Models/                # All entity models
+    ├── Portfolio.Data.MySql/          # EF Core MySQL provider (Oracle)
     ├── Portfolio.Data.CosmosDb/       # EF Core Azure Cosmos DB provider
     ├── Portfolio.Data.PostgreSql/     # EF Core PostgreSQL provider (Npgsql)
     ├── Portfolio.Sms.Abstractions/    # ISmsService, SmsMessage, SmsResult (no dependencies)
     ├── Portfolio.Sms.ClickSend/       # ClickSend REST API implementation
     ├── Portfolio.Sms.Twilio/          # Twilio REST API implementation
-    └── Portfolio.Web/                 # Blazor Web App (server-side, single project)
+    └── Portfolio.Web/                 # Blazor Web App (server-side, no direct DB access)
         ├── Components/
-        │   ├── Layout/            # MainLayout (DB-driven nav), NavMenu
+        │   ├── Layout/            # MainLayout (API-driven nav), NavMenu
         │   ├── Pages/
         │   │   ├── About/         # About page
         │   │   ├── Admin/         # Admin dashboard (Hero Stats, Users, Settings, Blog Posts, Pages, Menus, Projects)
@@ -113,12 +107,10 @@ Portfolio.slnx
         │   │   ├── Skills/        # Skills page
         │   │   └── CmsPageView.razor  # Catch-all /{**slug} for custom CMS pages
         │   └── Shared/            # RichTextEditor (Quill WYSIWYG wrapper)
-        ├── Data/                  # ApplicationDbContext (CMS-only), BlogPost, CmsPage, MenuItem, AppSettings, SmsSettings
-        ├── Infrastructure/        # DatabaseProviderFactory
-        └── Services/              # BlogService, CmsPageService, MenuService, AppSettingsService,
-                                   #   PortfolioApiService, PortfolioApiAuthService, SmsSender,
-                                   #   PortfolioApiService (HttpClient wrapper for Portfolio.Api), PortfolioApiAuthService,
-                                   #   SmsSender, StaticSiteGeneratorService
+        └── Services/              # PortfolioApiService (HttpClient wrapper for all API calls),
+                                   #   PortfolioApiAuthService, BlogService, CmsPageService,
+                                   #   MenuService, AppSettingsService, EmailSender, SmsSender,
+                                   #   StaticSiteGeneratorService
 ```
 
 ## Features
@@ -139,11 +131,11 @@ Portfolio.slnx
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header; blog content readable in both modes
 - **REST API with fallback**: all public pages (projects, skills, contact) call Portfolio.Api directly; when the API is unreachable the Blazor app uses built-in fallback data so the site remains visible
-- **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library
+- **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library. **Only Portfolio.Api connects to the database**; Portfolio.Web has no direct DB access
 - **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
 - **Swagger UI**: interactive API documentation available at `/swagger` on Portfolio.Api in all environments (including production); JWT auth wired in so you can test protected endpoints directly from the browser
 - **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, projects, and generate static exports
-- **In-app settings**: API base URL and SMS provider (with all API keys/tokens) configured through the admin Settings tab — stored in the database, no environment variables or app restart needed
+- **In-app settings**: API base URL, SMS provider (with all API keys/tokens), Mail (SMTP), and Google Analytics ID configured through the admin Settings tab — all stored in Portfolio.Api's database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
 - **Account lockout**: 5 failed attempts triggers a 15-minute lockout
 - **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend — all credentials (Account SID, Auth Token, API Key, etc.) stored in DB and managed in Admin → Settings
@@ -251,10 +243,11 @@ The following variables can be set in a `.env` file at the repo root or exported
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `JWT_KEY` | **Yes** | _(none)_ | JWT signing key — minimum 32 characters |
-| `ADMIN_EMAIL` | No | `admin@portfolio.com` | Seeded admin account email |
-| `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password |
-| `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for the API |
+| `JWT_KEY` | **Yes** | _(none)_ | JWT signing key for Portfolio.Api — minimum 32 characters |
+| `ADMIN_EMAIL` | No | `admin@portfolio.com` | Seeded admin account email (Portfolio.Api only) |
+| `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password (Portfolio.Api only) |
+| `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for Portfolio.Api |
+| `BASE_API_URL` | No | `http://portfolio-api:8080/` | URL Portfolio.Web uses to reach Portfolio.Api |
 
 > **Security:** change `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_KEY` before exposing containers publicly.
 
@@ -270,24 +263,23 @@ docker build -t portfolio-web -f src/Portfolio.Web/Dockerfile ./src
 
 ### Persistent data
 
-Each container stores its SQLite database in a named Docker volume (`api-data` and `web-data`). Data survives container restarts. To inspect or back up the volumes:
+The API container stores its SQLite database in a named Docker volume (`api-data`). Data survives container restarts. Portfolio.Web has no database volume — all state lives in the API.
 
 ```bash
 # List volumes
 docker volume ls
 
-# Copy a database file out of a volume
+# Copy the API database file out of its volume
 docker cp portfolio-api:/app/data/portfolio-api.db ./backup-api.db
-docker cp portfolio-web:/app/data/portfolio-web.db ./backup-web.db
 ```
 
 ### Connecting Web to API inside Docker
 
-After starting the containers, sign in to the Blazor admin panel (`http://localhost:5072/login`) and navigate to **Settings**. Set the **Portfolio API Base URL** to `http://portfolio-api:8080` so the web container can reach the API over the internal Docker network.
+The default `docker-compose.yml` sets `BaseApiUrl=http://portfolio-api:8080/` so the web container reaches the API over the internal Docker network automatically. No manual configuration is needed after startup.
 
 ### Changing the database provider in Docker
 
-The default `docker-compose.yml` uses SQLite for zero-setup persistence. To switch to **SQL Server** or **PostgreSQL**, update the environment variables for each service in `docker-compose.yml`.
+The default `docker-compose.yml` uses SQLite for zero-setup persistence. **Only Portfolio.Api uses a database.** To switch to **SQL Server** or **PostgreSQL**, update the environment variables for `portfolio-api` in `docker-compose.yml`.
 
 #### SQL Server
 
@@ -316,10 +308,7 @@ services:
 
   portfolio-web:
     # ... existing config ...
-    environment:
-      - DatabaseProvider=SqlServer
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=PortfolioWebDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
-      # ... other env vars ...
+    # No database configuration needed — Portfolio.Web has no DB
     depends_on:
       - sqlserver
 
@@ -353,10 +342,7 @@ services:
 
   portfolio-web:
     # ... existing config ...
-    environment:
-      - DatabaseProvider=PostgreSql
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=portfolio_web;Username=portfolio;Password=${POSTGRES_PASSWORD}
-      # ... other env vars ...
+    # No database configuration needed — Portfolio.Web has no DB
 
 volumes:
   postgres-data:
@@ -390,7 +376,9 @@ dotnet build Portfolio.slnx
 
 ## Database Configuration
 
-Set `DatabaseProvider` in `appsettings.json` (or override per environment).
+> **Only Portfolio.Api connects to the database.** Portfolio.Web has no direct database access — it exclusively calls Portfolio.Api over HTTP.
+
+Set `DatabaseProvider` in Portfolio.Api's `appsettings.json` (or override per environment).
 All providers are fully supported out of the box — no manual NuGet installs needed.
 
 | Value | Driver | Connection string format |
@@ -398,12 +386,12 @@ All providers are fully supported out of the box — no manual NuGet installs ne
 | `SqlServer` (default) | SQL Server / LocalDB | `Server=(localdb)\mssqllocaldb;Database=PortfolioDb;Trusted_Connection=True;` |
 | `Sqlite` | SQLite | `Data Source=portfolio.db` |
 | `PostgreSql` or `Postgres` | PostgreSQL (Npgsql) | `Host=localhost;Database=portfolio;Username=...;Password=...` |
-| `MySql` | MySQL / MariaDB (Pomelo) | `Server=localhost;Database=portfolio;User=...;Password=...` |
+| `MySql` | MySQL / MariaDB | `Server=localhost;Database=portfolio;User=...;Password=...` |
 | `CosmosDb` or `Cosmos` | Azure Cosmos DB | `AccountEndpoint=https://...;AccountKey=...;Database=portfolio` |
 
-Each provider is isolated in its own class library (`Portfolio.Data.MySql`, `Portfolio.Data.CosmosDb`, `Portfolio.Data.PostgreSql`). SQL Server and SQLite are built into `Portfolio.Api` and `Portfolio.Web` via the standard EF Core packages already referenced.
+Each provider is isolated in its own class library (`Portfolio.Data.MySql`, `Portfolio.Data.CosmosDb`, `Portfolio.Data.PostgreSql`). SQL Server and SQLite are built into `Portfolio.Api` via the standard EF Core packages already referenced.
 
-The database schema is created and all pending migrations are applied automatically at startup via `MigrateAsync()`. Seed data (projects, skills, admin user) is inserted on first run when `SeedData: true` is set.
+The database schema is created and all pending migrations are applied automatically at startup via `MigrateAsync()` (SQL Server / PostgreSQL) or `EnsureCreatedAsync()` (SQLite). Seed data (projects, skills, admin user, CMS entities) is inserted on first run when `SeedData: true` is set.
 
 See **[MIGRATIONS.md](./MIGRATIONS.md)** for the full guide on creating, applying, and rolling back migrations for each provider.
 See **[eftooling.txt](./eftooling.txt)** for a plain-text quick-reference of every EF Core CLI command.
@@ -414,14 +402,14 @@ See **[eftooling.txt](./eftooling.txt)** for a plain-text quick-reference of eve
 
 ### Quick start with SQLite (zero setup)
 
-The development appsettings already configure SQLite so you can run immediately:
+Portfolio.Api's development appsettings already configure SQLite so you can run immediately. Portfolio.Web has no database — it calls the API.
 
 ```bash
-# Terminal 1: API
+# Terminal 1: API (owns the database)
 cd src/Portfolio.Api
 dotnet run
 
-# Terminal 2: Blazor web app
+# Terminal 2: Blazor web app (calls the API, no DB needed)
 cd src/Portfolio.Web
 dotnet run
 ```
@@ -430,7 +418,7 @@ Open `http://localhost:5100` in your browser.
 
 ### Using SQL Server
 
-Update `appsettings.Development.json` in both projects:
+Update `appsettings.Development.json` in **Portfolio.Api only**:
 
 ```json
 {
@@ -463,13 +451,9 @@ Update `appsettings.Development.json` in both projects:
 
 | Key | Description | Example |
 |---|---|---|
-| `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
-| `ConnectionStrings:DefaultConnection` | Database connection | See above |
 | `BaseApiUrl` | Base URL of Portfolio.Api (production default already set) | `https://your-api.azurewebsites.net/` |
-| `DefaultAdmin:Email` | Seeded admin email | Unused — users are managed in Portfolio.Api |
-| `DefaultAdmin:Password` | Seeded admin password | Unused — users are managed in Portfolio.Api |
 
-`BaseApiUrl` is the primary way to point the web app at the API for any environment. The production value is already set in `appsettings.json` (see the file for the actual Azure App Service URL). `appsettings.Development.json` overrides this to `https://localhost:7002/` for local development. You can also override it via an environment variable (`BaseApiUrl=https://...`) or via the admin **Settings** panel (database value takes priority when non-empty).
+> **Portfolio.Web has no database.** It requires only `BaseApiUrl` to locate Portfolio.Api. All data (CMS, blog posts, navigation, settings, etc.) is fetched from the API at runtime. The production value is already set in `appsettings.json`. `appsettings.Development.json` overrides this to `https://localhost:7002/` for local development. You can also override it via an environment variable (`BaseApiUrl=https://...`) or via the admin **Settings** panel (the value saved there takes priority when non-empty).
 
 ---
 
@@ -478,14 +462,9 @@ Update `appsettings.Development.json` in both projects:
 Never commit real credentials. Use [.NET User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) for local development:
 
 ```bash
-# API secrets
+# API secrets (the only project that needs them)
 cd src/Portfolio.Api
 dotnet user-secrets set "Jwt:Key" "your-secret-key-minimum-32-characters"
-dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
-dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
-
-# Web secrets
-cd src/Portfolio.Web
 dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
 dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 ```
@@ -645,7 +624,7 @@ Three small, focused class libraries handle SMS:
 | `Portfolio.Sms.Twilio` | Sends via Twilio REST API (Basic Auth, no SDK required) |
 | `Portfolio.Sms.ClickSend` | Sends via ClickSend REST API v3 (Basic Auth, no SDK required) |
 
-`SmsSender` (in `Portfolio.Web`) reads the active provider settings from the database on every call and delegates to the correct library.
+`SmsSender` (in `Portfolio.Web`) is a thin delegate that calls `POST /api/notifications/test-sms` on Portfolio.Api. The API handles all provider logic, reads credentials from its own database, and dispatches via the correct library.
 
 ### Twilio Setup
 

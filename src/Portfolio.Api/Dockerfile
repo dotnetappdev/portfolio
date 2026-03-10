@@ -6,6 +6,9 @@ COPY Portfolio.Shared/Portfolio.Shared.csproj Portfolio.Shared/
 COPY Portfolio.Data.CosmosDb/Portfolio.Data.CosmosDb.csproj Portfolio.Data.CosmosDb/
 COPY Portfolio.Data.MySql/Portfolio.Data.MySql.csproj Portfolio.Data.MySql/
 COPY Portfolio.Data.PostgreSql/Portfolio.Data.PostgreSql.csproj Portfolio.Data.PostgreSql/
+COPY Portfolio.Sms.Abstractions/Portfolio.Sms.Abstractions.csproj Portfolio.Sms.Abstractions/
+COPY Portfolio.Sms.ClickSend/Portfolio.Sms.ClickSend.csproj Portfolio.Sms.ClickSend/
+COPY Portfolio.Sms.Twilio/Portfolio.Sms.Twilio.csproj Portfolio.Sms.Twilio/
 COPY Portfolio.Api/Portfolio.Api.csproj Portfolio.Api/
 
 RUN dotnet restore Portfolio.Api/Portfolio.Api.csproj
@@ -15,9 +18,12 @@ COPY Portfolio.Shared/ Portfolio.Shared/
 COPY Portfolio.Data.CosmosDb/ Portfolio.Data.CosmosDb/
 COPY Portfolio.Data.MySql/ Portfolio.Data.MySql/
 COPY Portfolio.Data.PostgreSql/ Portfolio.Data.PostgreSql/
+COPY Portfolio.Sms.Abstractions/ Portfolio.Sms.Abstractions/
+COPY Portfolio.Sms.ClickSend/ Portfolio.Sms.ClickSend/
+COPY Portfolio.Sms.Twilio/ Portfolio.Sms.Twilio/
 COPY Portfolio.Api/ Portfolio.Api/
 
-RUN dotnet publish Portfolio.Api/Portfolio.Api.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish Portfolio.Api/Portfolio.Api.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
