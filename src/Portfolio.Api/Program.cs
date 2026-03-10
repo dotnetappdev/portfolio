@@ -22,6 +22,7 @@ builder.WebHost.UseSentry(o =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 // Swashbuckle Swagger — active in all environments so the UI is available after deployment.
 builder.Services.AddSwaggerGen(options =>
