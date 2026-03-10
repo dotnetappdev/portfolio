@@ -21,6 +21,8 @@ public class Project
     public string? LiveUrl { get; set; }
     [MaxLength(200)]
     public string? ImageUrl { get; set; }
+    [MaxLength(300)]
+    public string? BlogSlug { get; set; }
     [MaxLength(100)]
     public string Category { get; set; } = string.Empty;
     public bool IsFeatured { get; set; }

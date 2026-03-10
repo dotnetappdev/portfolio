@@ -10,6 +10,7 @@ public class ProjectDto
     public string? GitHubUrl { get; set; }
     public string? LiveUrl { get; set; }
     public string? ImageUrl { get; set; }
+    public string? BlogSlug { get; set; }
     public string Category { get; set; } = string.Empty;
     public bool IsFeatured { get; set; }
     public int SortOrder { get; set; }

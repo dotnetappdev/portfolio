@@ -208,6 +208,40 @@
     border: 1px solid rgba(196, 181, 253, 0.12);
 }
 
+/* ── Project card header: purple gradient banner ──────────── */
+.project-card-header {
+    background: linear-gradient(135deg, #4338CA 0%, #5B5BD6 55%, #7C3AED 100%);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-card-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.10) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.project-card-header .mud-typography,
+.project-card-header .mud-avatar,
+.project-card-header .mud-link,
+.project-card-header .mud-chip {
+    color: white !important;
+}
+
+.project-card-header .mud-chip {
+    border-color: rgba(255,255,255,0.5) !important;
+    color: white !important;
+}
+
+.project-card-header .mud-chip.mud-chip-color-warning {
+    border-color: #FCD34D !important;
+    color: #FCD34D !important;
+}
+
 /* ── Scrollbar (dark mode) ────────────────────────────────── */
 :root[data-mud-theme="dark"],
 .dark {
