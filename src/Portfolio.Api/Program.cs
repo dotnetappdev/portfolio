@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Data;
 using Portfolio.Api.Infrastructure;
 using Portfolio.Api.Models;
+using Portfolio.Api.Services;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,7 @@ builder.WebHost.UseSentry(o =>
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Swashbuckle Swagger — active in all environments so the UI is available after deployment.
 builder.Services.AddSwaggerGen(options =>
@@ -153,7 +155,7 @@ try
         {
             logger.LogWarning(
                 "DefaultAdmin:Email / DefaultAdmin:Password not configured. " +
-                "Skipping admin seed — set DefaultAdmin__Email and DefaultAdmin__Password " +
+                "Skipping admin seed. Set DefaultAdmin__Email and DefaultAdmin__Password " +
                 "environment variables to seed an admin account.");
         }
         else if (await userMgr.FindByEmailAsync(adminEmail) == null)
@@ -171,6 +173,31 @@ try
                 await userMgr.AddToRoleAsync(admin, "Admin");
 
             logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
+        }
+
+        // Seed initial MailSettings from appsettings if not yet configured in DB.
+        if (!await context.MailSettings.AnyAsync())
+        {
+            var mailSection = builder.Configuration.GetSection("Mail");
+            if (mailSection.Exists())
+            {
+                context.MailSettings.Add(new MailSettings
+                {
+                    Id               = 1,
+                    IsEnabled        = mailSection.GetValue<bool>("IsEnabled"),
+                    Provider         = mailSection["Provider"]         ?? "Smtp",
+                    FromAddress      = mailSection["FromAddress"],
+                    FromName         = mailSection["FromName"],
+                    SmtpHost         = mailSection["SmtpHost"],
+                    SmtpPort         = mailSection.GetValue<int?>("SmtpPort") ?? 587,
+                    SmtpUsername     = mailSection["SmtpUsername"],
+                    SmtpPassword     = mailSection["SmtpPassword"],
+                    UseSsl           = mailSection.GetValue<bool?>("UseSsl") ?? true,
+                    MailerSendApiKey = mailSection["MailerSendApiKey"],
+                });
+                await context.SaveChangesAsync();
+                logger.LogInformation("MailSettings seeded from appsettings.");
+            }
         }
     }
 

@@ -11,16 +11,16 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ![Projects](https://github.com/user-attachments/assets/d1e65cb1-0169-4012-b404-9b78e6bfbc14)
 
 ### Admin Dashboard: Hero Stats
-![Admin Dashboard — Hero Stats](https://github.com/user-attachments/assets/b192afc0-c4b9-4648-b748-cf8d06b94192)
+![Admin Dashboard - Hero Stats](https://github.com/user-attachments/assets/b192afc0-c4b9-4648-b748-cf8d06b94192)
 
 ### Admin Dashboard: Settings (API, Google Analytics, SMS, Mail, Visitor Notifications)
-![Admin Dashboard — Settings](https://github.com/user-attachments/assets/29af299a-cc92-4a3f-bb5a-63f3de6d6fa7)
+![Admin Dashboard - Settings](https://github.com/user-attachments/assets/29af299a-cc92-4a3f-bb5a-63f3de6d6fa7)
 
 ### Admin Dashboard: Blog Posts
-![Admin Dashboard — Blog Posts](https://github.com/user-attachments/assets/193d1c1c-2f78-4beb-807d-59ab42418c45)
+![Admin Dashboard - Blog Posts](https://github.com/user-attachments/assets/193d1c1c-2f78-4beb-807d-59ab42418c45)
 
 ### Admin Dashboard: Projects (7 seeded projects, full CRUD)
-![Admin Dashboard — Projects](https://github.com/user-attachments/assets/12170bcb-55c1-449d-85c2-fb468b60da62)
+![Admin Dashboard - Projects](https://github.com/user-attachments/assets/12170bcb-55c1-449d-85c2-fb468b60da62)
 
 ### Blog listing (paginated, each with a themed featured image)
 ![Blog Listing](https://github.com/user-attachments/assets/79f8970a-62d7-4f92-8217-278be3d16c14)
@@ -34,40 +34,40 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ### Contact (with math CAPTCHA)
 ![Contact](https://github.com/user-attachments/assets/e3a8b864-ac24-4574-a588-7a99c247fdc3)
 
-### Blog post readability — light mode
+### Blog post readability - light mode
 
-Quill saves inline `color` values on every element it writes. The CSS now uses `!important` on `var(--mud-palette-text-primary)` so the theme colour always wins over those inline attributes — giving crisp, readable text in light mode:
+Quill saves inline `color` values on every element it writes. The CSS now uses `!important` on `var(--mud-palette-text-primary)` so the theme colour always wins over those inline attributes - giving crisp, readable text in light mode:
 
-![Blog post — light mode readable text](docs/screenshots/blog-post-light.png)
+![Blog post - light mode readable text](docs/screenshots/blog-post-light.png)
 
-### Blog post readability — dark mode
+### Blog post readability - dark mode
 
 The same theme-aware override keeps text readable on the dark `#1E1335` card background. Code blocks use a separate light-tint background so they remain visually distinct:
 
-![Blog post — dark mode readable text](docs/screenshots/blog-post-dark.png)
+![Blog post - dark mode readable text](docs/screenshots/blog-post-dark.png)
 
-### Accessibility toolbar (floating, bottom-left — Read Aloud + font-size controls)
+### Accessibility toolbar (floating, bottom-left - Read Aloud + font-size controls)
 
 The accessibility toolbar appears on every public page in the bottom-left corner. It provides three buttons:
 
-- **Read Aloud** (voice icon) — starts the Web Speech API reading the page content in document order; changes to a red Stop button while speaking
-- **A+** (text-increase icon) — steps font size up: default → 18 px → 20 px
-- **Aa** (format-size icon) — resets font size to default
+- **Read Aloud** (voice icon) - starts the Web Speech API reading the page content in document order; changes to a red Stop button while speaking
+- **A+** (text-increase icon) - steps font size up: default → 18 px → 20 px
+- **Aa** (format-size icon) - resets font size to default
 
 All buttons carry ARIA labels and the toolbar region has `role="toolbar"`. A hidden `aria-live="polite"` region announces each action to screen readers (e.g. "Reading page aloud. Press the stop button to stop.").
 
-![Accessibility toolbar — floating bottom-left with Read Aloud and font-size controls](https://github.com/user-attachments/assets/c126eda1-e800-4c30-9da0-722bf64c2271)
+![Accessibility toolbar - floating bottom-left with Read Aloud and font-size controls](https://github.com/user-attachments/assets/c126eda1-e800-4c30-9da0-722bf64c2271)
 
 ### GDS-compliant focus and active-element states
 
 All interactive elements follow UK Government Design System (GDS) accessibility guidelines:
 
-- **Focus ring** — 3 px solid yellow (`#ffdd00`) on every focusable element via `:focus-visible` (keyboard/AT only; not shown on mouse click)
-- **Active nav item** — current page button gets `aria-current="page"`, inset 3 px white bottom-bar, and a slightly lighter background so the current location is visible without relying on colour alone
-- **Skip link** — GDS yellow background (`#ffdd00`) + dark text (`#0b0c0c`) + inset underline shadow on focus (WCAG 2.4.1)
-- **Toggle buttons** — `aria-pressed="true"` on the Read Aloud and font-scale toolbar buttons; a persistent yellow ring makes the pressed/on state visible independently of colour
-- **CMS/blog links** — full GDS text-link highlight (yellow background, dark text, dark inset bottom border) on keyboard focus
-- **Pressed state** — buttons shift down 1 px on `:active` with a dark inset shadow for tactile feedback
+- **Focus ring** - 3 px solid yellow (`#ffdd00`) on every focusable element via `:focus-visible` (keyboard/AT only; not shown on mouse click)
+- **Active nav item** - current page button gets `aria-current="page"`, inset 3 px white bottom-bar, and a slightly lighter background so the current location is visible without relying on colour alone
+- **Skip link** - GDS yellow background (`#ffdd00`) + dark text (`#0b0c0c`) + inset underline shadow on focus (WCAG 2.4.1)
+- **Toggle buttons** - `aria-pressed="true"` on the Read Aloud and font-scale toolbar buttons; a persistent yellow ring makes the pressed/on state visible independently of colour
+- **CMS/blog links** - full GDS text-link highlight (yellow background, dark text, dark inset bottom border) on keyboard focus
+- **Pressed state** - buttons shift down 1 px on `:active` with a dark inset shadow for tactile feedback
 
 ![GDS focus and active element states](docs/screenshots/gds-focus-active-states.png)
 
@@ -79,7 +79,7 @@ All interactive elements follow UK Government Design System (GDS) accessibility 
 Portfolio.slnx
 └── src/
     ├── Portfolio.Shared/              # Shared DTOs and models
-    ├── Portfolio.Api/                 # REST Web API (.NET 10) — sole DB owner
+    ├── Portfolio.Api/                 # REST Web API (.NET 10) - sole DB owner
     │   ├── Controllers/           # Auth, HeroStats, Projects, Skills, Contact,
     │   │                          #   Blog, CmsPages, MenuItems, AppSettings,
     │   │                          #   MailSettings, SmsSettings, Notifications
@@ -124,22 +124,22 @@ Portfolio.slnx
 - **Custom CMS pages**: publish arbitrary pages at any slug (e.g. `/services`, `/hire-me`) with full SEO metadata
 - **SEO and Open Graph**: per-post/page meta title, meta description, OG image and canonical URL injected via `<HeadContent>`
 - **Featured images**: optional hero banner image on blog posts and card thumbnail on the blog listing; SVG app mockups on work project posts
-- **Tech chip badges**: technology tags displayed as outlined chips on project cards and blog posts — consistent styling across all public pages
-- **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set — editable via the admin Projects tab (changes are persisted to Portfolio.Api) with a built-in URL validate button
+- **Tech chip badges**: technology tags displayed as outlined chips on project cards and blog posts - consistent styling across all public pages
+- **GitHub & live demo links**: each project card shows GitHub and Live Demo buttons when URLs are set - editable via the admin Projects tab (changes are persisted to Portfolio.Api) with a built-in URL validate button
 - **SEO-friendly project detail pages**: every project has an individual page at `/projects/{slug}` with full `<head>` injection (meta description, OG tags, canonical URL); slugs are auto-generated from the project title in the admin form and editable
 - **Contact form CAPTCHA**: server-side math challenge blocks spam without any external service or API key
 - **Static site generator**: export a complete dark-mode static HTML snapshot of the portfolio as a deployable ZIP from the admin panel
 - **Light and dark mode**: respects system preference, toggleable in the header; blog content readable in both modes
 - **REST API with fallback**: all public pages (projects, skills, contact) call Portfolio.Api directly; when the API is unreachable the Blazor app uses built-in fallback data so the site remains visible
-- **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting — each backed by a dedicated class library. **Only Portfolio.Api connects to the database**; Portfolio.Web has no direct DB access
-- **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token — no duplicate user tables
+- **Configurable database provider**: SQL Server, SQLite, PostgreSQL, MySQL, or Azure Cosmos DB via one setting - each backed by a dedicated class library. **Only Portfolio.Api connects to the database**; Portfolio.Web has no direct DB access
+- **Centralised Identity**: user accounts live in Portfolio.Api (JWT auth); the Blazor Web app uses cookie auth derived from the API token - no duplicate user tables
 - **Swagger UI**: interactive API documentation available at `/swagger` on Portfolio.Api in all environments (including production); JWT auth wired in so you can test protected endpoints directly from the browser
 - **Admin area**: create accounts, manage hero stats, configure API/SMS settings, manage blog posts, pages, menus, projects, and generate static exports
-- **In-app settings**: API base URL, SMS provider (with all API keys/tokens), Mail (SMTP), and Google Analytics ID configured through the admin Settings tab — all stored in Portfolio.Api's database, no environment variables or app restart needed
+- **In-app settings**: API base URL, SMS provider (with all API keys/tokens), Mail (SMTP), and Google Analytics ID configured through the admin Settings tab - all stored in Portfolio.Api's database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
 - **Account lockout**: 5 failed attempts triggers a 15-minute lockout
-- **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend — all credentials (Account SID, Auth Token, API Key, etc.) stored in DB and managed in Admin → Settings
-- **Accessibility (WCAG AA)**: skip-to-content link, landmark roles, floating toolbar with Read Aloud (Web Speech API) and font-size scaling — see [Accessibility](#accessibility) below
+- **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend - all credentials (Account SID, Auth Token, API Key, etc.) stored in DB and managed in Admin → Settings
+- **Accessibility (WCAG AA)**: skip-to-content link, landmark roles, floating toolbar with Read Aloud (Web Speech API) and font-size scaling - see [Accessibility](#accessibility) below
 
 ## Accessibility
 
@@ -159,7 +159,7 @@ Each action is announced to screen readers via an `aria-live="polite"` region so
 
 | Feature | Standard | Detail |
 |---|---|---|
-| Skip-to-content link | WCAG 2.4.1 | Hidden `<a href="#main-content">` becomes visible on keyboard focus — lets keyboard and screen-reader users jump straight to the page body |
+| Skip-to-content link | WCAG 2.4.1 | Hidden `<a href="#main-content">` becomes visible on keyboard focus - lets keyboard and screen-reader users jump straight to the page body |
 | Landmark regions | WCAG 1.3.1 | `<main id="main-content">` wraps all page body content; `<nav>` via MudDrawer; `role="toolbar"` on the accessibility widget |
 | Dark / light theme | WCAG 1.4.3 | Both modes provide sufficient contrast; blog post body text always uses the theme's primary text colour regardless of Quill-saved inline styles |
 | Keyboard navigation | WCAG 2.1.1 | All interactive controls reachable by Tab; focus order follows visual reading order |
@@ -170,11 +170,11 @@ Each action is announced to screen readers via an `aria-live="polite"` region so
 
 The site has been designed to work with common screen readers:
 
-- **NVDA / JAWS** (Windows) — skip link and landmark structure compatible
-- **VoiceOver** (macOS / iOS) — `<main>` landmark and skip link verified
-- **TalkBack** (Android) — responsive layout keeps touch targets ≥ 44 × 44 px
+- **NVDA / JAWS** (Windows) - skip link and landmark structure compatible
+- **VoiceOver** (macOS / iOS) - `<main>` landmark and skip link verified
+- **TalkBack** (Android) - responsive layout keeps touch targets ≥ 44 × 44 px
 
-The **Read Aloud** feature uses the browser's built-in [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) — the same underlying engine used by BrowseAloud-style services — and requires no third-party account or script. Supported in Chrome, Edge, Safari 14+, and Firefox 49+.
+The **Read Aloud** feature uses the browser's built-in [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) - the same underlying engine used by BrowseAloud-style services - and requires no third-party account or script. Supported in Chrome, Edge, Safari 14+, and Firefox 49+.
 
 ## Tech Stack
 
@@ -202,7 +202,7 @@ The **Read Aloud** feature uses the browser's built-in [Web Speech API](https://
 
 Both the Web API and the Blazor site have Dockerfiles. A `docker-compose.yml` at the repo root orchestrates both containers together using SQLite for zero-setup persistence.
 
-> **Azure deployment?** See **[DOCKER-AZURE.md](./DOCKER-AZURE.md)** for the full guide to pushing both services to Azure Container Apps or Azure App Service — including ACR setup, environment variable configuration, and switching from SQLite to Azure SQL / PostgreSQL.
+> **Azure deployment?** See **[DOCKER-AZURE.md](./DOCKER-AZURE.md)** for the full guide to pushing both services to Azure Container Apps or Azure App Service - including ACR setup, environment variable configuration, and switching from SQLite to Azure SQL / PostgreSQL.
 
 ### Quick start with Docker Compose
 
@@ -243,7 +243,7 @@ The following variables can be set in a `.env` file at the repo root or exported
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `JWT_KEY` | **Yes** | _(none)_ | JWT signing key for Portfolio.Api — minimum 32 characters |
+| `JWT_KEY` | **Yes** | _(none)_ | JWT signing key for Portfolio.Api - minimum 32 characters |
 | `ADMIN_EMAIL` | No | `admin@portfolio.com` | Seeded admin account email (Portfolio.Api only) |
 | `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password (Portfolio.Api only) |
 | `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for Portfolio.Api |
@@ -263,7 +263,7 @@ docker build -t portfolio-web -f src/Portfolio.Web/Dockerfile ./src
 
 ### Persistent data
 
-The API container stores its SQLite database in a named Docker volume (`api-data`). Data survives container restarts. Portfolio.Web has no database volume — all state lives in the API.
+The API container stores its SQLite database in a named Docker volume (`api-data`). Data survives container restarts. Portfolio.Web has no database volume - all state lives in the API.
 
 ```bash
 # List volumes
@@ -308,7 +308,7 @@ services:
 
   portfolio-web:
     # ... existing config ...
-    # No database configuration needed — Portfolio.Web has no DB
+    # No database configuration needed - Portfolio.Web has no DB
     depends_on:
       - sqlserver
 
@@ -320,7 +320,7 @@ Add `SA_PASSWORD` to your `.env` file (must meet SQL Server complexity requireme
 
 #### PostgreSQL
 
-Add a PostgreSQL service and update the env vars (no code changes needed — the provider library is already referenced):
+Add a PostgreSQL service and update the env vars (no code changes needed - the provider library is already referenced):
 
 ```yaml
 services:
@@ -342,7 +342,7 @@ services:
 
   portfolio-web:
     # ... existing config ...
-    # No database configuration needed — Portfolio.Web has no DB
+    # No database configuration needed - Portfolio.Web has no DB
 
 volumes:
   postgres-data:
@@ -350,7 +350,7 @@ volumes:
 
 ### Notification (SMS) settings in Docker
 
-The contact form sends an SMS alert to your phone when a visitor submits a message. These settings are **not** environment variables — they are stored in the database and managed entirely through the admin panel. No container restart is needed after changing them.
+The contact form sends an SMS alert to your phone when a visitor submits a message. These settings are **not** environment variables - they are stored in the database and managed entirely through the admin panel. No container restart is needed after changing them.
 
 To configure SMS notifications after the containers are running:
 
@@ -376,10 +376,10 @@ dotnet build Portfolio.slnx
 
 ## Database Configuration
 
-> **Only Portfolio.Api connects to the database.** Portfolio.Web has no direct database access — it exclusively calls Portfolio.Api over HTTP.
+> **Only Portfolio.Api connects to the database.** Portfolio.Web has no direct database access - it exclusively calls Portfolio.Api over HTTP.
 
 Set `DatabaseProvider` in Portfolio.Api's `appsettings.json` (or override per environment).
-All providers are fully supported out of the box — no manual NuGet installs needed.
+All providers are fully supported out of the box - no manual NuGet installs needed.
 
 | Value | Driver | Connection string format |
 |---|---|---|
@@ -402,7 +402,7 @@ See **[eftooling.txt](./eftooling.txt)** for a plain-text quick-reference of eve
 
 ### Quick start with SQLite (zero setup)
 
-Portfolio.Api's development appsettings already configure SQLite so you can run immediately. Portfolio.Web has no database — it calls the API.
+Portfolio.Api's development appsettings already configure SQLite so you can run immediately. Portfolio.Web has no database - it calls the API.
 
 ```bash
 # Terminal 1: API (owns the database)
@@ -438,14 +438,14 @@ Update `appsettings.Development.json` in **Portfolio.Api only**:
 | Key | Description | Example |
 |---|---|---|
 | `DatabaseProvider` | Database driver | `SqlServer`, `Sqlite`, `PostgreSql`, `MySql`, `CosmosDb` |
-| `Jwt:Key` | JWT signing key — **never commit**; inject via env var or secret | _(empty in source — see below)_ |
+| `Jwt:Key` | JWT signing key - **never commit**; inject via env var or secret | _(empty in source - see below)_ |
 | `Jwt:Issuer` | JWT issuer claim | `Portfolio.Api` |
 | `Jwt:Audience` | JWT audience claim | `Portfolio.Web` |
 | `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
 | `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
 | `AllowedOrigins` | CORS allowed origins | `https://yourdomain.com` |
 
-> **`Jwt:Key` is intentionally blank in `appsettings.json`.** The app will throw `InvalidOperationException` at startup if the key is missing or empty — it will never silently run without a signing key. See [Secrets Management](#secrets-management) below for how to supply it per environment.
+> **`Jwt:Key` is intentionally blank in `appsettings.json`.** The app will throw `InvalidOperationException` at startup if the key is missing or empty - it will never silently run without a signing key. See [Secrets Management](#secrets-management) below for how to supply it per environment.
 
 ### Portfolio.Web: `appsettings.json`
 
@@ -471,7 +471,7 @@ dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 
 ### Azure App Service
 
-Set the JWT key and other secrets as **Application Settings** in the Azure portal — they are injected as environment variables at runtime. ASP.NET Core maps double-underscore (`__`) to nested config keys:
+Set the JWT key and other secrets as **Application Settings** in the Azure portal - they are injected as environment variables at runtime. ASP.NET Core maps double-underscore (`__`) to nested config keys:
 
 1. Azure Portal → App Service (`portfolio-api-app`) → **Configuration** → **Application settings**
 2. Add the following settings:
@@ -491,9 +491,9 @@ openssl rand -base64 32
 [Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
 ```
 
-3. Click **Save** — the app restarts automatically with the new key injected.
+3. Click **Save** - the app restarts automatically with the new key injected.
 
-> **Important:** `Jwt:Key` is intentionally blank in committed `appsettings.json`. The Portfolio.Api startup throws `InvalidOperationException` if the key is empty or missing — the app will refuse to start rather than run insecurely.
+> **Important:** `Jwt:Key` is intentionally blank in committed `appsettings.json`. The Portfolio.Api startup throws `InvalidOperationException` if the key is empty or missing - the app will refuse to start rather than run insecurely.
 
 ### Docker Compose
 
@@ -516,7 +516,7 @@ The development defaults (in `appsettings.Development.json`) are:
 
 | Setting | Value |
 |---|---|
-| JWT key | _(see `appsettings.Development.json` — change before going live)_ |
+| JWT key | _(see `appsettings.Development.json` - change before going live)_ |
 | Admin email | `admin@portfolio.com` |
 | Admin password | `Admin@123456!` |
 
@@ -563,13 +563,13 @@ The Menus tab lists all current nav items (label, URL, sort order, visibility). 
 The Projects tab provides full CRUD management for your portfolio project cards. Each project supports:
 
 - **Title** and **Short Description** (shown on listing cards)
-- **Slug** — SEO-friendly URL segment auto-generated from the title when the field loses focus (editable); used as the permalink `/projects/{slug}` for the project detail page
+- **Slug** - SEO-friendly URL segment auto-generated from the title when the field loses focus (editable); used as the permalink `/projects/{slug}` for the project detail page
 - **Full Description** (shown on the project detail page)
-- **Tech Stack** (comma-separated — rendered as chip badges)
-- **Category** (e.g. Work Project, Healthcare, AI, Security — drives the card icon and colour)
-- **GitHub Repository URL** — text field with a **Validate** button (opens the URL in a new tab so you can confirm the link works before saving)
-- **Live Demo URL** — text field with a **Validate** button
-- **Image URL** — optional project image
+- **Tech Stack** (comma-separated - rendered as chip badges)
+- **Category** (e.g. Work Project, Healthcare, AI, Security - drives the card icon and colour)
+- **GitHub Repository URL** - text field with a **Validate** button (opens the URL in a new tab so you can confirm the link works before saving)
+- **Live Demo URL** - text field with a **Validate** button
+- **Image URL** - optional project image
 - **Sort Order** and **Featured** toggle (featured projects appear on the home page)
 
 GitHub and Live Demo URLs are displayed as styled buttons on project cards across both the **home page** and the **My Projects** page. Each project card also shows a **Details** button that links to the individual project page at `/projects/{slug}`.
@@ -584,7 +584,7 @@ Each project detail page (`/projects/{slug}`) includes:
 
 ## SMS Notifications
 
-Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. **All SMS credentials (API keys, tokens, phone numbers) are stored in the database and managed entirely through Admin → Settings — no config files, environment variables, or app restart required.**
+Contact-form submissions trigger an SMS alert to the admin receiver number you set in the admin dashboard. **All SMS credentials (API keys, tokens, phone numbers) are stored in the database and managed entirely through Admin → Settings - no config files, environment variables, or app restart required.**
 
 ### Admin → Settings: SMS Provider fields
 
@@ -596,7 +596,7 @@ Navigate to `/admin` → **Settings** tab → **SMS Provider** card. All fields 
 |---|---|
 | **Enable SMS sending** | Toggle to turn notifications on or off without losing your credentials |
 | **Provider** | Select **Twilio**, **ClickSend**, or **None** |
-| **Admin receiver number** | Your phone number in E.164 format (e.g. `+447911123456`) — contact-form alerts go here |
+| **Admin receiver number** | Your phone number in E.164 format (e.g. `+447911123456`) - contact-form alerts go here |
 
 #### Twilio credential fields
 
@@ -612,7 +612,7 @@ Navigate to `/admin` → **Settings** tab → **SMS Provider** card. All fields 
 |---|---|
 | **Username** | Your ClickSend login email address |
 | **API Key** | [ClickSend dashboard](https://dashboard.clicksend.com) → Account → API Credentials → Generate Key |
-| **Sender ID** | Optional — up to 11 alphanumeric characters shown as the sender name (e.g. `Portfolio`); leave blank to use your account number |
+| **Sender ID** | Optional - up to 11 alphanumeric characters shown as the sender name (e.g. `Portfolio`); leave blank to use your account number |
 
 ### Architecture
 
@@ -774,7 +774,7 @@ The full project catalogue also includes:
 - HTTPS enforced in non-development environments
 - HSTS enabled in production
 - Sensitive config values are empty in committed `appsettings.json`; supply via secrets or environment variables
-- `Jwt:Key` is blank in source — app refuses to start if no key is injected (fail-fast at startup)
+- `Jwt:Key` is blank in source - app refuses to start if no key is injected (fail-fast at startup)
 
 ---
 
@@ -793,9 +793,9 @@ The Portfolio.Api exposes interactive Swagger documentation via Swashbuckle at `
 1. Call `POST /api/auth/login` with your admin credentials to obtain a JWT token
 2. Click **Authorize** (the padlock icon) at the top right of the Swagger UI
 3. Enter `Bearer <your-token>` in the Value field
-4. Click **Authorize** — all subsequent requests will include the `Authorization` header
+4. Click **Authorize** - all subsequent requests will include the `Authorization` header
 
-### Azure App Service — 500.30 fix
+### Azure App Service - 500.30 fix
 
 Portfolio.Api is configured with `<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>` in `Portfolio.Api.csproj`. This runs the API on the Kestrel web server rather than inside the IIS in-process hosting module, which resolves HTTP 500.30 startup failures on Azure App Service caused by in-process hosting module incompatibilities.
 

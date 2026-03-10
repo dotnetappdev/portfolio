@@ -55,7 +55,7 @@ ALLOWED_ORIGINS=http://localhost:5072
 BASE_API_URL=http://localhost:5008/
 ```
 
-> **Important:** If `JWT_KEY` is not set, `docker compose up` will immediately fail with a clear error message. The Portfolio.Api startup will throw an `InvalidOperationException` if the key is empty or missing — this is intentional to prevent running with no signing key.
+> **Important:** If `JWT_KEY` is not set, `docker compose up` will immediately fail with a clear error message. The Portfolio.Api startup will throw an `InvalidOperationException` if the key is empty or missing - this is intentional to prevent running with no signing key.
 
 To generate a strong key:
 ```bash
@@ -68,7 +68,7 @@ openssl rand -base64 32
 
 ---
 
-## Azure — Prerequisites
+## Azure - Prerequisites
 
 Install or update the Azure CLI:
 
@@ -94,7 +94,7 @@ az extension add --name containerapp --upgrade
 
 ---
 
-## Option A — Azure Container Apps (recommended)
+## Option A - Azure Container Apps (recommended)
 
 Azure Container Apps is the simplest zero-infrastructure path for containerised ASP.NET Core apps.
 
@@ -241,7 +241,7 @@ Sign in to the admin panel at `https://<web-url>/login` and navigate to **Settin
 
 ---
 
-## Option B — Azure App Service (Web Apps for Containers)
+## Option B - Azure App Service (Web Apps for Containers)
 
 Use this if you prefer a PaaS approach with built-in SSL, custom domains, and deployment slots.
 
@@ -358,7 +358,7 @@ az webapp show --name portfolio-web-app --resource-group $RESOURCE_GROUP --query
 
 > **Swagger UI** is available at `https://<api-hostname>/swagger` once the API app is running.
 
-> **500.30 note:** `Portfolio.Api.csproj` sets `<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>` so the API runs on Kestrel rather than the IIS in-process module. This resolves HTTP 500.30 startup failures on Azure App Service. No action required — it is already in the project file.
+> **500.30 note:** `Portfolio.Api.csproj` sets `<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>` so the API runs on Kestrel rather than the IIS in-process module. This resolves HTTP 500.30 startup failures on Azure App Service. No action required - it is already in the project file.
 
 ---
 
