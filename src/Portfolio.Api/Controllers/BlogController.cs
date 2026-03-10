@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Portfolio.Api.Data;
 using Portfolio.Api.Models;
 using Portfolio.Shared.Models;
+using System.Text.Json;
 
 namespace Portfolio.Api.Controllers;
 
@@ -12,8 +13,13 @@ namespace Portfolio.Api.Controllers;
 public class BlogController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<BlogController> _logger;
 
-    public BlogController(ApplicationDbContext context) => _context = context;
+    public BlogController(ApplicationDbContext context, ILogger<BlogController> logger)
+    {
+        _context = context;
+        _logger  = logger;
+    }
 
     [HttpGet]
     public async Task<IEnumerable<BlogPostDto>> GetPublished()
@@ -62,6 +68,8 @@ public class BlogController : ControllerBase
         var post = await _context.BlogPosts.FindAsync(id);
         if (post is null) return NotFound();
 
+        var mediaJson = SerialiseMediaItems(dto.MediaItems, dto.MediaItemsJson);
+
         post.Slug             = dto.Slug;
         post.Title            = dto.Title;
         post.Summary          = dto.Summary;
@@ -75,6 +83,7 @@ public class BlogController : ControllerBase
         post.FeaturedImage    = dto.FeaturedImage;
         post.GitHubUrl        = dto.GitHubUrl;
         post.GalleryImages    = dto.GalleryImages;
+        post.MediaItemsJson   = mediaJson;
         post.MetaTitle        = dto.MetaTitle;
         post.MetaDescription  = dto.MetaDescription;
         post.OgImage          = dto.OgImage;
@@ -95,27 +104,56 @@ public class BlogController : ControllerBase
         return NoContent();
     }
 
-    private static BlogPostDto ToDto(BlogPost p) => new()
+    private static readonly JsonSerializerOptions _jsonOpts = new()
     {
-        Id               = p.Id,
-        Slug             = p.Slug,
-        Title            = p.Title,
-        Summary          = p.Summary,
-        Category         = p.Category,
-        PublishedDate    = p.PublishedDate,
-        UpdatedAt        = p.UpdatedAt,
-        ReadMinutes      = p.ReadMinutes,
-        Tags             = p.Tags,
-        Body             = p.Body,
-        IsPublished      = p.IsPublished,
-        FeaturedImage    = p.FeaturedImage,
-        GitHubUrl        = p.GitHubUrl,
-        GalleryImages    = p.GalleryImages,
-        MetaTitle        = p.MetaTitle,
-        MetaDescription  = p.MetaDescription,
-        OgImage          = p.OgImage,
-        CanonicalUrl     = p.CanonicalUrl
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented        = false
     };
+
+    /// <summary>Serialises the MediaItems list to JSON, or falls back to the raw JSON string.</summary>
+    private static string? SerialiseMediaItems(List<BlogMediaItem> items, string? rawJson) =>
+        items.Count > 0 ? JsonSerializer.Serialize(items, _jsonOpts) : rawJson;
+
+    private BlogPostDto ToDto(BlogPost p)
+    {
+        var dto = new BlogPostDto
+        {
+            Id               = p.Id,
+            Slug             = p.Slug,
+            Title            = p.Title,
+            Summary          = p.Summary,
+            Category         = p.Category,
+            PublishedDate    = p.PublishedDate,
+            UpdatedAt        = p.UpdatedAt,
+            ReadMinutes      = p.ReadMinutes,
+            Tags             = p.Tags,
+            Body             = p.Body,
+            IsPublished      = p.IsPublished,
+            FeaturedImage    = p.FeaturedImage,
+            GitHubUrl        = p.GitHubUrl,
+            GalleryImages    = p.GalleryImages,
+            MediaItemsJson   = p.MediaItemsJson,
+            MetaTitle        = p.MetaTitle,
+            MetaDescription  = p.MetaDescription,
+            OgImage          = p.OgImage,
+            CanonicalUrl     = p.CanonicalUrl
+        };
+
+        // Deserialise MediaItemsJson so callers can use the typed list directly.
+        if (!string.IsNullOrWhiteSpace(p.MediaItemsJson))
+        {
+            try
+            {
+                dto.MediaItems = JsonSerializer.Deserialize<List<BlogMediaItem>>(p.MediaItemsJson, _jsonOpts) ?? [];
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Failed to deserialise MediaItemsJson for BlogPost {Id}", p.Id);
+            }
+        }
+
+        return dto;
+    }
 
     private static BlogPost FromDto(BlogPostDto dto) => new()
     {
@@ -132,6 +170,7 @@ public class BlogController : ControllerBase
         FeaturedImage    = dto.FeaturedImage,
         GitHubUrl        = dto.GitHubUrl,
         GalleryImages    = dto.GalleryImages,
+        MediaItemsJson   = SerialiseMediaItems(dto.MediaItems, dto.MediaItemsJson),
         MetaTitle        = dto.MetaTitle,
         MetaDescription  = dto.MetaDescription,
         OgImage          = dto.OgImage,

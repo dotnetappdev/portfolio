@@ -1037,49 +1037,82 @@
                         </MudCardContent>
                     </MudCard>
 
-                    <!-- Gallery Images card -->
+                    <!-- Media Gallery card -->
                     <MudCard Elevation="2" Class="mb-4">
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.subtitle2">
-                                    <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Small" Class="mr-1" />
-                                    Image Gallery
+                                    <MudIcon Icon="@Icons.Material.Filled.PermMedia" Size="Size.Small" Class="mr-1" />
+                                    Media Gallery
                                 </MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2 d-block">
-                                Add image URLs one per line. Use the arrows to reorder. These appear as a gallery below the post.
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3 d-block">
+                                Add images or videos. Drag rows to reorder. Set position to display media before or after the article body.
                             </MudText>
-                            @{
-                                var galleryLines = (_postGalleryImages ?? string.Empty)
-                                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                    .ToList();
-                            }
-                            @for (int gi = 0; gi < galleryLines.Count; gi++)
+                            @for (int mi = 0; mi < _postMediaItems.Count; mi++)
                             {
-                                var idx = gi;
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2">
-                                    <MudTextField Value="@galleryLines[idx]"
-                                                  ValueChanged="@((string v) => UpdateGalleryLine(idx, v))"
-                                                  Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                  Placeholder="https://..." Style="flex:1;" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small"
-                                                   Disabled="@(idx == 0)"
-                                                   OnClick="@(() => MoveGalleryLine(idx, -1))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small"
-                                                   Disabled="@(idx == galleryLines.Count - 1)"
-                                                   OnClick="@(() => MoveGalleryLine(idx, 1))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                                                   Color="Color.Error"
-                                                   OnClick="@(() => RemoveGalleryLine(idx))" />
-                                </MudStack>
+                                var idx = mi;
+                                var item = _postMediaItems[idx];
+                                <div draggable="true"
+                                     @ondragstart="@(() => _dragFromIndex = idx)"
+                                     @ondragover:preventDefault="true"
+                                     @ondrop="@(() => DropMediaItem(idx))"
+                                     style="cursor:grab;border:1px solid var(--mud-palette-lines-default);border-radius:6px;padding:8px;margin-bottom:8px;background:var(--mud-palette-background);">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Wrap="Wrap.NoWrap">
+                                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Size="Size.Small"
+                                                 Style="color:var(--mud-palette-text-secondary);flex-shrink:0;" />
+                                        <MudSelect T="string" Value="@item.Type"
+                                                   ValueChanged="@((string v) => { _postMediaItems[idx].Type = v; })"
+                                                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                   Style="width:110px;flex-shrink:0;" Label="Type"
+                                                   AnchorOrigin="Origin.BottomLeft">
+                                            <MudSelectItem Value="@("image")">Image</MudSelectItem>
+                                            <MudSelectItem Value="@("video")">Video</MudSelectItem>
+                                        </MudSelect>
+                                        <MudTextField Value="@item.Url"
+                                                      ValueChanged="@((string v) => { _postMediaItems[idx].Url = v; })"
+                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                      Placeholder="@(item.Type == "video" ? "YouTube / Vimeo URL…" : "https://…")"
+                                                      Style="flex:1;" Label="URL" />
+                                        <MudTextField Value="@item.Caption"
+                                                      ValueChanged="@((string? v) => { _postMediaItems[idx].Caption = v; })"
+                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                      Placeholder="Caption (optional)"
+                                                      Style="width:150px;flex-shrink:0;" Label="Caption" />
+                                        <MudSelect T="string" Value="@item.Position"
+                                                   ValueChanged="@((string v) => { _postMediaItems[idx].Position = v; })"
+                                                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                   Style="width:145px;flex-shrink:0;" Label="Position"
+                                                   AnchorOrigin="Origin.BottomLeft">
+                                            <MudSelectItem Value="@("before_article")">Before article</MudSelectItem>
+                                            <MudSelectItem Value="@("after_article")">After article</MudSelectItem>
+                                        </MudSelect>
+                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small"
+                                                       Disabled="@(idx == 0)"
+                                                       OnClick="@(() => MoveMediaItem(idx, -1))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small"
+                                                       Disabled="@(idx == _postMediaItems.Count - 1)"
+                                                       OnClick="@(() => MoveMediaItem(idx, 1))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => RemoveMediaItem(idx))" />
+                                    </MudStack>
+                                </div>
                             }
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                       StartIcon="@Icons.Material.Filled.Add"
-                                       OnClick="@AddGalleryLine" Class="mt-1">
-                                Add Image URL
-                            </MudButton>
+                            <MudStack Row="true" Spacing="1" Class="mt-1">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Image"
+                                           OnClick="@(() => AddMediaItem("image"))">
+                                    Add Image
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.VideoLibrary"
+                                           OnClick="@(() => AddMediaItem("video"))">
+                                    Add Video
+                                </MudButton>
+                            </MudStack>
                         </MudCardContent>
                     </MudCard>
 
@@ -2350,7 +2383,8 @@
     private string  _postPublishedDateStr = DateTime.Today.ToString("yyyy-MM-dd");
     private string? _postFeaturedImage;
     private string? _postGitHubUrl;
-    private string? _postGalleryImages;
+    private List<BlogMediaItem> _postMediaItems = [];
+    private int _dragFromIndex = -1;
     // SEO
     private string? _postMetaTitle;
     private string? _postMetaDescription;
@@ -2385,7 +2419,9 @@
         _postPublishedDateStr = post.PublishedDate.ToString("yyyy-MM-dd");
         _postFeaturedImage    = post.FeaturedImage;
         _postGitHubUrl        = post.GitHubUrl;
-        _postGalleryImages    = post.GalleryImages;
+        _postMediaItems       = post.MediaItems.Count > 0
+                                    ? [.. post.MediaItems.OrderBy(m => m.SortOrder)]
+                                    : MigrateGalleryImagesToMediaItems(post.GalleryImages);
         _postMetaTitle        = post.MetaTitle;
         _postMetaDescription  = post.MetaDescription;
         _postOgImage          = post.OgImage;
@@ -2412,7 +2448,8 @@
         _postPublishedDateStr   = DateTime.Today.ToString("yyyy-MM-dd");
         _postFeaturedImage   = null;
         _postGitHubUrl       = null;
-        _postGalleryImages   = null;
+        _postMediaItems      = [];
+        _dragFromIndex       = -1;
         _postMetaTitle       = null;
         _postMetaDescription = null;
         _postOgImage         = null;
@@ -2444,7 +2481,8 @@
             _editingPost.PublishedDate    = publishedDate;
             _editingPost.FeaturedImage    = NullIfEmpty(_postFeaturedImage);
             _editingPost.GitHubUrl        = NullIfEmpty(_postGitHubUrl);
-            _editingPost.GalleryImages    = NullIfEmpty(_postGalleryImages);
+            _editingPost.GalleryImages    = null; // superseded by MediaItems
+            _editingPost.MediaItems       = NormaliseSortOrder(_postMediaItems);
             _editingPost.MetaTitle        = NullIfEmpty(_postMetaTitle);
             _editingPost.MetaDescription  = NullIfEmpty(_postMetaDescription);
             _editingPost.OgImage          = NullIfEmpty(_postOgImage);
@@ -2467,7 +2505,7 @@
                 PublishedDate    = publishedDate,
                 FeaturedImage    = NullIfEmpty(_postFeaturedImage),
                 GitHubUrl        = NullIfEmpty(_postGitHubUrl),
-                GalleryImages    = NullIfEmpty(_postGalleryImages),
+                MediaItems       = NormaliseSortOrder(_postMediaItems),
                 MetaTitle        = NullIfEmpty(_postMetaTitle),
                 MetaDescription  = NullIfEmpty(_postMetaDescription),
                 OgImage          = NullIfEmpty(_postOgImage),
@@ -2737,46 +2775,56 @@
     private static string? NullIfEmpty(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value;
 
-    private void AddGalleryLine()
+    private void AddMediaItem(string type)
     {
-        var lines = (_postGalleryImages ?? string.Empty)
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
-        lines.Add(string.Empty);
-        _postGalleryImages = string.Join('\n', lines);
-    }
-
-    private void RemoveGalleryLine(int index)
-    {
-        var lines = (_postGalleryImages ?? string.Empty)
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
-        if (index >= 0 && index < lines.Count)
+        _postMediaItems.Add(new BlogMediaItem
         {
-            lines.RemoveAt(index);
-            _postGalleryImages = lines.Count > 0 ? string.Join('\n', lines) : null;
-        }
+            Type      = type,
+            Position  = "after_article",
+            SortOrder = _postMediaItems.Count
+        });
     }
 
-    private void UpdateGalleryLine(int index, string value)
+    private void RemoveMediaItem(int index)
     {
-        var lines = (_postGalleryImages ?? string.Empty)
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
-        while (lines.Count <= index) lines.Add(string.Empty);
-        lines[index] = value;
-        _postGalleryImages = string.Join('\n', lines);
+        if (index >= 0 && index < _postMediaItems.Count)
+            _postMediaItems.RemoveAt(index);
     }
 
-    private void MoveGalleryLine(int index, int direction)
+    private void MoveMediaItem(int index, int direction)
     {
-        var lines = (_postGalleryImages ?? string.Empty)
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
         var target = index + direction;
-        if (target < 0 || target >= lines.Count) return;
-        (lines[index], lines[target]) = (lines[target], lines[index]);
-        _postGalleryImages = string.Join('\n', lines);
+        if (target < 0 || target >= _postMediaItems.Count) return;
+        (_postMediaItems[index], _postMediaItems[target]) = (_postMediaItems[target], _postMediaItems[index]);
+    }
+
+    private void DropMediaItem(int toIndex)
+    {
+        if (_dragFromIndex < 0 || _dragFromIndex == toIndex)
+        {
+            _dragFromIndex = -1;
+            return;
+        }
+        var item = _postMediaItems[_dragFromIndex];
+        _postMediaItems.RemoveAt(_dragFromIndex);
+        _postMediaItems.Insert(toIndex, item);
+        _dragFromIndex = -1;
+    }
+
+    private static List<BlogMediaItem> NormaliseSortOrder(List<BlogMediaItem> items)
+    {
+        for (int i = 0; i < items.Count; i++) items[i].SortOrder = i;
+        return items;
+    }
+
+    /// <summary>Converts the legacy newline-separated GalleryImages string into MediaItems (all "after_article" images).</summary>
+    private static List<BlogMediaItem> MigrateGalleryImagesToMediaItems(string? galleryImages)
+    {
+        if (string.IsNullOrWhiteSpace(galleryImages)) return [];
+        return galleryImages
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select((url, i) => new BlogMediaItem { Url = url, Type = "image", Position = "after_article", SortOrder = i })
+            .ToList();
     }
 
     private static DateTime ParseDate(string dateStr) =>

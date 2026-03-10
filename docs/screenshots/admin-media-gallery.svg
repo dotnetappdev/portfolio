@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="580" viewBox="0 0 900 580" font-family="Segoe UI, Arial, sans-serif">
+  <!-- Dark background -->
+  <rect width="900" height="580" fill="#1E1335" rx="8"/>
+
+  <!-- Card title bar -->
+  <rect x="20" y="20" width="860" height="48" fill="#2A1F45" rx="6"/>
+  <text x="44" y="50" fill="#C4B5FD" font-size="13" font-weight="600">&#x1F5BC; Media Gallery</text>
+
+  <!-- Helper text -->
+  <text x="24" y="84" fill="#9B8EC4" font-size="11">Add images or videos. Drag rows to reorder. Set position to display media before or after the article body.</text>
+
+  <!-- Row 1 - image item -->
+  <rect x="20" y="96" width="860" height="64" fill="#2D2150" rx="5" stroke="#3D2F6A" stroke-width="1"/>
+  <!-- drag handle -->
+  <text x="34" y="134" fill="#6B5A8A" font-size="16">⠿</text>
+  <!-- Type chip -->
+  <rect x="58" y="108" width="90" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="68" y="124" fill="#9B8EC4" font-size="9">Type</text>
+  <text x="68" y="140" fill="#C4B5FD" font-size="12">📷 Image</text>
+  <!-- URL field -->
+  <rect x="158" y="108" width="330" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="168" y="124" fill="#9B8EC4" font-size="9">URL</text>
+  <text x="168" y="140" fill="#C4B5FD" font-size="11">https://example.com/photo-before.jpg</text>
+  <!-- Caption field -->
+  <rect x="498" y="108" width="170" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="508" y="124" fill="#9B8EC4" font-size="9">Caption</text>
+  <text x="508" y="140" fill="#C4B5FD" font-size="11">Launch day photo</text>
+  <!-- Position chip -->
+  <rect x="678" y="108" width="120" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="688" y="124" fill="#9B8EC4" font-size="9">Position</text>
+  <text x="688" y="140" fill="#8B7DD8" font-size="11">Before article</text>
+  <!-- Up/Down/Delete icons -->
+  <text x="810" y="134" fill="#6B5A8A" font-size="14">▲</text>
+  <text x="836" y="134" fill="#C4B5FD" font-size="14">▼</text>
+  <text x="862" y="134" fill="#F44336" font-size="14">🗑</text>
+
+  <!-- Row 2 - video item (highlighted as being dragged) -->
+  <rect x="20" y="170" width="860" height="64" fill="#2A1F45" rx="5" stroke="#6B5A8A" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="34" y="208" fill="#6B5A8A" font-size="16">⠿</text>
+  <rect x="58" y="182" width="90" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="68" y="198" fill="#9B8EC4" font-size="9">Type</text>
+  <text x="68" y="214" fill="#C4B5FD" font-size="12">🎬 Video</text>
+  <rect x="158" y="182" width="330" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="168" y="198" fill="#9B8EC4" font-size="9">URL</text>
+  <text x="168" y="214" fill="#C4B5FD" font-size="11">https://www.youtube.com/watch?v=dQw4w9WgXcQ</text>
+  <rect x="498" y="182" width="170" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="508" y="198" fill="#9B8EC4" font-size="9">Caption</text>
+  <text x="508" y="214" fill="#9B8EC4" font-size="11" font-style="italic">Caption (optional)</text>
+  <rect x="678" y="182" width="120" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="688" y="198" fill="#9B8EC4" font-size="9">Position</text>
+  <text x="688" y="214" fill="#C4B5FD" font-size="11">After article</text>
+  <text x="810" y="208" fill="#C4B5FD" font-size="14">▲</text>
+  <text x="836" y="208" fill="#6B5A8A" font-size="14">▼</text>
+  <text x="862" y="208" fill="#F44336" font-size="14">🗑</text>
+
+  <!-- Row 3 - image item -->
+  <rect x="20" y="244" width="860" height="64" fill="#2D2150" rx="5" stroke="#3D2F6A" stroke-width="1"/>
+  <text x="34" y="282" fill="#6B5A8A" font-size="16">⠿</text>
+  <rect x="58" y="256" width="90" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="68" y="272" fill="#9B8EC4" font-size="9">Type</text>
+  <text x="68" y="288" fill="#C4B5FD" font-size="12">📷 Image</text>
+  <rect x="158" y="256" width="330" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="168" y="272" fill="#9B8EC4" font-size="9">URL</text>
+  <text x="168" y="288" fill="#C4B5FD" font-size="11">https://example.com/team-photo.jpg</text>
+  <rect x="498" y="256" width="170" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="508" y="272" fill="#9B8EC4" font-size="9">Caption</text>
+  <text x="508" y="288" fill="#C4B5FD" font-size="11">The team at launch</text>
+  <rect x="678" y="256" width="120" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="688" y="272" fill="#9B8EC4" font-size="9">Position</text>
+  <text x="688" y="288" fill="#C4B5FD" font-size="11">After article</text>
+  <text x="810" y="282" fill="#C4B5FD" font-size="14">▲</text>
+  <text x="836" y="282" fill="#C4B5FD" font-size="14">▼</text>
+  <text x="862" y="282" fill="#F44336" font-size="14">🗑</text>
+
+  <!-- Row 4 empty with drop target -->
+  <rect x="20" y="318" width="860" height="64" fill="#2A1F45" rx="5" stroke="#C4B5FD" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="34" y="356" fill="#6B5A8A" font-size="16">⠿</text>
+  <rect x="58" y="330" width="90" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="68" y="346" fill="#9B8EC4" font-size="9">Type</text>
+  <text x="68" y="362" fill="#9B8EC4" font-size="12">📷 Image</text>
+  <rect x="158" y="330" width="330" height="40" fill="#1E1335" rx="4" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="168" y="346" fill="#9B8EC4" font-size="9">URL</text>
+  <text x="168" y="362" fill="#6B7FBA" font-size="11" font-style="italic">https://…</text>
+  <rect x="498" y="330" width="170" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="508" y="346" fill="#9B8EC4" font-size="9">Caption</text>
+  <text x="508" y="362" fill="#6B7FBA" font-size="11" font-style="italic">Caption (optional)</text>
+  <rect x="678" y="330" width="120" height="40" fill="#1E1335" rx="4" stroke="#4B3B7A" stroke-width="1"/>
+  <text x="688" y="346" fill="#9B8EC4" font-size="9">Position</text>
+  <text x="688" y="362" fill="#C4B5FD" font-size="11">After article</text>
+  <text x="810" y="356" fill="#C4B5FD" font-size="14">▲</text>
+  <text x="836" y="356" fill="#6B5A8A" font-size="14">▼</text>
+  <text x="862" y="356" fill="#F44336" font-size="14">🗑</text>
+
+  <!-- Add buttons -->
+  <rect x="20" y="400" width="130" height="36" fill="transparent" rx="4" stroke="#C4B5FD" stroke-width="1.5"/>
+  <text x="38" y="423" fill="#C4B5FD" font-size="12">📷  Add Image</text>
+
+  <rect x="162" y="400" width="130" height="36" fill="transparent" rx="4" stroke="#9B8EC4" stroke-width="1.5"/>
+  <text x="180" y="423" fill="#9B8EC4" font-size="12">🎬  Add Video</text>
+
+  <!-- Drag hint callout -->
+  <rect x="20" y="456" width="860" height="50" fill="#1A1530" rx="4" stroke="#3D2F6A" stroke-width="1"/>
+  <text x="36" y="479" fill="#9B8EC4" font-size="12">💡 Drag the</text>
+  <text x="108" y="479" fill="#6B5A8A" font-size="14" font-weight="bold">⠿</text>
+  <text x="122" y="479" fill="#9B8EC4" font-size="12">handle to reorder — or use the ▲ ▼ buttons.  YouTube and Vimeo URLs are embedded as responsive iframes automatically.</text>
+
+  <!-- Position legend -->
+  <text x="24" y="530" fill="#9B8EC4" font-size="11">Position: </text>
+  <rect x="82" y="518" width="11" height="11" fill="#8B7DD8" rx="2"/>
+  <text x="98" y="530" fill="#9B8EC4" font-size="11">Before article — renders above the post body</text>
+  <rect x="348" y="518" width="11" height="11" fill="#C4B5FD" rx="2"/>
+  <text x="364" y="530" fill="#9B8EC4" font-size="11">After article — renders below the post body (in the gallery section)</text>
+</svg>

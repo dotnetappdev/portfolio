@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="760" viewBox="0 0 800 760" font-family="Segoe UI, Arial, sans-serif">
+  <!-- Dark background -->
+  <rect width="800" height="760" fill="#0F0A1E" rx="8"/>
+
+  <!-- Blog post header area -->
+  <rect x="0" y="0" width="800" height="70" fill="#1E1335"/>
+  <text x="30" y="30" fill="#9B8EC4" font-size="12">← Back to Blog</text>
+  <text x="30" y="55" fill="#C4B5FD" font-size="11">📂 Projects  🏷 Blazor  🏷 .NET</text>
+
+  <text x="30" y="95" fill="#FFFFFF" font-size="22" font-weight="700">Building TalentConnect: A Modern Blazor Platform</text>
+  <text x="30" y="118" fill="#9B8EC4" font-size="11">David Buckley · 12 March 2025 · 8 min read</text>
+
+  <line x1="30" y1="132" x2="770" y2="132" stroke="#3D2F6A" stroke-width="1"/>
+
+  <!-- ── BEFORE ARTICLE media section ── -->
+  <text x="30" y="155" fill="#C4B5FD" font-size="13" font-weight="600">Media</text>
+
+  <!-- Image: before article (half width) -->
+  <rect x="30" y="166" width="358" height="180" fill="#2A1F45" rx="6"/>
+  <text x="185" y="250" fill="#6B5A8A" font-size="32" text-anchor="middle">🖼</text>
+  <text x="185" y="278" fill="#9B8EC4" font-size="11" text-anchor="middle">https://example.com/photo-before.jpg</text>
+  <text x="185" y="296" fill="#C4B5FD" font-size="10" text-anchor="middle" font-style="italic">Launch day photo</text>
+
+  <!-- Video embed: before article (full width) -->
+  <rect x="398" y="166" width="372" height="180" fill="#1A1530" rx="6" stroke="#3D2F6A" stroke-width="1"/>
+  <rect x="398" y="166" width="372" height="180" fill="#000000" rx="6" opacity="0.3"/>
+  <!-- YouTube embed placeholder -->
+  <rect x="550" y="222" width="68" height="48" fill="#FF0000" rx="6"/>
+  <polygon points="568,238 568,258 588,248" fill="white"/>
+  <text x="584" y="362" fill="#9B8EC4" font-size="9" text-anchor="middle">YouTube embed (responsive 16:9 iframe)</text>
+
+  <!-- Divider -->
+  <line x1="30" y1="356" x2="770" y2="356" stroke="#3D2F6A" stroke-width="1"/>
+
+  <!-- ── ARTICLE BODY ── -->
+  <text x="30" y="376" fill="#E0D8F0" font-size="13" font-weight="600">Introduction</text>
+  <rect x="30" y="386" width="740" height="10" fill="#3D2F6A" rx="2"/>
+  <rect x="30" y="404" width="700" height="10" fill="#3D2F6A" rx="2"/>
+  <rect x="30" y="422" width="720" height="10" fill="#3D2F6A" rx="2"/>
+  <rect x="30" y="440" width="600" height="10" fill="#3D2F6A" rx="2"/>
+
+  <text x="30" y="472" fill="#E0D8F0" font-size="13" font-weight="600">Architecture</text>
+  <rect x="30" y="482" width="740" height="10" fill="#3D2F6A" rx="2"/>
+  <rect x="30" y="500" width="680" height="10" fill="#3D2F6A" rx="2"/>
+
+  <!-- Divider -->
+  <line x1="30" y1="522" x2="770" y2="522" stroke="#3D2F6A" stroke-width="1"/>
+
+  <!-- ── AFTER ARTICLE media section (gallery) ── -->
+  <text x="30" y="545" fill="#C4B5FD" font-size="13" font-weight="600">Gallery</text>
+
+  <!-- Image 1 -->
+  <rect x="30" y="556" width="355" height="160" fill="#2A1F45" rx="6"/>
+  <text x="208" y="622" fill="#6B5A8A" font-size="28" text-anchor="middle">🖼</text>
+  <text x="208" y="648" fill="#9B8EC4" font-size="10" text-anchor="middle">https://example.com/team-photo.jpg</text>
+  <text x="208" y="664" fill="#C4B5FD" font-size="9" text-anchor="middle" font-style="italic">The team at launch</text>
+  <!-- figcaption marker -->
+  <rect x="30" y="716" width="355" height="22" fill="#1A1530" rx="0 0 6 6"/>
+  <text x="208" y="731" fill="#9B8EC4" font-size="10" text-anchor="middle">The team at launch</text>
+
+  <!-- Image 2 -->
+  <rect x="395" y="556" width="375" height="160" fill="#2A1F45" rx="6"/>
+  <text x="583" y="622" fill="#6B5A8A" font-size="28" text-anchor="middle">🖼</text>
+  <text x="583" y="648" fill="#9B8EC4" font-size="10" text-anchor="middle">https://example.com/dashboard.jpg</text>
+  <text x="583" y="664" fill="#9B8EC4" font-size="10" text-anchor="middle" font-style="italic">(no caption)</text>
+
+  <!-- Annotation arrows -->
+  <text x="620" y="165" fill="#8B7DD8" font-size="10" font-style="italic">↑ Before article</text>
+  <text x="620" y="540" fill="#C4B5FD" font-size="10" font-style="italic">↓ After article</text>
+</svg>

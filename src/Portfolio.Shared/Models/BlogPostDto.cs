@@ -16,6 +16,7 @@ public class BlogPostDto
     public string? FeaturedImage { get; set; }
     public string? GitHubUrl { get; set; }
     public string? GalleryImages { get; set; }
+    public string? MediaItemsJson { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
     public string? OgImage { get; set; }
@@ -26,4 +27,8 @@ public class BlogPostDto
 
     public string[] GalleryImageList =>
         GalleryImages?.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+
+    /// <summary>Structured media items (images + videos) with position and ordering.
+    /// Serialised as JSON in the API column <c>MediaItemsJson</c>.</summary>
+    public List<BlogMediaItem> MediaItems { get; set; } = [];
 }

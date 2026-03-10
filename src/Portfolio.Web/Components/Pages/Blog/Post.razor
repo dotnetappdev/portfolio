@@ -80,6 +80,21 @@ else
 
             <MudDivider Class="mb-6" />
 
+            @{ var beforeItems = GetMediaItems("before_article"); }
+            @if (beforeItems.Count > 0)
+            {
+                <MudDivider Class="mb-4" />
+                <MudText Typo="Typo.h6" Class="fw-bold mb-3">Media</MudText>
+                <MudGrid Spacing="2" Class="mb-6">
+                    @foreach (var item in beforeItems)
+                    {
+                        <MudItem xs="12" sm="@(item.Type == "video" ? 12 : 6)">
+                            @RenderMediaItem(item)
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+
             <MudPaper Elevation="0" Class="pa-2">
                 @if (IsHtmlBody(_post.Body))
                 {
@@ -94,8 +109,23 @@ else
                 }
             </MudPaper>
 
-            @if (_post.GalleryImageList.Length > 0)
+            @{ var afterItems = GetMediaItems("after_article"); }
+            @if (afterItems.Count > 0)
             {
+                <MudDivider Class="mt-6 mb-4" />
+                <MudText Typo="Typo.h6" Class="fw-bold mb-3">Gallery</MudText>
+                <MudGrid Spacing="2">
+                    @foreach (var item in afterItems)
+                    {
+                        <MudItem xs="12" sm="@(item.Type == "video" ? 12 : 6)">
+                            @RenderMediaItem(item)
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+            else if (_post.GalleryImageList.Length > 0)
+            {
+                @* Backward-compat: old posts using raw GalleryImages string *@
                 <MudDivider Class="mt-6 mb-4" />
                 <MudText Typo="Typo.h6" Class="fw-bold mb-3">Gallery</MudText>
                 <MudGrid Spacing="2">
@@ -195,6 +225,78 @@ else
         body.Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(p => p.Trim())
             .Where(p => p.Length > 0);
+
+    private List<Portfolio.Shared.Models.BlogMediaItem> GetMediaItems(string position) =>
+        (_post?.MediaItems ?? [])
+            .Where(m => m.Position == position && !string.IsNullOrWhiteSpace(m.Url))
+            .OrderBy(m => m.SortOrder)
+            .ToList();
+
+    private RenderFragment RenderMediaItem(Portfolio.Shared.Models.BlogMediaItem item) => __builder =>
+    {
+        if (item.Type == "video")
+        {
+            var embedUrl = GetVideoEmbedUrl(item.Url);
+            if (embedUrl is not null)
+            {
+                __builder.OpenElement(0, "div");
+                __builder.AddAttribute(1, "style", "position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin-bottom:4px;");
+                __builder.OpenElement(2, "iframe");
+                __builder.AddAttribute(3, "src", embedUrl);
+                __builder.AddAttribute(4, "style", "position:absolute;top:0;left:0;width:100%;height:100%;border:0;");
+                __builder.AddAttribute(5, "allowfullscreen", "true");
+                __builder.AddAttribute(6, "allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+                __builder.CloseElement();
+                __builder.CloseElement();
+            }
+            else
+            {
+                __builder.OpenElement(0, "video");
+                __builder.AddAttribute(1, "src", item.Url);
+                __builder.AddAttribute(2, "controls", "true");
+                __builder.AddAttribute(3, "style", "width:100%;border-radius:8px;");
+                __builder.CloseElement();
+            }
+        }
+        else
+        {
+            __builder.OpenElement(0, "figure");
+            __builder.AddAttribute(1, "style", "margin:0;");
+            __builder.OpenElement(2, "img");
+            __builder.AddAttribute(3, "src", item.Url);
+            __builder.AddAttribute(4, "alt", item.Caption ?? "Gallery image");
+            __builder.AddAttribute(5, "style", "width:100%;border-radius:8px;object-fit:cover;max-height:280px;");
+            __builder.CloseElement();
+            if (!string.IsNullOrWhiteSpace(item.Caption))
+            {
+                __builder.OpenElement(6, "figcaption");
+                __builder.AddAttribute(7, "style", "font-size:0.8rem;color:var(--mud-palette-text-secondary);text-align:center;margin-top:4px;");
+                __builder.AddContent(8, item.Caption);
+                __builder.CloseElement();
+            }
+            __builder.CloseElement();
+        }
+    };
+
+    private static readonly System.Text.RegularExpressions.Regex _ytRegex =
+        new(@"(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_\-]{11})",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly System.Text.RegularExpressions.Regex _vmRegex =
+        new(@"vimeo\.com\/(?:video\/)?(\d+)",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static string? GetVideoEmbedUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+        var ytMatch = _ytRegex.Match(url);
+        if (ytMatch.Success)
+            return $"https://www.youtube.com/embed/{ytMatch.Groups[1].Value}";
+        var vmMatch = _vmRegex.Match(url);
+        if (vmMatch.Success)
+            return $"https://player.vimeo.com/video/{vmMatch.Groups[1].Value}";
+        return null;
+    }
 
     private Color GetCategoryColor(string category) => category switch
     {
