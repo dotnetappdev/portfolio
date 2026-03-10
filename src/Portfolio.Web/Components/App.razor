@@ -1,4 +1,4 @@
-@inject IConfiguration Configuration
+@inject Portfolio.Web.Services.PortfolioApiService ApiService
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,10 +43,9 @@
 @code {
     private string? _gaId;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        var gaId = Configuration["GoogleAnalyticsId"];
-        _gaId = string.IsNullOrWhiteSpace(gaId) ? null : gaId.Trim();
-        return Task.CompletedTask;
+        var settings = await ApiService.GetPublicAppSettingsAsync();
+        _gaId = string.IsNullOrWhiteSpace(settings?.GoogleAnalyticsId) ? null : settings.GoogleAnalyticsId!.Trim();
     }
 }

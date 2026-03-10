@@ -24,6 +24,18 @@ public class AppSettingsController : ControllerBase
         return ToDto(settings);
     }
 
+    /// <summary>Returns non-sensitive public settings (e.g. Google Analytics ID).</summary>
+    [HttpGet("public")]
+    [AllowAnonymous]
+    public async Task<ActionResult<PublicAppSettingsDto>> GetPublic()
+    {
+        var settings = await _context.AppSettings.FirstOrDefaultAsync();
+        return new PublicAppSettingsDto
+        {
+            GoogleAnalyticsId = settings?.GoogleAnalyticsId
+        };
+    }
+
     [HttpPut]
     public async Task<IActionResult> Save([FromBody] AppSettingsDto dto)
     {

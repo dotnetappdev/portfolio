@@ -497,6 +497,20 @@ public class PortfolioApiService(
         }
     }
 
+    public async Task<PublicAppSettingsDto?> GetPublicAppSettingsAsync()
+    {
+        try
+        {
+            return await GetClient().GetFromJsonAsync<PublicAppSettingsDto>("api/appsettings/public");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Error fetching public app settings");
+            return null;
+        }
+    }
+
+
     public async Task<(bool Success, string? Error)> SaveAppSettingsAsync(AppSettingsDto dto, string adminToken)
     {
         try

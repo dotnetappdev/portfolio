@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 // Named HTTP client for the Portfolio API.
-// BaseApiUrl from appsettings is the deployment-time default; the admin panel (DB) can override at runtime.
+// BaseApiUrl from appsettings sets the deployment-time base address.
 builder.Services.AddHttpClient("PortfolioApi", client =>
 {
     var baseApiUrl = builder.Configuration["BaseApiUrl"];
@@ -44,12 +44,6 @@ builder.Services.AddHttpClient("PortfolioApi", client =>
         client.BaseAddress = new Uri(baseApiUrl.TrimEnd('/') + "/");
 });
 
-// Named HTTP clients for SMS providers (kept in case needed by future extensions)
-builder.Services.AddHttpClient("Twilio");
-builder.Services.AddHttpClient("ClickSend");
-builder.Services.AddHttpClient("MailerSend");
-
-// SmsSender reads provider settings from the DB on each call — no restart needed
 builder.Services.AddScoped<SmsSender>();
 builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<Portfolio.Web.Services.BlogService>();
