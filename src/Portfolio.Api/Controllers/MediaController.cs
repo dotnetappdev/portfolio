@@ -38,8 +38,7 @@ public class MediaController : ControllerBase
             .OrderByDescending(f => f.UploadedAt)
             .ToListAsync();
 
-        var baseUrl = GetMediaBaseUrl();
-        return files.Select(f => ToDto(f, baseUrl)).ToList();
+        return files.Select(f => ToDto(f)).ToList();
     }
 
     /// <summary>Uploads a file to the media library.</summary>
@@ -90,7 +89,7 @@ public class MediaController : ControllerBase
 
         _logger.LogInformation("Media file uploaded: {FileName} ({Size} bytes)", storedName, file.Length);
 
-        return CreatedAtAction(nameof(GetAll), ToDto(mediaFile, GetMediaBaseUrl()));
+        return CreatedAtAction(nameof(GetAll), ToDto(mediaFile));
     }
 
     /// <summary>Deletes a media file from the library and from disk.</summary>
@@ -130,12 +129,6 @@ public class MediaController : ControllerBase
     private string GetUploadsDirectory() =>
         Path.Combine(_env.ContentRootPath, "wwwroot", "uploads", "media");
 
-    private string GetMediaBaseUrl()
-    {
-        var request = Request;
-        return $"{request.Scheme}://{request.Host}";
-    }
-
     private static string? DetermineMediaType(string contentType)
     {
         if (AllowedImageTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase)) return "image";
@@ -143,7 +136,7 @@ public class MediaController : ControllerBase
         return null;
     }
 
-    private static MediaFileDto ToDto(MediaFile f, string baseUrl) => new()
+    private static MediaFileDto ToDto(MediaFile f) => new()
     {
         Id           = f.Id,
         FileName     = f.FileName,
@@ -153,7 +146,8 @@ public class MediaController : ControllerBase
         MediaType    = f.MediaType,
         Alt          = f.Alt,
         UploadedAt   = f.UploadedAt,
-        Url          = $"{baseUrl}/uploads/media/{f.FileName}",
+        // Relative URL — callers prepend the API base URL if they need an absolute URL.
+        Url          = $"/uploads/media/{f.FileName}",
     };
 }
 

@@ -656,9 +656,13 @@ public class PortfolioApiService(
         {
             using var request = CreateAuthorizedRequest(HttpMethod.Get, "api/media", adminToken);
             using var response = await GetClient().SendAsync(request);
-            return response.IsSuccessStatusCode
-                ? await response.Content.ReadFromJsonAsync<List<MediaFileDto>>() ?? []
-                : [];
+            if (!response.IsSuccessStatusCode) return [];
+            var files = await response.Content.ReadFromJsonAsync<List<MediaFileDto>>() ?? [];
+            var baseUrl = GetClient().BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+            foreach (var f in files)
+                if (f.Url.StartsWith('/'))
+                    f.Url = baseUrl + f.Url;
+            return files;
         }
         catch (Exception ex)
         {
@@ -684,7 +688,15 @@ public class PortfolioApiService(
             };
             using var response = await GetClient().SendAsync(request);
             if (response.IsSuccessStatusCode)
-                return (await response.Content.ReadFromJsonAsync<MediaFileDto>(), null);
+            {
+                var mf = await response.Content.ReadFromJsonAsync<MediaFileDto>();
+                if (mf is not null && mf.Url.StartsWith('/'))
+                {
+                    var baseUrl = GetClient().BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+                    mf.Url = baseUrl + mf.Url;
+                }
+                return (mf, null);
+            }
             return (null, await response.Content.ReadAsStringAsync());
         }
         catch (Exception ex)
