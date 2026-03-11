@@ -719,6 +719,37 @@
                         </MudCardActions>
                     </MudCard>
                     }
+
+                    <!-- Blog Post Image Slots card -->
+                    @if (_appSettings != null)
+                    {
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.GridView" Class="mr-2" />
+                                    Blog Post Media Slots
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                Set how many image / video slots appear in the blog post editor and on each published post.
+                                The first slot is always the hero image; the rest are gallery slots. Default: 10.
+                            </MudText>
+                            <MudNumericField @bind-Value="_appSettings.BlogPostImageSlots"
+                                             Label="Total image slots per post" Min="1" Max="50"
+                                             Variant="Variant.Outlined" Style="max-width:220px;" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                       OnClick="@SaveAppSettings" Disabled="@_savingAppSettings"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(_savingAppSettings ? "Saving..." : "Save Media Settings")
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                    }
                 </MudItem>
             }
 
@@ -1037,7 +1068,7 @@
                         </MudCardContent>
                     </MudCard>
 
-                    <!-- Media Gallery card -->
+                    <!-- Media Gallery card — slot-based (WordPress-style) -->
                     <MudCard Elevation="2" Class="mb-4">
                         <MudCardHeader>
                             <CardHeaderContent>
@@ -1046,75 +1077,218 @@
                                     Media Gallery
                                 </MudText>
                             </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudTooltip Text="Drag slots to reorder. Click + to add from library or upload. Click × to clear a slot.">
+                                    <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Size="Size.Small"
+                                             Style="color:var(--mud-palette-text-secondary);" />
+                                </MudTooltip>
+                            </CardHeaderActions>
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3 d-block">
-                                Add images or videos. Drag rows to reorder. Set position to display media before or after the article body.
+                            @{
+                                var totalSlots = (_appSettings?.BlogPostImageSlots ?? 10);
+                            }
+
+                            <!-- Hero (primary) slot -->
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1 d-block">
+                                Hero Image (primary — shown at the top of the post)
                             </MudText>
-                            @for (int mi = 0; mi < _postMediaItems.Count; mi++)
-                            {
-                                var idx = mi;
-                                var item = _postMediaItems[idx];
-                                <div draggable="true"
-                                     @ondragstart="@(() => _dragFromIndex = idx)"
-                                     @ondragover:preventDefault="true"
-                                     @ondrop="@(() => DropMediaItem(idx))"
-                                     style="cursor:grab;border:1px solid var(--mud-palette-lines-default);border-radius:6px;padding:8px;margin-bottom:8px;background:var(--mud-palette-background);">
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Wrap="Wrap.NoWrap">
-                                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Size="Size.Small"
-                                                 Style="color:var(--mud-palette-text-secondary);flex-shrink:0;" />
-                                        <MudSelect T="string" Value="@item.Type"
-                                                   ValueChanged="@((string v) => { _postMediaItems[idx].Type = v; })"
-                                                   Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                   Style="width:110px;flex-shrink:0;" Label="Type"
-                                                   AnchorOrigin="Origin.BottomLeft">
+                            @{
+                                var heroItem = _postMediaItems.Count > 0 ? _postMediaItems[0] : null;
+                                bool heroHasContent = !string.IsNullOrWhiteSpace(heroItem?.Url);
+                            }
+                            <div draggable="true"
+                                 @ondragstart="@(() => _dragFromIndex = 0)"
+                                 @ondragover:preventDefault="true"
+                                 @ondrop="@(() => DropMediaItem(0))"
+                                 style="position:relative;width:100%;height:160px;border:2px dashed @(heroHasContent ? "var(--mud-palette-primary)" : "var(--mud-palette-lines-default)");border-radius:8px;margin-bottom:12px;overflow:hidden;background:var(--mud-palette-background-grey);">
+                                @if (heroHasContent)
+                                {
+                                    @if (heroItem!.Type == "image")
+                                    {
+                                        <img src="@heroItem.Url" alt="@(heroItem.Caption ?? "Hero image")"
+                                             style="width:100%;height:100%;object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--mud-palette-background);">
+                                            <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Style="font-size:48px;opacity:0.6;" />
+                                            <MudText Typo="Typo.caption" Class="ml-2" Style="word-break:break-all;max-width:80%;">@heroItem.Url</MudText>
+                                        </div>
+                                    }
+                                    <div style="position:absolute;top:4px;right:4px;display:flex;gap:4px;">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                                       Style="background:rgba(0,0,0,0.5);color:white;"
+                                                       OnClick="@(() => OpenSlotPicker(0))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                                                       Style="background:rgba(220,38,38,0.8);color:white;"
+                                                       OnClick="@(() => ClearSlot(0))" />
+                                    </div>
+                                    <div style="position:absolute;top:4px;left:4px;background:var(--mud-palette-primary);color:white;font-size:10px;padding:2px 6px;border-radius:3px;">HERO</div>
+                                }
+                                else
+                                {
+                                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;cursor:pointer;"
+                                         @onclick="@(() => OpenSlotPicker(0))">
+                                        <MudIcon Icon="@Icons.Material.Filled.AddPhotoAlternate" Size="Size.Large"
+                                                 Style="color:var(--mud-palette-text-secondary);opacity:0.5;" />
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">Hero Image — click + to add</MudText>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Filled"
+                                                       Color="Color.Primary" Size="Size.Small" Class="mt-2"
+                                                       OnClick="@(() => OpenSlotPicker(0))" />
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Secondary gallery slots (eBay-style dotted grid) -->
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2 d-block">
+                                Gallery Slots (@(totalSlots - 1) additional — drag to reorder)
+                            </MudText>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:8px;">
+                                @for (int si = 1; si < totalSlots; si++)
+                                {
+                                    var slotIdx = si;
+                                    var slotItem = slotIdx < _postMediaItems.Count ? _postMediaItems[slotIdx] : null;
+                                    bool slotHasContent = !string.IsNullOrWhiteSpace(slotItem?.Url);
+                                    <div draggable="true"
+                                         @ondragstart="@(() => _dragFromIndex = slotIdx)"
+                                         @ondragover:preventDefault="true"
+                                         @ondrop="@(() => DropMediaItem(slotIdx))"
+                                         style="position:relative;width:100%;aspect-ratio:1;border:2px dashed @(slotHasContent ? "var(--mud-palette-primary)" : "var(--mud-palette-lines-default)");border-radius:6px;overflow:hidden;background:var(--mud-palette-background-grey);cursor:@(slotHasContent ? "grab" : "pointer");"
+                                         @onclick="@(() => { if (!slotHasContent) OpenSlotPicker(slotIdx); })">
+                                        @if (slotHasContent)
+                                        {
+                                            @if (slotItem!.Type == "image")
+                                            {
+                                                <img src="@slotItem.Url" alt="@(slotItem.Caption ?? $"Slot {slotIdx}")"
+                                                     style="width:100%;height:100%;object-fit:cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--mud-palette-background);">
+                                                    <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Size="Size.Medium"
+                                                             Style="opacity:0.7;" />
+                                                </div>
+                                            }
+                                            <div style="position:absolute;top:2px;right:2px;display:flex;gap:2px;">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                                               Style="background:rgba(0,0,0,0.5);color:white;padding:2px;"
+                                                               OnClick="@(() => OpenSlotPicker(slotIdx))" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                                                               Style="background:rgba(220,38,38,0.8);color:white;padding:2px;"
+                                                               OnClick="@(() => ClearSlot(slotIdx))" />
+                                            </div>
+                                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.45);color:white;font-size:9px;padding:2px 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                                @(string.IsNullOrWhiteSpace(slotItem.Caption) ? $"Slot {slotIdx}" : slotItem.Caption)
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
+                                                <MudIcon Icon="@Icons.Material.Filled.Add"
+                                                         Style="color:var(--mud-palette-text-secondary);opacity:0.4;font-size:28px;" />
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary"
+                                                         Style="font-size:9px;margin-top:2px;">@slotIdx</MudText>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Media Slot Picker (inline panel) -->
+                    @if (_showMediaPicker)
+                    {
+                    <MudCard Elevation="4" Class="mb-4" Style="border:2px solid var(--mud-palette-primary);">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle2">
+                                    <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Small" Class="mr-1" />
+                                    @(_pickerTargetSlot == 0 ? "Set Hero Image" : $"Set Slot {_pickerTargetSlot}")
+                                </MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                                               OnClick="@ClosePicker" />
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudTabs Elevation="0">
+                                <!-- URL / Library tab -->
+                                <MudTabPanel Text="URL or Library" Icon="@Icons.Material.Filled.Link">
+                                    <MudStack Spacing="2" Class="pt-2">
+                                        <MudSelect T="string" @bind-Value="_pickerType" Label="Type"
+                                                   Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:110px;">
                                             <MudSelectItem Value="@("image")">Image</MudSelectItem>
                                             <MudSelectItem Value="@("video")">Video</MudSelectItem>
                                         </MudSelect>
-                                        <MudTextField Value="@item.Url"
-                                                      ValueChanged="@((string v) => { _postMediaItems[idx].Url = v; })"
-                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                      Placeholder="@(item.Type == "video" ? "YouTube / Vimeo URL…" : "https://…")"
-                                                      Style="flex:1;" Label="URL" />
-                                        <MudTextField Value="@item.Caption"
-                                                      ValueChanged="@((string? v) => { _postMediaItems[idx].Caption = v; })"
-                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                      Placeholder="Caption (optional)"
-                                                      Style="width:150px;flex-shrink:0;" Label="Caption" />
-                                        <MudSelect T="string" Value="@item.Position"
-                                                   ValueChanged="@((string v) => { _postMediaItems[idx].Position = v; })"
-                                                   Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                   Style="width:145px;flex-shrink:0;" Label="Position"
-                                                   AnchorOrigin="Origin.BottomLeft">
-                                            <MudSelectItem Value="@("before_article")">Before article</MudSelectItem>
-                                            <MudSelectItem Value="@("after_article")">After article</MudSelectItem>
-                                        </MudSelect>
-                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small"
-                                                       Disabled="@(idx == 0)"
-                                                       OnClick="@(() => MoveMediaItem(idx, -1))" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small"
-                                                       Disabled="@(idx == _postMediaItems.Count - 1)"
-                                                       OnClick="@(() => MoveMediaItem(idx, 1))" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                                                       Color="Color.Error"
-                                                       OnClick="@(() => RemoveMediaItem(idx))" />
+                                        <MudTextField @bind-Value="_pickerUrl"
+                                                      Label="URL" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                      Placeholder="@(_pickerType == "video" ? "YouTube / Vimeo / direct video URL…" : "https://…")" />
+                                        <MudTextField @bind-Value="_pickerCaption"
+                                                      Label="Caption (optional)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                                   Disabled="@string.IsNullOrWhiteSpace(_pickerUrl)"
+                                                   OnClick="@ConfirmPickerUrl">
+                                            Use This URL
+                                        </MudButton>
+
+                                        @if (_mediaFiles.Count > 0)
+                                        {
+                                            <MudDivider Class="my-2" />
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">— or pick from your media library —</MudText>
+                                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:240px;overflow-y:auto;">
+                                                @foreach (var mf in _mediaFiles)
+                                                {
+                                                    <div style="position:relative;aspect-ratio:1;border:2px solid transparent;border-radius:4px;overflow:hidden;cursor:pointer;background:var(--mud-palette-background-grey);"
+                                                         @onclick="@(() => PickFromLibrary(mf))">
+                                                        @if (mf.MediaType == "image")
+                                                        {
+                                                            <img src="@mf.Url" alt="@(mf.Alt ?? mf.OriginalName)"
+                                                                 style="width:100%;height:100%;object-fit:cover;" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+                                                                <MudIcon Icon="@Icons.Material.Filled.PlayCircle"
+                                                                         Style="opacity:0.7;" />
+                                                            </div>
+                                                        }
+                                                        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:8px;padding:1px 3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+                                                            @mf.OriginalName
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
                                     </MudStack>
-                                </div>
-                            }
-                            <MudStack Row="true" Spacing="1" Class="mt-1">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                           StartIcon="@Icons.Material.Filled.Image"
-                                           OnClick="@(() => AddMediaItem("image"))">
-                                    Add Image
-                                </MudButton>
-                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
-                                           StartIcon="@Icons.Material.Filled.VideoLibrary"
-                                           OnClick="@(() => AddMediaItem("video"))">
-                                    Add Video
-                                </MudButton>
-                            </MudStack>
+                                </MudTabPanel>
+
+                                <!-- Upload tab -->
+                                <MudTabPanel Text="Upload" Icon="@Icons.Material.Filled.Upload">
+                                    <MudStack Spacing="2" Class="pt-2">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            Upload an image (JPEG, PNG, GIF, WebP, SVG) or video (MP4, WebM, OGG, MOV) up to 100 MB.
+                                        </MudText>
+                                        <InputFile id="slotUploadInput" OnChange="@HandleSlotFileUpload"
+                                                   accept="image/*,video/*" style="display:none;" />
+                                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small"
+                                                   StartIcon="@Icons.Material.Filled.Upload"
+                                                   Disabled="@_pickerUploading"
+                                                   OnClick="@(() => JSRuntime.InvokeVoidAsync("eval", "document.getElementById('slotUploadInput').click()"))">
+                                            @(_pickerUploading ? "Uploading…" : "Browse & Upload")
+                                        </MudButton>
+                                        @if (_pickerUploading)
+                                        {
+                                            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                                        }
+                                    </MudStack>
+                                </MudTabPanel>
+                            </MudTabs>
                         </MudCardContent>
                     </MudCard>
+                    }
 
                     <!-- SEO card -->
                     <MudExpansionPanel Text="SEO & Social" Icon="@Icons.Material.Filled.TravelExplore"
@@ -1816,6 +1990,97 @@
         </MudGrid>
     </MudTabPanel>
 
+    <!-- ── Media Library tab ───────────────────────────────── -->
+    <MudTabPanel Text="Media" Icon="@Icons.Material.Filled.PermMedia">
+        <MudGrid Class="mt-4">
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Class="mr-2" />
+                                Media Library
+                            </MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <InputFile id="mediaLibraryUpload" OnChange="@HandleMediaLibraryUpload"
+                                       accept="image/*,video/*" style="display:none;" multiple />
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Upload"
+                                       Disabled="@_uploadingMedia"
+                                       OnClick="@(() => JSRuntime.InvokeVoidAsync("eval", "document.getElementById('mediaLibraryUpload').click()"))">
+                                @(_uploadingMedia ? "Uploading…" : "Upload Files")
+                            </MudButton>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                            Upload images and videos to your media library. Files are served from the API server. Supported formats: JPEG, PNG, GIF, WebP, SVG (images); MP4, WebM, OGG, MOV (video). Max size: 100 MB per file.
+                        </MudText>
+                        @if (_uploadingMedia)
+                        {
+                            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-3" />
+                        }
+                        @if (_mediaFiles.Count == 0 && !_mediaLoading)
+                        {
+                            <MudAlert Severity="Severity.Info" Class="mb-3">
+                                No media files yet. Click <strong>Upload Files</strong> to add your first image or video.
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
+                                @foreach (var mf in _mediaFiles)
+                                {
+                                    <MudCard Elevation="1" Style="overflow:hidden;">
+                                        <div style="position:relative;aspect-ratio:1;background:var(--mud-palette-background-grey);">
+                                            @if (mf.MediaType == "image")
+                                            {
+                                                <img src="@mf.Url" alt="@(mf.Alt ?? mf.OriginalName)"
+                                                     style="width:100%;height:100%;object-fit:cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
+                                                    <MudIcon Icon="@Icons.Material.Filled.PlayCircle"
+                                                             Style="font-size:40px;opacity:0.6;" />
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">Video</MudText>
+                                                </div>
+                                            }
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                           Size="Size.Small" Color="Color.Error"
+                                                           Style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.5);"
+                                                           OnClick="@(() => DeleteMediaFile(mf.Id))" />
+                                        </div>
+                                        <MudCardContent Class="pa-2">
+                                            <MudText Typo="Typo.caption" Style="word-break:break-all;display:block;max-height:36px;overflow:hidden;"
+                                                     title="@mf.OriginalName">
+                                                @mf.OriginalName
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @FormatFileSize(mf.FileSize) · @mf.UploadedAt.ToString("d MMM yyyy")
+                                            </MudText>
+                                        </MudCardContent>
+                                        <MudCardActions Class="pa-1">
+                                            <MudTooltip Text="Copy URL to clipboard">
+                                                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+                                                               OnClick="@(() => CopyMediaUrl(mf.Url))" />
+                                            </MudTooltip>
+                                            <MudTooltip Text="Open in new tab">
+                                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
+                                                               Href="@mf.Url" Target="_blank" />
+                                            </MudTooltip>
+                                        </MudCardActions>
+                                    </MudCard>
+                                }
+                            </div>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
     <!-- ── Static Site tab ─────────────────────────────────── -->
     <MudTabPanel Text="Static Site" Icon="@Icons.Material.Filled.Download">
         <MudGrid Class="mt-4">
@@ -1964,6 +2229,7 @@
         _cmsPages  = await CmsPageService.GetAllForAdminAsync(token ?? string.Empty);
         _menuItems = await MenuService.GetAllForAdminAsync(token ?? string.Empty);
         _projects  = await ApiService.GetProjectsAsync();
+        _mediaFiles = await ApiService.GetMediaFilesAsync(token ?? string.Empty);
     }
 
     // ── User management ─────────────────────────────────────
@@ -2422,10 +2688,22 @@
         _postMediaItems       = post.MediaItems.Count > 0
                                     ? [.. post.MediaItems.OrderBy(m => m.SortOrder)]
                                     : MigrateGalleryImagesToMediaItems(post.GalleryImages);
+
+        // Ensure hero slot (slot 0) reflects FeaturedImage if not already in MediaItems
+        if (_postMediaItems.Count == 0 && !string.IsNullOrWhiteSpace(post.FeaturedImage))
+            _postMediaItems.Add(new BlogMediaItem
+            {
+                Url      = post.FeaturedImage,
+                Type     = "image",
+                Position = "before_article",
+                SortOrder = 0
+            });
+
         _postMetaTitle        = post.MetaTitle;
         _postMetaDescription  = post.MetaDescription;
         _postOgImage          = post.OgImage;
         _postCanonicalUrl     = post.CanonicalUrl;
+        _showMediaPicker      = false;
         _postShowEditor       = true;
         // Load body into WYSIWYG after state change re-renders editor
         await InvokeAsync(StateHasChanged);
@@ -2450,6 +2728,7 @@
         _postGitHubUrl       = null;
         _postMediaItems      = [];
         _dragFromIndex       = -1;
+        _showMediaPicker     = false;
         _postMetaTitle       = null;
         _postMetaDescription = null;
         _postOgImage         = null;
@@ -2468,6 +2747,10 @@
         var publishedDate = ParseDate(_postPublishedDateStr);
         var token         = await GetAdminTokenAsync();
 
+        // Slot 0 is the hero image; sync back to FeaturedImage for backward compat
+        var heroSlotUrl = _postMediaItems.Count > 0 && !string.IsNullOrWhiteSpace(_postMediaItems[0].Url)
+            ? _postMediaItems[0].Url : NullIfEmpty(_postFeaturedImage);
+
         if (_editingPost != null)
         {
             _editingPost.Title            = _postTitle;
@@ -2479,7 +2762,7 @@
             _editingPost.Body             = body;
             _editingPost.IsPublished      = _postIsPublished;
             _editingPost.PublishedDate    = publishedDate;
-            _editingPost.FeaturedImage    = NullIfEmpty(_postFeaturedImage);
+            _editingPost.FeaturedImage    = heroSlotUrl;
             _editingPost.GitHubUrl        = NullIfEmpty(_postGitHubUrl);
             _editingPost.GalleryImages    = null; // superseded by MediaItems
             _editingPost.MediaItems       = NormaliseSortOrder(_postMediaItems);
@@ -2503,7 +2786,7 @@
                 Body             = body,
                 IsPublished      = _postIsPublished,
                 PublishedDate    = publishedDate,
-                FeaturedImage    = NullIfEmpty(_postFeaturedImage),
+                FeaturedImage    = heroSlotUrl,
                 GitHubUrl        = NullIfEmpty(_postGitHubUrl),
                 MediaItems       = NormaliseSortOrder(_postMediaItems),
                 MetaTitle        = NullIfEmpty(_postMetaTitle),
@@ -2923,6 +3206,172 @@
             Snackbar.Add("Test SMS sent successfully.", Severity.Success);
         else
             Snackbar.Add("Test SMS failed — check the SMS settings and server logs.", Severity.Error);
+    }
+
+    // ── Media Library ────────────────────────────────────────
+    private List<Portfolio.Shared.Models.MediaFileDto> _mediaFiles = [];
+    private bool _uploadingMedia;
+    private bool _mediaLoading;
+
+    // ── Media Slot Picker ─────────────────────────────────────
+    private bool _showMediaPicker;
+    private int  _pickerTargetSlot;
+    private string _pickerUrl     = string.Empty;
+    private string _pickerCaption = string.Empty;
+    private string _pickerType    = "image";
+    private bool _pickerUploading;
+
+    private void OpenSlotPicker(int slotIndex)
+    {
+        _pickerTargetSlot = slotIndex;
+        // Pre-fill from existing slot if any
+        var existing = slotIndex < _postMediaItems.Count ? _postMediaItems[slotIndex] : null;
+        _pickerUrl     = existing?.Url     ?? string.Empty;
+        _pickerCaption = existing?.Caption ?? string.Empty;
+        _pickerType    = existing?.Type    ?? "image";
+        _showMediaPicker = true;
+    }
+
+    private void ClosePicker()
+    {
+        _showMediaPicker = false;
+        _pickerUrl = string.Empty;
+        _pickerCaption = string.Empty;
+        _pickerType = "image";
+    }
+
+    private void ConfirmPickerUrl()
+    {
+        if (string.IsNullOrWhiteSpace(_pickerUrl)) return;
+        SetSlot(_pickerTargetSlot, _pickerUrl, _pickerType, _pickerCaption);
+        ClosePicker();
+    }
+
+    private void PickFromLibrary(Portfolio.Shared.Models.MediaFileDto mf)
+    {
+        SetSlot(_pickerTargetSlot, mf.Url, mf.MediaType, mf.Alt ?? string.Empty);
+        ClosePicker();
+    }
+
+    private void SetSlot(int slotIndex, string url, string type, string caption)
+    {
+        // Expand list to accommodate the slot index
+        while (_postMediaItems.Count <= slotIndex)
+            _postMediaItems.Add(new BlogMediaItem
+            {
+                Type     = "image",
+                Position = slotIndex == 0 ? "before_article" : "after_article",
+                SortOrder = _postMediaItems.Count
+            });
+
+        _postMediaItems[slotIndex].Url     = url;
+        _postMediaItems[slotIndex].Type    = type;
+        _postMediaItems[slotIndex].Caption = string.IsNullOrWhiteSpace(caption) ? null : caption;
+        _postMediaItems[slotIndex].Position = slotIndex == 0 ? "before_article" : "after_article";
+    }
+
+    private void ClearSlot(int slotIndex)
+    {
+        if (slotIndex < _postMediaItems.Count)
+        {
+            _postMediaItems[slotIndex].Url     = string.Empty;
+            _postMediaItems[slotIndex].Caption = null;
+        }
+    }
+
+    private async Task HandleSlotFileUpload(InputFileChangeEventArgs e)
+    {
+        var token = await GetAdminTokenAsync();
+        _pickerUploading = true;
+        StateHasChanged();
+        try
+        {
+            foreach (var file in e.GetMultipleFiles(1))
+            {
+                await using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
+                var (mf, err) = await ApiService.UploadMediaFileAsync(stream, file.Name, file.ContentType, token ?? string.Empty);
+                if (mf is not null)
+                {
+                    _mediaFiles.Insert(0, mf);
+                    SetSlot(_pickerTargetSlot, mf.Url, mf.MediaType, string.Empty);
+                    ClosePicker();
+                    Snackbar.Add($"Uploaded: {file.Name}", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add($"Upload failed: {err}", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Upload error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _pickerUploading = false;
+        }
+    }
+
+    private async Task HandleMediaLibraryUpload(InputFileChangeEventArgs e)
+    {
+        var token = await GetAdminTokenAsync();
+        _uploadingMedia = true;
+        StateHasChanged();
+        try
+        {
+            foreach (var file in e.GetMultipleFiles(20))
+            {
+                await using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
+                var (mf, err) = await ApiService.UploadMediaFileAsync(stream, file.Name, file.ContentType, token ?? string.Empty);
+                if (mf is not null)
+                {
+                    _mediaFiles.Insert(0, mf);
+                    Snackbar.Add($"Uploaded: {file.Name}", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add($"Upload failed for {file.Name}: {err}", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Upload error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _uploadingMedia = false;
+        }
+    }
+
+    private async Task DeleteMediaFile(int id)
+    {
+        var token = await GetAdminTokenAsync();
+        var (success, err) = await ApiService.DeleteMediaFileAsync(id, token ?? string.Empty);
+        if (success)
+        {
+            _mediaFiles.RemoveAll(f => f.Id == id);
+            Snackbar.Add("Media file deleted.", Severity.Info);
+        }
+        else
+        {
+            Snackbar.Add($"Delete failed: {err}", Severity.Error);
+        }
+    }
+
+    private async Task CopyMediaUrl(string url)
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+        Snackbar.Add("URL copied to clipboard.", Severity.Success);
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024)               return $"{bytes} B";
+        if (bytes < 1024 * 1024)        return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+        return $"{bytes / (1024.0 * 1024 * 1024):F1} GB";
     }
 
     // ── Static Site Generator ────────────────────────────────

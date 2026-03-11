@@ -120,6 +120,10 @@ app.UseSwaggerUI(options =>
 
 app.UseHttpsRedirection();
 app.UseCors("BlazorOrigin");
+
+// Serve uploaded media files from wwwroot/uploads/
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

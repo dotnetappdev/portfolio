@@ -648,6 +648,68 @@ public class PortfolioApiService(
         }
     }
 
+    // ── Media Library ─────────────────────────────────────────────────────────
+
+    public async Task<List<MediaFileDto>> GetMediaFilesAsync(string adminToken)
+    {
+        try
+        {
+            using var request = CreateAuthorizedRequest(HttpMethod.Get, "api/media", adminToken);
+            using var response = await GetClient().SendAsync(request);
+            return response.IsSuccessStatusCode
+                ? await response.Content.ReadFromJsonAsync<List<MediaFileDto>>() ?? []
+                : [];
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching media files");
+            return [];
+        }
+    }
+
+    public async Task<(MediaFileDto? File, string? Error)> UploadMediaFileAsync(
+        System.IO.Stream fileStream, string fileName, string contentType, string adminToken)
+    {
+        try
+        {
+            using var content   = new MultipartFormDataContent();
+            using var sc        = new StreamContent(fileStream);
+            sc.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+            content.Add(sc, "file", fileName);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "api/media/upload")
+            {
+                Headers = { Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken) },
+                Content = content,
+            };
+            using var response = await GetClient().SendAsync(request);
+            if (response.IsSuccessStatusCode)
+                return (await response.Content.ReadFromJsonAsync<MediaFileDto>(), null);
+            return (null, await response.Content.ReadAsStringAsync());
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to upload media file");
+            return (null, ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> DeleteMediaFileAsync(int id, string adminToken)
+    {
+        try
+        {
+            using var request  = CreateAuthorizedRequest(HttpMethod.Delete, $"api/media/{id}", adminToken);
+            using var response = await GetClient().SendAsync(request);
+            if (response.IsSuccessStatusCode) return (true, null);
+            return (false, await response.Content.ReadAsStringAsync());
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to delete media file via API");
+            return (false, ex.Message);
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static HttpRequestMessage CreateAuthorizedRequest(
