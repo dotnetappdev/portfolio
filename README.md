@@ -19,11 +19,13 @@ A professional portfolio website built with .NET 10, Blazor, MudBlazor, and Enti
 ### Admin Dashboard: Blog Posts
 ![Admin Dashboard - Blog Posts](https://github.com/user-attachments/assets/193d1c1c-2f78-4beb-807d-59ab42418c45)
 
-### Admin: Media Gallery — drag-and-drop images and videos with position control
-![Admin Media Gallery](docs/screenshots/admin-media-gallery.svg)
+### Admin: Media Library (WordPress-style upload and management)
 
-### Blog post media rendering — before/after article positioning with YouTube embeds
-![Blog post media rendering](docs/screenshots/blog-post-media-rendering.svg)
+The Media tab provides a thumbnail grid of all uploaded files with upload, copy-URL, open and delete actions.
+
+### Admin: Blog Post Media Gallery — slot-based hero + eBay-style dotted gallery grid
+
+The blog post editor shows a hero image slot (banner, full width) above a responsive grid of dotted secondary slots. Click `+` to add from library or upload; drag to reorder.
 
 ### Admin Dashboard: Projects (7 seeded projects, full CRUD)
 ![Admin Dashboard - Projects](https://github.com/user-attachments/assets/12170bcb-55c1-449d-85c2-fb468b60da62)
@@ -88,7 +90,7 @@ Portfolio.slnx
     ├── Portfolio.Api/                 # REST Web API (.NET 10) - sole DB owner
     │   ├── Controllers/           # Auth, HeroStats, Projects, Skills, Contact,
     │   │                          #   Blog, CmsPages, MenuItems, AppSettings,
-    │   │                          #   MailSettings, SmsSettings, Notifications
+    │   │                          #   MailSettings, SmsSettings, Notifications, Media
     │   ├── Data/                  # ApplicationDbContext + EF Core migrations
     │   ├── Infrastructure/        # DatabaseProviderFactory
     │   └── Models/                # All entity models
@@ -532,17 +534,18 @@ The development defaults (in `appsettings.Development.json`) are:
 
 ## Admin Area
 
-Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into eight tabs:
+Navigate to `/login` and sign in to access `/admin`. The admin dashboard is organised into nine tabs:
 
 | Tab | What you can do |
 |---|---|
 | **Hero Stats** | Add, edit or delete the stat cards shown in the hero section |
 | **Users** | Create new user accounts and view existing ones |
-| **Settings** | Configure the Portfolio API base URL; set up Twilio or ClickSend SMS |
-| **Blog Posts** | Create, edit, publish/unpublish and delete blog posts using the Quill WYSIWYG editor; manage slug, excerpt, tags, read time, featured image, media gallery (drag-and-drop images and videos with before/after-article positioning) and SEO metadata |
+| **Settings** | Configure the Portfolio API base URL; set up Twilio or ClickSend SMS; set theme colours; configure Blog Post Image Slots (tenant-configurable) |
+| **Blog Posts** | Create, edit, publish/unpublish and delete blog posts using the Quill WYSIWYG editor; manage slug, excerpt, tags, read time, featured image, slot-based media gallery (hero image + eBay-style dotted slots) and SEO metadata |
 | **Pages** | Create custom CMS pages at any slug (e.g. `/services`); same editor and SEO fields as blog posts |
 | **Menus** | Add, edit, reorder, show/hide and delete navigation menu items; changes appear immediately in the nav bar |
 | **Projects** | Add, edit and delete portfolio project cards; includes GitHub URL and Live Demo URL fields with a validate button that opens the link in a new tab to verify it works |
+| **Media** | WordPress-style media library — upload images and videos (JPEG, PNG, GIF, WebP, SVG, MP4, WebM, OGG, MOV, up to 100 MB); view all uploaded files in a thumbnail grid; copy file URL to clipboard; delete files |
 | **Static Site** | Generate a complete dark-mode static HTML snapshot of the portfolio and download it as a deployable ZIP |
 
 There is no public registration page by design.
@@ -553,28 +556,44 @@ The Blog Posts tab works like WordPress's post editor:
 
 - **List view**: shows all posts with title, slug, category, publish date, status chip (Published / Draft) and quick-action buttons (Edit, Publish/Unpublish, Delete); paginated (10 rows per page, options: 5 / 10 / 25)
 - **Status filters**: chip buttons to filter All / Published / Drafts
-- **Editor view**: left column: large title field, permalink slug, Quill WYSIWYG body, excerpt; right sidebar: Publish card (status, toggle, date, Save button), Post Settings (category, tags, read time), Featured Image (URL + live preview), **Media Gallery** (drag-and-drop images and videos), Source Repository, SEO and Social (meta title, meta description, OG image, canonical URL, expandable panel)
+- **Editor view**: left column: large title field, permalink slug, Quill WYSIWYG body, excerpt; right sidebar: Publish card (status, toggle, date, Save button), Post Settings (category, tags, read time), Featured Image (URL + live preview), **Media Gallery** (slot-based grid with hero image + gallery slots), Source Repository, SEO and Social (meta title, meta description, OG image, canonical URL, expandable panel)
 - **Back breadcrumb**: `← Posts` returns to the list without losing context
 
-#### Media Gallery (drag-and-drop images + videos)
+#### Media Gallery — slot-based image and video grid
 
-![Admin Media Gallery — drag-and-drop, type selector, caption and position controls](docs/screenshots/admin-media-gallery.svg)
+The **Media Gallery** card in the blog post editor uses a visual slot-based layout similar to eBay's product image grid:
 
-The **Media Gallery** card in the blog post editor replaces the old flat image-URL list with a fully structured media manager:
+**Hero Image Slot (Slot 0)**
+
+The first slot is the primary/hero image — displayed prominently at the top of the published post, in listing cards, and as the Open Graph share image. It is shown as a large banner slot in the editor.
+
+**Gallery Slots (Slots 1 – N)**
+
+The remaining slots are displayed as a responsive grid of small dotted rectangles. The total number of slots (default 10) is configurable by the tenant in **Settings → Blog Post Media Slots**.
 
 | Control | Description |
 |---|---|
-| **⠿ Drag handle** | Drag any row to a new position to reorder media items |
-| **▲ / ▼ buttons** | Keyboard-accessible reorder (same result as dragging) |
-| **Type** | `Image` — renders as a responsive `<img>` with optional caption; `Video` — YouTube/Vimeo URLs are auto-embedded as a responsive 16:9 iframe, any other URL uses a native `<video>` element |
-| **URL** | Full URL to the image or video |
-| **Caption** | Optional caption rendered in `<figcaption>` below the image |
-| **Position** | `Before article` — media rendered above the post body; `After article` — media rendered in the Gallery section below the body |
-| **🗑 Delete** | Remove the item instantly |
+| **+ button** | Click any empty slot to open the media picker and add an image or video |
+| **Edit (✏) button** | Click on a filled slot's edit icon to replace the media |
+| **Clear (×) button** | Remove the media from a slot without deleting it from the library |
+| **Drag handle** | Drag any slot to a new position to reorder media items |
+| **Media Picker — URL tab** | Enter a direct URL or choose from your uploaded media library |
+| **Media Picker — Upload tab** | Upload a new file directly from your device; it is saved to the media library and inserted into the slot |
 
-Click **Add Image** or **Add Video** to append a new row of the appropriate type.
+> **Migrating old posts:** when you open a post that was saved with the old newline-separated *GalleryImages* format or the previous row-based MediaItems format, all existing items are loaded into the slot grid automatically so nothing is lost.
 
-> **Migrating old posts:** when you open a post that was saved with the old newline-separated *GalleryImages* format, the editor automatically converts all those URLs into individual `After article` image items so nothing is lost.
+### Media Library
+
+The **Media** tab provides a WordPress-style media library:
+
+- **Upload**: click **Upload Files** to select one or more images or videos from your device. Files are stored on the API server and served as static files.
+- **Supported formats**: images (JPEG, PNG, GIF, WebP, SVG) and videos (MP4, WebM, OGG, MOV), up to 100 MB per file.
+- **Thumbnail grid**: all uploaded files are shown as thumbnails (or a video icon for video files).
+- **Copy URL**: click the copy icon on any file to copy its public URL to the clipboard for use in posts, pages, or elsewhere.
+- **Open in new tab**: preview any file in a new browser tab.
+- **Delete**: remove a file from the library and from disk.
+
+Files uploaded via the blog post editor's **Upload** tab are automatically saved to the media library and available for reuse across posts.
 
 ### Custom Pages
 
@@ -716,25 +735,29 @@ The blog lives at `/blog`. Posts are stored in the database and managed entirely
 
 - **Slug**: fully editable permalink (e.g. `/blog/my-post-title`)
 - **Featured image**: displayed as a full-width hero banner on the post page and as a card thumbnail on the blog listing
-- **Media Gallery**: attach multiple images and/or videos per post, set a per-item position (before or after the article body), add captions, and reorder with drag-and-drop
+- **Media Gallery**: attach images and videos per post in a slot-based visual grid (hero slot + configurable gallery slots); upload directly from device or pick from the media library; reorder with drag-and-drop; add captions
 - **SEO**: per-post `<title>`, `<meta name="description">`, `og:title`, `og:description`, `og:image`, and `<link rel="canonical">` injected automatically
 - **Status**: toggle between Published and Draft at any time without deleting
 
 ### Media Gallery
 
-![Blog post with Before-article image and After-article gallery](docs/screenshots/blog-post-media-rendering.svg)
+Every blog post uses a visual **slot-based** media grid:
 
-Every blog post can have any number of media items (images and/or videos). Each item has:
+- **Hero Image (Slot 0)**: the primary/featured image — shown at the top of the post, in listing cards, and as the Open Graph share image. Displayed as a large banner slot in the editor.
+- **Gallery Slots (Slots 1–N)**: responsive grid of image/video slots styled like eBay's product image grid with dotted borders. Empty slots show a `+` icon — click to add media.
+- **Configurable count**: the total number of slots defaults to 10 and can be changed per tenant in **Settings → Blog Post Media Slots**.
+
+Each slot supports:
 
 | Field | Description |
 |---|---|
 | **Type** | `Image` — standard responsive photo; `Video` — YouTube/Vimeo URLs become embedded iframes, other URLs use `<video>` |
-| **URL** | Public URL to the image or video |
+| **URL** | Direct file URL or YouTube/Vimeo link |
 | **Caption** | Optional text shown in `<figcaption>` beneath the item |
-| **Position** | `Before article` — shown above the post body; `After article` — shown in the Gallery section below the body |
-| **Sort order** | Maintained by dragging or using the ▲ / ▼ buttons in the admin editor |
 
 YouTube and Vimeo video URLs are detected automatically and converted to responsive 16:9 embedded iframes. Any other video URL is rendered using a native `<video controls>` element.
+
+The **after-article gallery** renders images in a responsive auto-fill grid and videos in a full-width column below the images.
 
 ### Seeded posts
 

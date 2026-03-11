@@ -26,6 +26,11 @@ public class AppSettings
     /// <summary>Template for the visitor notification email body. Supports {{ip}}, {{page}}, {{time}} placeholders.</summary>
     public string? VisitorEmailTemplate { get; set; }
 
+    // ── Media / Blog Post Slots ───────────────────────────────────────────────
+    /// <summary>Number of image slots available in the blog post editor (1 hero + additional).
+    /// Tenants can adjust this in admin settings. Default is 10.</summary>
+    public int BlogPostImageSlots { get; set; } = 10;
+
     // ── Site Theme ────────────────────────────────────────────────────────────
     /// <summary>Primary brand colour (CSS hex, e.g. #5B5BD6). Defaults to indigo when null.</summary>
     [MaxLength(20)]

@@ -114,14 +114,37 @@ else
             {
                 <MudDivider Class="mt-6 mb-4" />
                 <MudText Typo="Typo.h6" Class="fw-bold mb-3">Gallery</MudText>
-                <MudGrid Spacing="2">
-                    @foreach (var item in afterItems)
-                    {
-                        <MudItem xs="12" sm="@(item.Type == "video" ? 12 : 6)">
-                            @RenderMediaItem(item)
-                        </MudItem>
-                    }
-                </MudGrid>
+                var imageItems = afterItems.Where(i => i.Type == "image").ToList();
+                var videoItems = afterItems.Where(i => i.Type == "video").ToList();
+                @if (imageItems.Count > 0)
+                {
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+                        @foreach (var item in imageItems)
+                        {
+                            <figure style="margin:0;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--mud-palette-background-grey);">
+                                <img src="@item.Url" alt="@(item.Caption ?? "Gallery image")"
+                                     style="width:100%;height:100%;object-fit:cover;" />
+                                @if (!string.IsNullOrWhiteSpace(item.Caption))
+                                {
+                                    <figcaption style="font-size:0.75rem;color:var(--mud-palette-text-secondary);text-align:center;padding:4px;">
+                                        @item.Caption
+                                    </figcaption>
+                                }
+                            </figure>
+                        }
+                    </div>
+                }
+                @if (videoItems.Count > 0)
+                {
+                    <MudGrid Spacing="2">
+                        @foreach (var item in videoItems)
+                        {
+                            <MudItem xs="12">
+                                @RenderMediaItem(item)
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
             }
             else if (_post.GalleryImageList.Length > 0)
             {

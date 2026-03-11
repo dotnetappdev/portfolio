@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AppSettings> AppSettings => Set<AppSettings>();
     public DbSet<SmsSettings> SmsSettings => Set<SmsSettings>();
     public DbSet<MailSettings> MailSettings => Set<MailSettings>();
+    public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

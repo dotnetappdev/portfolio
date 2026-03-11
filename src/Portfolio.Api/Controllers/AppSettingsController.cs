@@ -57,6 +57,7 @@ public class AppSettingsController : ControllerBase
         settings.PrimaryColor                = string.IsNullOrWhiteSpace(dto.PrimaryColor) ? null : dto.PrimaryColor;
         settings.SecondaryColor              = string.IsNullOrWhiteSpace(dto.SecondaryColor) ? null : dto.SecondaryColor;
         settings.TertiaryColor               = string.IsNullOrWhiteSpace(dto.TertiaryColor) ? null : dto.TertiaryColor;
+        settings.BlogPostImageSlots          = dto.BlogPostImageSlots > 0 ? dto.BlogPostImageSlots : 10;
 
         await _context.SaveChangesAsync();
         return NoContent();
@@ -72,6 +73,7 @@ public class AppSettingsController : ControllerBase
         VisitorEmailTemplate         = s.VisitorEmailTemplate,
         PrimaryColor                 = s.PrimaryColor,
         SecondaryColor               = s.SecondaryColor,
-        TertiaryColor                = s.TertiaryColor
+        TertiaryColor                = s.TertiaryColor,
+        BlogPostImageSlots           = s.BlogPostImageSlots > 0 ? s.BlogPostImageSlots : 10,
     };
 }

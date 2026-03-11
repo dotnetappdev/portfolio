@@ -13,4 +13,7 @@ public class AppSettingsDto
     public string? PrimaryColor { get; set; }
     public string? SecondaryColor { get; set; }
     public string? TertiaryColor { get; set; }
+
+    // Media / Blog Post Slots
+    public int BlogPostImageSlots { get; set; } = 10;
 }
