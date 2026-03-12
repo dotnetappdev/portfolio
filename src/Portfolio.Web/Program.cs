@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using MudBlazor.Services;
 using Portfolio.Web.Components;
 using Portfolio.Web.Services;
+using System.IO;
+using Sentry;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,25 +62,69 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+// Debug middleware: show full exception text when `Debug:ShowExceptionSecret` is
+// provided via header `X-Debug-Show-Exception` or query `showException`, or
+// automatically in Development. This is temporary and safe when protected by
+// a secret or disabled in Production.
+app.Use(async (context, next) =>
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
-}
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled exception for request {Method} {Path}", context.Request.Method, context.Request.Path);
 
-app.UseStatusCodePagesWithReExecute("/not-found");
-if (!app.Environment.IsDevelopment())
+        var secret = builder.Configuration["Debug:ShowExceptionSecret"];
+        var show = false;
+        if (!string.IsNullOrWhiteSpace(secret))
+        {
+            if (context.Request.Headers.TryGetValue("X-Debug-Show-Exception", out var hv) && hv == secret)
+                show = true;
+            if (context.Request.Query.TryGetValue("showException", out var qv) && qv == secret)
+                show = true;
+        }
+        else if (builder.Environment.IsDevelopment())
+        {
+            show = true;
+        }
+
+        if (show)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "text/plain; charset=utf-8";
+            await context.Response.WriteAsync(ex.ToString());
+            return;
+        }
+
+        throw;
+    }
+});
+
+try
 {
-    app.UseHttpsRedirection();
-}
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseMiddleware<Portfolio.Web.Infrastructure.VisitorNotificationMiddleware>();
-app.UseAntiforgery();
-app.MapStaticAssets();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        app.UseHsts();
+    }
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    app.UseDeveloperExceptionPage();
+    app.UseStatusCodePagesWithReExecute("/not-found");
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.UseMiddleware<Portfolio.Web.Infrastructure.VisitorNotificationMiddleware>();
+    app.UseAntiforgery();
+    app.MapStaticAssets();
+
+    app.MapRazorComponents<App>()
+        .AddInteractiveServerRenderMode();
 
 // ── Authentication endpoints ─────────────────────────────────────────────────
 // Login: validates credentials via Portfolio.Api and sets a cookie-based session.
@@ -126,4 +173,40 @@ app.MapGet("/admin/generate-static-site", async (
     await ctx.Response.Body.WriteAsync(bytes);
 }).RequireAuthorization();
 
-app.Run();
+    app.Run();
+}
+catch (Exception ex)
+{
+    // First, attempt to write a local startup-error file so hosts with file
+    // access can show the exception quickly.
+    try
+    {
+        var home = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
+        var path = Path.Combine(home, "site", "wwwroot", "startup-error.txt");
+        var dir  = Path.GetDirectoryName(path) ?? home;
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(path, ex.ToString());
+    }
+    catch
+    {
+        // Ignore file write failures — we'll still attempt to send to Sentry.
+    }
+
+    // Then, attempt to send the same exception to Sentry if configured.
+    try
+    {
+        var dsn = builder.Configuration["Sentry:Dsn"];
+        if (!string.IsNullOrWhiteSpace(dsn))
+        {
+            using var _ = SentrySdk.Init(o => { o.Dsn = dsn; o.SendDefaultPii = false; });
+            SentrySdk.CaptureException(ex);
+            SentrySdk.FlushAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+        }
+    }
+    catch
+    {
+        // Ignore Sentry failures.
+    }
+
+    throw;
+}

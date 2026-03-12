@@ -456,12 +456,13 @@ button.mud-fab[aria-pressed="true"] {
     border: 0;
 }
 
-/* ── Accessibility toolbar (floating, bottom-left) ─────────── */
+/* ── Accessibility toolbar (floating, bottom-right) ────────── */
 .a11y-toolbar {
     position: fixed;
-    bottom: 80px;
-    left: 12px;
-    z-index: 999;
+    bottom: 110px; /* sit above the scroll-to-top FAB */
+    right: 12px;
+    left: auto;
+    z-index: 1200;
     display: flex;
     flex-direction: column;
     gap: 4px;

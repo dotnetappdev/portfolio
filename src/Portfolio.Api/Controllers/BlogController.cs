@@ -22,13 +22,23 @@ public class BlogController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<BlogPostDto>> GetPublished()
+    public async Task<ActionResult<IEnumerable<BlogPostDto>>> GetPublished()
     {
-        return await _context.BlogPosts
-            .Where(p => p.IsPublished)
-            .OrderByDescending(p => p.PublishedDate)
-            .Select(p => ToDto(p))
-            .ToListAsync();
+        try
+        {
+            var list = await _context.BlogPosts
+                .Where(p => p.IsPublished)
+                .OrderByDescending(p => p.PublishedDate)
+                .Select(p => ToDto(p))
+                .ToListAsync();
+
+            return Ok(list);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception while fetching published blog posts");
+            return StatusCode(500, "An error occurred while fetching blog posts.");
+        }
     }
 
     [HttpGet("{slug}")]

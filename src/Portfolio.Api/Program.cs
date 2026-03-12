@@ -10,9 +10,28 @@ using Portfolio.Api.Infrastructure;
 using Portfolio.Api.Models;
 using Portfolio.Api.Services;
 using Microsoft.OpenApi;
+using Sentry;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// If a platform-provided port or URL is given (e.g. `PORT` or `ASPNETCORE_URLS`),
+// apply it so we don't accidentally bind to the default development port (5000)
+// in production environments where the platform controls the listening address.
+// Check common environment variables provided by hosting platforms (App Service, containers, etc.).
+var platformPortOrUrls = Environment.GetEnvironmentVariable("PORT")
+                      ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
+                      ?? Environment.GetEnvironmentVariable("ASPNETCORE_PORT")
+                      ?? Environment.GetEnvironmentVariable("WEBSITE_PORT");
+if (!string.IsNullOrWhiteSpace(platformPortOrUrls))
+{
+    // If PORT contains a bare number, map it to a wildcard URL; otherwise pass
+    // the value through so callers can set full URLs (e.g. "http://*:80").
+    if (int.TryParse(platformPortOrUrls, out var numericPort))
+        builder.WebHost.UseUrls($"http://0.0.0.0:{numericPort}");
+    else
+        builder.WebHost.UseUrls(platformPortOrUrls);
+}
 builder.WebHost.UseSentry(o =>
 {
     o.Dsn = builder.Configuration["Sentry:Dsn"] ?? string.Empty;
@@ -102,13 +121,114 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorOrigin", policy =>
     {
-        policy.WithOrigins(builder.Configuration["AllowedOrigins"] ?? "https://localhost:7001")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        // Support a comma- or semicolon-separated list in configuration and
+        // allow matching by domain suffix (e.g. ".dotnetappdevni.com" or "*.dotnetappdevni.com").
+        var allowed = builder.Configuration["AllowedOrigins"] ?? "https://localhost:7001";
+        var origins = allowed.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                             .Select(s => s.Trim())
+                             .ToArray();
+
+        policy.SetIsOriginAllowed(originString =>
+        {
+            if (string.IsNullOrWhiteSpace(originString))
+                return false;
+
+            try
+            {
+                var originUri = new Uri(originString);
+                var originHost = originUri.Host;
+
+                foreach (var a in origins)
+                {
+                    if (string.IsNullOrWhiteSpace(a))
+                        continue;
+
+                    // Domain suffix or wildcard entry: ".example.com" or "*.example.com"
+                    if (a.StartsWith(".") || a.StartsWith("*."))
+                    {
+                        var domain = a.TrimStart('*').TrimStart('.');
+                        if (originHost.Equals(domain, StringComparison.OrdinalIgnoreCase) ||
+                            originHost.EndsWith("." + domain, StringComparison.OrdinalIgnoreCase))
+                            return true;
+                    }
+                    else
+                    {
+                        // Exact origin match (including scheme/port)
+                        if (string.Equals(originString, a, StringComparison.OrdinalIgnoreCase))
+                            return true;
+
+                        // If configured value includes a scheme, compare hosts too
+                        try
+                        {
+                            var aUri = new Uri(a);
+                            if (string.Equals(aUri.Host, originHost, StringComparison.OrdinalIgnoreCase))
+                                return true;
+                        }
+                        catch
+                        {
+                            // If 'a' is a bare host like "dotnetappdevni.com", compare host strings
+                            var trimmed = a.Replace("https://", "").Replace("http://", "").Split('/')[0];
+                            if (trimmed.Equals(originHost, StringComparison.OrdinalIgnoreCase))
+                                return true;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
+
+// Temporary debug middleware: when `Debug:ShowExceptionSecret` is set, sending
+// that secret either as the `X-Debug-Show-Exception` header or as the
+// `showException` query value will return the full exception text in the
+// response body. In Development the full details are shown automatically.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled exception for request {Method} {Path}", context.Request.Method, context.Request.Path);
+
+        var secret = builder.Configuration["Debug:ShowExceptionSecret"];
+        var show = false;
+        if (!string.IsNullOrWhiteSpace(secret))
+        {
+            if (context.Request.Headers.TryGetValue("X-Debug-Show-Exception", out var hv) && hv == secret)
+                show = true;
+            if (context.Request.Query.TryGetValue("showException", out var qv) && qv == secret)
+                show = true;
+        }
+        else if (builder.Environment.IsDevelopment())
+        {
+            show = true;
+        }
+
+        if (show)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "text/plain; charset=utf-8";
+            await context.Response.WriteAsync(ex.ToString());
+            return;
+        }
+
+        // Not allowed to show details — rethrow so the standard handler runs.
+        throw;
+    }
+});
 
 // Swagger UI — available in all environments (including production / Azure).
 app.UseSwagger();
@@ -187,7 +307,6 @@ try
             {
                 context.MailSettings.Add(new MailSettings
                 {
-                    Id               = 1,
                     IsEnabled        = mailSection.GetValue<bool>("IsEnabled"),
                     Provider         = mailSection["Provider"]         ?? "Smtp",
                     FromAddress      = mailSection["FromAddress"],
@@ -213,14 +332,35 @@ catch (Exception ex)
     {
         var home = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
         var path = Path.Combine(home, "site", "wwwroot", "startup-error.txt");
-        var dir  = Path.GetDirectoryName(path) ?? home;
+        var dir = Path.GetDirectoryName(path) ?? home;
         Directory.CreateDirectory(dir);
         File.WriteAllText(path, ex.ToString());
     }
-    catch
-    {
-        // Swallow secondary exceptions when writing the error file.
-    }
 
-    throw;
-}
+
+
+    catch (Exception writeEx)
+    {
+        // Try to send the exception to Sentry if a DSN is configured. This helps
+        // capture fatal startup errors (like port binding failures) in the remote
+        // Sentry project so you can inspect them even if stdout logs are missing.
+        try
+        {
+            var dsn = builder.Configuration["Sentry:Dsn"];
+            if (!string.IsNullOrWhiteSpace(dsn))
+            {
+                // Initialize a short-lived Sentry SDK instance if it's not already
+                // initialized by UseSentry earlier in the host building process.
+                using var _ = SentrySdk.Init(o => { o.Dsn = dsn; o.SendDefaultPii = false; });
+                SentrySdk.CaptureException(ex);
+                // Give Sentry a moment to send the event before the process exits.
+                SentrySdk.FlushAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+            }
+        }
+        catch
+        {
+            // Ignore Sentry failures — we still want to write the local startup file.
+        }
+
+    }
+    }

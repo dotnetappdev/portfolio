@@ -10,6 +10,11 @@
          This avoids HTTP 500.30 start-up failures on Azure App Service
          caused by in-process hosting module incompatibilities. -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+        <!-- Enable stdout logging in generated web.config so that App Service / IIS can
+          capture process startup logs. Logs are written to the app's LogFiles folder. -->
+        <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
+        <AspNetCoreModuleStdoutLogEnabled>true</AspNetCoreModuleStdoutLogEnabled>
+        <AspNetCoreModuleStdoutLogFile>\\?\%home%\LogFiles\stdout</AspNetCoreModuleStdoutLogFile>
   </PropertyGroup>
 
   <ItemGroup>

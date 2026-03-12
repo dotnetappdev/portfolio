@@ -6,7 +6,7 @@
 <div id="a11y-announce" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
 <div class="a11y-toolbar" role="toolbar" aria-label="Accessibility tools">
-    <MudTooltip Text="@(_isSpeaking ? "Stop reading aloud" : "Read page aloud")" Placement="Placement.Right">
+    <MudTooltip Text="@(_isSpeaking ? "Stop reading aloud" : "Read page aloud")" Placement="Placement.Left">
         <MudFab Color="@(_isSpeaking ? Color.Error : Color.Secondary)"
                 StartIcon="@(_isSpeaking ? Icons.Material.Filled.StopCircle : Icons.Material.Filled.RecordVoiceOver)"
                 Size="Size.Small"
@@ -16,7 +16,7 @@
                 Class="mb-2 d-block" />
     </MudTooltip>
 
-    <MudTooltip Text="Increase text size" Placement="Placement.Right">
+    <MudTooltip Text="Increase text size" Placement="Placement.Left">
         <MudFab Color="Color.Default"
                 StartIcon="@Icons.Material.Filled.TextIncrease"
                 Size="Size.Small"
@@ -26,7 +26,7 @@
                 Class="mb-2 d-block" />
     </MudTooltip>
 
-    <MudTooltip Text="Reset text size" Placement="Placement.Right">
+    <MudTooltip Text="Reset text size" Placement="Placement.Left">
         <MudFab Color="Color.Default"
                 StartIcon="@Icons.Material.Filled.FormatSize"
                 Size="Size.Small"

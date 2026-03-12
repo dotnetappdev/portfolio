@@ -61,25 +61,25 @@ else
                     <MudCardActions>
                         @if (!string.IsNullOrWhiteSpace(project.Slug))
                         {
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.OpenInNew" Href="@($"/projects/{project.Slug}")" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.OpenInNew" Href="@($"/projects/{project.Slug}")" Size="Size.Small" Class="mr-2 mb-2">
                                 Details
                             </MudButton>
                         }
                         @if (!string.IsNullOrWhiteSpace(project.BlogSlug))
                         {
-                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Article" Href="@($"/blog/{project.BlogSlug}")" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Article" Href="@($"/blog/{project.BlogSlug}")" Size="Size.Small" Class="mr-2 mb-2">
                                 Read Story
                             </MudButton>
                         }
                         @if (project.GitHubUrl != null)
                         {
-                            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Custom.Brands.GitHub" Href="@project.GitHubUrl" Target="_blank" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Custom.Brands.GitHub" Href="@project.GitHubUrl" Target="_blank" Size="Size.Small" Class="mr-2 mb-2">
                                 GitHub
                             </MudButton>
                         }
                         @if (project.LiveUrl != null)
                         {
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Launch" Href="@project.LiveUrl" Target="_blank" Size="Size.Small">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Launch" Href="@project.LiveUrl" Target="_blank" Size="Size.Small" Class="mr-2 mb-2">
                                 Live Demo
                             </MudButton>
                         }

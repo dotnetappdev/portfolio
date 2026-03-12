@@ -12,9 +12,12 @@
     var errorParam     = queryParams.TryGetValue("error",     out var ev) ? ev.ToString() : null;
     var returnUrlParam = queryParams.TryGetValue("returnUrl", out var rv) ? rv.ToString() : "/admin";
 
-    var isDev       = Env.IsDevelopment();
-    var hintEmail   = isDev ? (Config["DefaultAdmin:Email"]    ?? "admin@portfolio.com") : string.Empty;
-    var hintPassword = isDev ? (Config["DefaultAdmin:Password"] ?? "Admin@123456!")       : string.Empty;
+    var isDev        = Env.IsDevelopment();
+    // Only read configured default admin credentials in development.
+    // Do NOT provide hard-coded fallback values here to avoid shipping credentials
+    // in the source that could be displayed in production builds or published assets.
+    var hintEmail    = isDev ? (Config["DefaultAdmin:Email"]    ?? string.Empty) : string.Empty;
+    var hintPassword = isDev ? (Config["DefaultAdmin:Password"] ?? string.Empty) : string.Empty;
 }
 
 @code {
@@ -46,12 +49,12 @@
                     </MudAlert>
                 }
 
-                @if (isDev)
+                @if (isDev && (!string.IsNullOrWhiteSpace(hintEmail) || !string.IsNullOrWhiteSpace(hintPassword)))
                 {
                     <MudAlert Severity="Severity.Info" Class="mb-4" Icon="@Icons.Material.Filled.Info">
                         <strong>Default credentials (development only)</strong><br />
-                        Email: <code>@hintEmail</code><br />
-                        Password: <code>@hintPassword</code>
+                        @if (!string.IsNullOrWhiteSpace(hintEmail)) { <text>Email: <code>@hintEmail</code><br /></text> }
+                        @if (!string.IsNullOrWhiteSpace(hintPassword)) { <text>Password: <code>@hintPassword</code></text> }
                     </MudAlert>
                 }
 

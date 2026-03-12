@@ -10,6 +10,11 @@
          Required on SmarterASP.NET shared hosting to avoid HTTP 500.34
          (mixing hosting models in the same app pool). -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+        <!-- Enable stdout logging in generated web.config so that App Service / IIS can
+          capture process startup logs. Logs are written to the app's LogFiles folder. -->
+        <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
+        <AspNetCoreModuleStdoutLogEnabled>true</AspNetCoreModuleStdoutLogEnabled>
+        <AspNetCoreModuleStdoutLogFile>\\?\%home%\LogFiles\stdout</AspNetCoreModuleStdoutLogFile>
   </PropertyGroup>
 
   <ItemGroup>
