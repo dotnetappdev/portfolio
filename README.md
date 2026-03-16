@@ -146,6 +146,8 @@ Portfolio.slnx
 - **In-app settings**: API base URL, SMS provider (with all API keys/tokens), Mail (SMTP), and Google Analytics ID configured through the admin Settings tab - all stored in Portfolio.Api's database, no environment variables or app restart needed
 - **Paginated blog listing**: public blog page shows 5 posts per page; admin blog table shows 10 rows per page (options: 5 / 10 / 25)
 - **Account lockout**: 5 failed attempts triggers a 15-minute lockout
+- **Forgot password**: self-service password reset via emailed token (ASP.NET Identity `GeneratePasswordResetTokenAsync` / `ResetPasswordAsync`); link on login page at `/forgot-password`
+- **Admin seeded via migration**: the admin user and Admin role are inserted by the `SeedAdminUser` EF Core migration - no environment variables or runtime config required
 - **SMS notifications**: contact-form alerts sent to your number via Twilio or ClickSend - all credentials (Account SID, Auth Token, API Key, etc.) stored in DB and managed in Admin → Settings
 - **Accessibility (WCAG AA)**: skip-to-content link, landmark roles, floating toolbar with Read Aloud (Web Speech API) and font-size scaling - see [Accessibility](#accessibility) below
 
@@ -252,12 +254,10 @@ The following variables can be set in a `.env` file at the repo root or exported
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `JWT_KEY` | **Yes** | _(none)_ | JWT signing key for Portfolio.Api - minimum 32 characters |
-| `ADMIN_EMAIL` | No | `admin@portfolio.dotnetappdevni.com` | Seeded admin account email (Portfolio.Api only) |
-| `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password (Portfolio.Api only) |
 | `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for Portfolio.Api |
 | `BASE_API_URL` | No | `http://portfolio-api:8080/` | URL Portfolio.Web uses to reach Portfolio.Api |
 
-> **Security:** change `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_KEY` before exposing containers publicly.
+> **Security:** change `JWT_KEY` before exposing containers publicly. The admin account is seeded via the `SeedAdminUser` migration - no env var needed.
 
 ### Building images individually
 
@@ -441,7 +441,7 @@ Update `appsettings.Development.json` in **Portfolio.Api only**:
 
 ## Default Login
 
-When `SeedData: true` is set (default in development and Docker), an admin account is created automatically on first run.
+The admin user and Admin role are seeded directly into the ASP.NET Identity tables via an EF Core migration - no environment variables or runtime config required.
 
 | Field | Value |
 |---|---|
@@ -449,7 +449,9 @@ When `SeedData: true` is set (default in development and Docker), an admin accou
 | **Email** | `admin@portfolio.dotnetappdevni.com` |
 | **Password** | `Admin@123456!` |
 
-> **Important:** Change these before exposing the app publicly. Override via environment variables `DefaultAdmin__Email` and `DefaultAdmin__Password` (or `ADMIN_EMAIL` / `ADMIN_PASSWORD` in Docker).
+The account is created by the `SeedAdminUser` migration with a fixed password hash. It is available as soon as `dotnet ef database update` runs (or on first startup, which runs migrations automatically).
+
+> **Forgot your password?** Use the **Forgot password?** link on the login page. A reset email will be sent if mail settings are configured in Admin - Settings - Mail.
 
 The admin dashboard is at `/admin` and requires the **Admin** role.
 
@@ -465,8 +467,6 @@ The admin dashboard is at `/admin` and requires the **Admin** role.
 | `Jwt:Key` | JWT signing key - **never commit**; inject via env var or secret | _(empty in source - see below)_ |
 | `Jwt:Issuer` | JWT issuer claim | `Portfolio.Api` |
 | `Jwt:Audience` | JWT audience claim | `Portfolio.Web` |
-| `DefaultAdmin:Email` | Seeded admin email | Set via secret or env var |
-| `DefaultAdmin:Password` | Seeded admin password | Set via secret or env var |
 | `AllowedOrigins` | CORS allowed origins | `https://yourdomain.com` |
 
 > **`Jwt:Key` is intentionally blank in `appsettings.json`.** The app will throw `InvalidOperationException` at startup if the key is missing or empty - it will never silently run without a signing key. See [Secrets Management](#secrets-management) below for how to supply it per environment.
@@ -489,9 +489,9 @@ Never commit real credentials. Use [.NET User Secrets](https://learn.microsoft.c
 # API secrets (the only project that needs them)
 cd src/Portfolio.Api
 dotnet user-secrets set "Jwt:Key" "your-secret-key-minimum-32-characters"
-dotnet user-secrets set "DefaultAdmin:Email" "admin@yourdomain.com"
-dotnet user-secrets set "DefaultAdmin:Password" "YourStr0ng!Password"
 ```
+
+> The admin account is seeded via the `SeedAdminUser` migration - no user-secrets needed for it.
 
 ### Azure App Service
 
@@ -503,8 +503,6 @@ Set the JWT key and other secrets as **Application Settings** in the Azure porta
 | App Setting name | Maps to config key | Value |
 |---|---|---|
 | `Jwt__Key` | `Jwt:Key` | A strong random string (32+ chars, see below) |
-| `DefaultAdmin__Email` | `DefaultAdmin:Email` | Your admin email |
-| `DefaultAdmin__Password` | `DefaultAdmin:Password` | A strong password |
 
 Generate a strong JWT key:
 ```bash
@@ -532,19 +530,9 @@ cp .env.example .env
 
 ```bash
 export Jwt__Key="your-production-secret"
-export DefaultAdmin__Email="admin@yourdomain.com"
-export DefaultAdmin__Password="YourStr0ng!Password"
 ```
 
-The development defaults (in `appsettings.Development.json`) are:
-
-| Setting | Value |
-|---|---|
-| JWT key | _(see `appsettings.Development.json` - change before going live)_ |
-| Admin email | `admin@portfolio.dotnetappdevni.com` |
-| Admin password | `Admin@123456!` |
-
-> **Change all of these before going live.**
+> The admin account (`admin@portfolio.dotnetappdevni.com` / `Admin@123456!`) is seeded via the `SeedAdminUser` migration and requires no environment variables.
 
 ---
 

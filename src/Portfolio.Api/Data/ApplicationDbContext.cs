@@ -73,5 +73,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // Blog posts are NOT seeded via HasData. They are upserted at startup
         // by BlogPostSeedData.GetAll() in Program.cs, so new posts can be added
         // without creating a new migration.
+
+        // ── Admin role + user ──────────────────────────────────────────────────
+        // Fixed GUIDs so EF migrations are deterministic and idempotent.
+        const string adminRoleId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+        const string adminUserId = "b2c3d4e5-f6a7-8901-bcde-f12345678901";
+
+        builder.Entity<IdentityRole>().HasData(new IdentityRole
+        {
+            Id               = adminRoleId,
+            Name             = "Admin",
+            NormalizedName   = "ADMIN",
+            ConcurrencyStamp = "c3d4e5f6-a7b8-9012-cdef-123456789012"
+        });
+
+        builder.Entity<ApplicationUser>().HasData(new ApplicationUser
+        {
+            Id                   = adminUserId,
+            UserName             = "admin@portfolio.dotnetappdevni.com",
+            NormalizedUserName   = "ADMIN@PORTFOLIO.DOTNETAPPDEVNI.COM",
+            Email                = "admin@portfolio.dotnetappdevni.com",
+            NormalizedEmail      = "ADMIN@PORTFOLIO.DOTNETAPPDEVNI.COM",
+            EmailConfirmed       = true,
+            FirstName            = "David",
+            LastName             = "Buckley",
+            // Hash of Admin@123456! — generated once via PasswordHasher<object>
+            PasswordHash         = "AQAAAAEAACcQAAAAEDacB/KH29SYZmvFPMtSZ2GtiNSXqIPC+X0riYS+Py3PqkCGmf4dEqyIdDj82UNrkw==",
+            SecurityStamp        = "d4e5f6a7-b8c9-0123-def0-234567890123",
+            ConcurrencyStamp     = "e5f6a7b8-c9d0-1234-ef01-345678901234",
+            LockoutEnabled       = true,
+            AccessFailedCount    = 0
+        });
+
+        builder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
+        {
+            UserId = adminUserId,
+            RoleId = adminRoleId
+        });
     }
 }

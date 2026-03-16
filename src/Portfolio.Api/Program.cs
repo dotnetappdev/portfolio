@@ -267,38 +267,6 @@ try
 
     if (builder.Configuration.GetValue<bool>("SeedData"))
     {
-        var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-        if (!await roleMgr.RoleExistsAsync("Admin"))
-            await roleMgr.CreateAsync(new IdentityRole("Admin"));
-
-        var adminEmail    = builder.Configuration["DefaultAdmin:Email"];
-        var adminPassword = builder.Configuration["DefaultAdmin:Password"];
-        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
-        {
-            logger.LogWarning(
-                "DefaultAdmin:Email / DefaultAdmin:Password not configured. " +
-                "Skipping admin seed. Set DefaultAdmin__Email and DefaultAdmin__Password " +
-                "environment variables to seed an admin account.");
-        }
-        else if (await userMgr.FindByEmailAsync(adminEmail) == null)
-        {
-            var admin = new ApplicationUser
-            {
-                UserName       = adminEmail,
-                Email          = adminEmail,
-                FirstName      = "David",
-                LastName       = "Buckley",
-                EmailConfirmed = true
-            };
-            var result = await userMgr.CreateAsync(admin, adminPassword);
-            if (result.Succeeded)
-                await userMgr.AddToRoleAsync(admin, "Admin");
-
-            logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
-        }
-
         // Upsert blog posts from BlogPostSeedData — insert new, update content of existing.
         // Look up by Slug (not Id) so we never attempt to INSERT an explicit value into
         // the IDENTITY column, which SQL Server rejects when IDENTITY_INSERT is OFF.
