@@ -252,7 +252,7 @@ The following variables can be set in a `.env` file at the repo root or exported
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `JWT_KEY` | **Yes** | _(none)_ | JWT signing key for Portfolio.Api - minimum 32 characters |
-| `ADMIN_EMAIL` | No | `admin@portfolio.com` | Seeded admin account email (Portfolio.Api only) |
+| `ADMIN_EMAIL` | No | `admin@portfolio.dotnetappdevni.com` | Seeded admin account email (Portfolio.Api only) |
 | `ADMIN_PASSWORD` | No | `Admin@123456!` | Seeded admin account password (Portfolio.Api only) |
 | `ALLOWED_ORIGINS` | No | `http://localhost:5072` | CORS allowed origin for Portfolio.Api |
 | `BASE_API_URL` | No | `http://portfolio-api:8080/` | URL Portfolio.Web uses to reach Portfolio.Api |
@@ -439,6 +439,22 @@ Update `appsettings.Development.json` in **Portfolio.Api only**:
 
 ---
 
+## Default Login
+
+When `SeedData: true` is set (default in development and Docker), an admin account is created automatically on first run.
+
+| Field | Value |
+|---|---|
+| **URL** | `http://localhost:5100/login` (local) or your deployed domain `/login` |
+| **Email** | `admin@portfolio.dotnetappdevni.com` |
+| **Password** | `Admin@123456!` |
+
+> **Important:** Change these before exposing the app publicly. Override via environment variables `DefaultAdmin__Email` and `DefaultAdmin__Password` (or `ADMIN_EMAIL` / `ADMIN_PASSWORD` in Docker).
+
+The admin dashboard is at `/admin` and requires the **Admin** role.
+
+---
+
 ## Configuration Reference
 
 ### Portfolio.Api: `appsettings.json`
@@ -525,7 +541,7 @@ The development defaults (in `appsettings.Development.json`) are:
 | Setting | Value |
 |---|---|
 | JWT key | _(see `appsettings.Development.json` - change before going live)_ |
-| Admin email | `admin@portfolio.com` |
+| Admin email | `admin@portfolio.dotnetappdevni.com` |
 | Admin password | `Admin@123456!` |
 
 > **Change all of these before going live.**

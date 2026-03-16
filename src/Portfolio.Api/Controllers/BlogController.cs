@@ -26,13 +26,12 @@ public class BlogController : ControllerBase
     {
         try
         {
-            var list = await _context.BlogPosts
+            var posts = await _context.BlogPosts
                 .Where(p => p.IsPublished)
                 .OrderByDescending(p => p.PublishedDate)
-                .Select(p => ToDto(p))
                 .ToListAsync();
 
-            return Ok(list);
+            return Ok(posts.Select(p => ToDto(p)).ToList());
         }
         catch (Exception ex)
         {
@@ -54,10 +53,11 @@ public class BlogController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IEnumerable<BlogPostDto>> GetAll()
     {
-        return await _context.BlogPosts
+        var posts = await _context.BlogPosts
             .OrderByDescending(p => p.PublishedDate)
-            .Select(p => ToDto(p))
             .ToListAsync();
+
+        return posts.Select(p => ToDto(p)).ToList();
     }
 
     [HttpPost]

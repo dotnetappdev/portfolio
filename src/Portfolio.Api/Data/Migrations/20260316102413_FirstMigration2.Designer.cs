@@ -12,8 +12,8 @@ using Portfolio.Api.Data;
 namespace Portfolio.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260310230458_AddBlogPostMediaItems")]
-    partial class AddBlogPostMediaItems
+    [Migration("20260316102413_FirstMigration2")]
+    partial class FirstMigration2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,6 +169,9 @@ namespace Portfolio.Api.Data.Migrations
                     b.Property<string>("ApiBaseUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("BlogPostImageSlots")
+                        .HasColumnType("int");
 
                     b.Property<string>("GoogleAnalyticsId")
                         .HasMaxLength(50)
@@ -354,104 +357,6 @@ namespace Portfolio.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("BlogPosts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Body = "<h2>What Is BookIt?</h2><p>BookIt is a <strong>multi-tenant, all-in-one booking CRM</strong> built for service businesses - barbers, salons, spas, gyms, B&amp;Bs, and recruitment agencies. It lets businesses accept appointments 24/7, manage their team's availability, take online payments, and stay on top of their customer relationships, all from a single platform.</p><p>The public landing page and pricing tier were built to convert visitors on day one:</p><p><img src=\"https://github.com/user-attachments/assets/d2a6354e-cf3d-437b-8b6a-59a2bad036fb\" alt=\"BookIt Home Page\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><p><img src=\"https://github.com/user-attachments/assets/81aa988c-5fac-40ea-9ef2-a728c31f5dc6\" alt=\"BookIt Pricing Page\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>The Problem We Were Solving</h2><p>Most booking tools in this space are either too expensive for small service businesses or too inflexible for anything beyond a hairdresser. We kept hearing the same complaints from clients: \"we can't add multiple staff\", \"there's no SMS reminder\", \"it doesn't support room-based bookings as well as appointment bookings\". BookIt was built to fix all of those things in one platform.</p><p>The core challenge was <strong>multi-tenancy</strong>. Every business has its own brand, staff, services, and booking rules. We needed a clean tenant isolation model that was still fast enough for real-time availability queries at scale.</p><h2>The Public Booking Flow</h2><p>Customers can book without creating an account - they pick a service, choose a time from a live availability grid, enter their details, and receive a booking confirmation with a unique access PIN. When <code>SendOtpOnBooking</code> is enabled, the PIN is also sent by SMS immediately after the booking is created.</p><p><img src=\"https://github.com/user-attachments/assets/7f728e92-c63b-4ff6-9e69-f2c3077a80c5\" alt=\"BookIt Public Booking Page\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>Authentication Challenges</h2><p>One of the trickiest design decisions was the login flow. We needed a single login page that worked for regular staff <em>and</em> super admins who manage multiple tenants. The solution was a standard email/password form with a \"Super admin?\" toggle that reveals a business slug field - the tenant is resolved from the JWT claims, so regular users never see the slug at all.</p><p><img src=\"https://github.com/user-attachments/assets/ae9a3e71-5cc5-4ca6-9f4b-6b822f8e8888\" alt=\"BookIt Login\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><p><img src=\"https://github.com/user-attachments/assets/2243020a-fcf1-4e85-b5c0-185e985cf3b6\" alt=\"BookIt Super Admin Login\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>The Admin Portal</h2><p>The Blazor + MudBlazor admin portal is where most of the complexity lives. Business owners and their staff get a stat-card dashboard, a calendar view of all upcoming appointments, and deep management screens for services, customers, staff availability, and settings.</p><p><img src=\"https://github.com/user-attachments/assets/a6825129-ca56-44be-a3f7-aed235bcc1b9\" alt=\"BookIt Admin Dashboard\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><p><img src=\"https://github.com/user-attachments/assets/ea02cd3d-fb68-4af3-acf2-a611c8c10442\" alt=\"BookIt Admin Calendar\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><p>Services support photo galleries, per-service online booking toggles, and custom pre-booking question forms - which was a surprisingly complex feature to build correctly on top of a dynamic form builder backed by EF Core JSON columns.</p><p><img src=\"https://github.com/user-attachments/assets/94db25b2-2d28-4502-9fc1-271cd9b2b2ad\" alt=\"BookIt Admin Services\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>Rooms &amp; Lodging</h2><p>We extended the platform beyond simple appointment booking to support B&amp;Bs and lodges that need property and room management, seasonal rates, and amenity tracking. Each property and room has its own inline photo gallery.</p><p><img src=\"https://github.com/user-attachments/assets/1481259d-ada7-4ef3-a8d8-0b04dfd81782\" alt=\"BookIt Rooms &amp; Lodging\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>Booking Invitations &amp; Staff Self-Scheduling</h2><p>Staff can send booking invitations to customers with up to five proposed time slots. Customers click a 14-day shareable link, pick a slot, and their booking is created automatically. Staff availability is managed with a full recurrence engine (Daily, Weekly, BiWeekly, Monthly, Custom) and IANA timezone support.</p><p><img src=\"https://github.com/user-attachments/assets/ba1d9734-3658-49cb-8da6-e544cbb4b64e\" alt=\"BookIt Booking Forms\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>Settings &amp; Notifications</h2><p>Businesses configure their entire booking behaviour, branding, payment gateway, and notification templates from a single settings screen. SMS reminders, email confirmations, and per-notification HTML templates are all there.</p><p><img src=\"https://github.com/user-attachments/assets/f3ac994a-4fd0-4bff-bc30-9cf12d225eb0\" alt=\"BookIt Settings\" style=\"max-width:100%;border-radius:8px;margin:1rem 0;\" /></p><h2>Key Technical Lessons</h2><ul><li><strong>Tenant isolation via EF Core query filters</strong> - global query filters on the DbContext made tenant isolation transparent without polluting every LINQ query with a <code>.Where(x =&gt; x.TenantId == tenantId)</code>.</li><li><strong>Real-time availability</strong> - calculating open slots against staff working windows, existing bookings, and service durations is harder than it looks. We ended up with a dedicated availability engine that caches slot windows per staff per day.</li><li><strong>Blazor component architecture</strong> - splitting each admin section into focused components with clean state management made the MudBlazor UI maintainable as the feature list grew past 30 admin screens.</li><li><strong>SMS reliability</strong> - we integrated Twilio and ClickSend with a provider abstraction so tenants can switch SMS gateway without a code deployment.</li></ul><h2>What We Would Do Differently</h2><p>If we started again, we would introduce an event-sourcing layer earlier for the booking state machine. The current approach uses status columns and audit trail records, which works, but a proper domain event log would make the notification triggers and reporting much cleaner. We would also move the availability engine into a dedicated microservice sooner - it is the most CPU-intensive part of the platform and scales differently from the rest of the CRUD screens.</p>",
-                            Category = "Projects",
-                            FeaturedImage = "/images/bookit.svg",
-                            IsPublished = true,
-                            MetaDescription = "A deep-dive into building BookIt - a production multi-tenant booking CRM with Blazor, SMS, real-time availability, and a fully responsive MudBlazor admin portal.",
-                            MetaTitle = "Building BookIt: A Blazor Booking Management System",
-                            PublishedDate = new DateTime(2025, 11, 10, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReadMinutes = 10,
-                            Slug = "building-bookit-blazor-booking-management-system",
-                            Summary = "How we built BookIt - a multi-tenant booking CRM for service businesses - with Blazor, real-time availability, SMS notifications, multi-language support, and a fully responsive MudBlazor UI.",
-                            Tags = "Blazor, ASP.NET Core, SQL Server, MudBlazor, Multi-Tenant, SMS, Booking",
-                            Title = "Building BookIt: A Blazor Booking Management System"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Body = "<h2>The Problem</h2><p>Community carers were carrying paper round sheets to each visit - recording notes by hand, signing off tasks with a biro, and handing sheets back to the office at the end of the week. Managers had no visibility of what had happened until those sheets were typed up. If a carer missed a visit, nobody knew until the next morning. <strong>Curo was built to change that.</strong></p><h2>What Curo Does</h2><p>Curo is a care management platform that gives community carers a task-driven workflow on any device. When a carer arrives at a service user&apos;s home, they open Curo, see the care plan tasks for that visit, work through them in order, add notes, and mark the visit complete. The office immediately sees a live dashboard showing which visits are in progress, complete, or overdue.</p><h2>Technology Choices</h2><p>We chose <strong>Blazor with ASP.NET Core</strong> because carers needed to use it on NHS-issued Windows laptops as well as personal Android phones. A Blazor progressive web app gave us a single codebase that worked everywhere without an app store deployment. <strong>MudBlazor</strong> gave us a component library that looked professional enough for office managers without requiring a front-end designer on the project.</p><p>The backend runs on <strong>Azure App Service</strong> behind Azure Front Door for global availability. All data is in <strong>Azure SQL</strong> with row-level security enforcing organisation-level tenant isolation.</p><h2>The Compliance Challenge</h2><p>Healthcare data in the UK sits under CQC and GDPR obligations. Every action - task completion, note edit, visit sign-off - writes an immutable audit record. We spent more time on audit trail design than on almost any other feature. The audit table is append-only at the database level using a check constraint that refuses UPDATE and DELETE operations against it.</p><h2>Role-Based Access Control</h2><p>The platform has four roles: <strong>Carer</strong>, <strong>Senior Carer</strong>, <strong>Care Manager</strong>, and <strong>Administrator</strong>. Carers see only their own schedule and the care plans for the service users they are assigned to. Managers see the whole organisation. The RBAC model is enforced at both the API and the UI layer - a carer who navigates directly to a manager URL gets a 403, not an empty page.</p><h2>Key Technical Lessons</h2><ul><li><strong>Offline-first is hard</strong> - carers often lose mobile signal mid-visit. We cached the visit plan locally using browser storage and synced changes when connectivity returned. The conflict resolution logic for concurrent edits was the hardest part of the whole project.</li><li><strong>Azure Front Door + App Service</strong> is a very good combination for healthcare SaaS - zero-downtime deployments, automatic scaling, and WAF rules all come with minimal ops overhead.</li><li><strong>Entity Framework Core migrations</strong> on a live healthcare database require care. We ran every migration through a staging environment with a production data copy before touching production.</li></ul><h2>Impact</h2><p>Within two months of go-live, the client reported a <strong>35% reduction</strong> in missed visit follow-up calls and managers reclaimed roughly <strong>four hours per week</strong> previously spent processing paper round sheets. The paper round sheets are gone.</p>",
-                            Category = "Projects",
-                            FeaturedImage = "/images/curo.svg",
-                            IsPublished = true,
-                            MetaDescription = "How Curo replaced a paper-based community care system with a real-time Blazor platform, Azure hosting, and strict compliance controls.",
-                            MetaTitle = "Building Curo: A Healthcare Care Management Platform",
-                            PublishedDate = new DateTime(2025, 10, 15, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReadMinutes = 8,
-                            Slug = "building-curo-healthcare-care-management-platform",
-                            Summary = "Curo replaced a paper-based community care system with a Blazor task-driven workflow, real-time visit tracking, Azure hosting, and strict RBAC and audit logging.",
-                            Tags = "Blazor, ASP.NET Core, Azure, Healthcare, RBAC, Audit, EF Core",
-                            Title = "Building Curo: A Healthcare Care Management Platform"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Body = "<h2>Why We Built TalentConnect</h2><p>Recruitment teams were managing candidates in spreadsheets. Column A was the candidate name. Column B was their phone number. Column C was a colour code that meant something different to every recruiter. When the spreadsheet had 400 rows, nobody could find anything. <strong>TalentConnect was built to replace the spreadsheet.</strong></p><h2>Core Features</h2><p>TalentConnect covers the end-to-end hiring lifecycle: create a job posting, build a multi-stage pipeline (Screening, Phone Interview, Technical, Final, Offer, Hired / Rejected), move candidates through stages with a drag-and-drop Kanban board, schedule interviews, send automated notifications, and view analytics on hiring velocity and pipeline conversion.</p><h2>The Pipeline Engine</h2><p>The configurable pipeline was the most complex feature. Each job can have a different set of stages with different automations attached - send an email when a candidate moves to Phone Interview, create a calendar invite when they reach the Technical stage, notify the hiring manager when they hit Offer. We modelled this as a pipeline definition with stage actions, which meant the recruiter could wire up the automations from a UI without any developer involvement.</p><h2>Analytics</h2><p>Every recruiter wants to know: how long does it take us to hire? Where do candidates drop out? Which job boards send the best candidates? TalentConnect tracks candidate source, time-in-stage, and outcome for every application. The analytics dashboard gives hiring managers a real answer to those questions for the first time.</p><h2>Technical Architecture</h2><p>TalentConnect is a <strong>Blazor Server</strong> application with an <strong>ASP.NET Core REST API</strong> backend. We chose Blazor Server over WebAssembly here because the application is used exclusively by internal staff on corporate networks - the real-time SignalR connection gives a snappier feel than a WASM download on first load, and we do not need offline support.</p><p>The database is <strong>SQL Server on Azure</strong> with Entity Framework Core. The pipeline definition and stage action configuration is stored as JSON in EF Core owned entity columns, which kept the schema clean without sacrificing queryability for the analytics layer.</p><h2>What We Learned</h2><ul><li><strong>Drag-and-drop on Blazor</strong> - there is no great drag-and-drop library for Blazor Server. We ended up writing our own using JS interop and a slim JS helper that dispatches custom browser events back into Blazor components. It works well but took longer than expected.</li><li><strong>Email deliverability</strong> - automated interview invitations go to personal inboxes and get caught by spam filters. We moved from SMTP to a transactional email API (MailerSend) and added SPF and DKIM records, which resolved the deliverability issues almost completely.</li><li><strong>Analytics queries on live data</strong> - running aggregation queries against the same database that handles real-time pipeline updates caused lock contention. We added a read replica and directed analytics queries there.</li></ul>",
-                            Category = "Projects",
-                            FeaturedImage = "/images/talentconnect.svg",
-                            IsPublished = true,
-                            MetaDescription = "A look at how TalentConnect brings job pipeline management, candidate tracking, and hiring analytics to recruitment teams using Blazor and ASP.NET Core.",
-                            MetaTitle = "Building TalentConnect: A Modern Blazor Recruitment Platform",
-                            PublishedDate = new DateTime(2025, 9, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReadMinutes = 9,
-                            Slug = "building-talentconnect-blazor-recruitment-platform",
-                            Summary = "TalentConnect is a full-featured recruitment platform with job posting management, a configurable multi-stage candidate pipeline, interview scheduling, and recruitment analytics - all built on Blazor and ASP.NET Core.",
-                            Tags = "Blazor, Recruitment, Pipeline, Analytics, ASP.NET Core, MudBlazor",
-                            Title = "Building TalentConnect: A Modern Blazor Recruitment Platform"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Body = "<h2>The Starting Point</h2><p>Adding an AI assistant to a healthcare platform sounds straightforward until you realise the model can confidently tell a nurse that a patient has no known allergies when the allergy record is right there in the database. Getting AI into production in a regulated environment means you cannot just call the OpenAI API, return the response, and call it done.</p><h2>Why Semantic Kernel?</h2><p>We chose <strong>Semantic Kernel</strong> over a raw OpenAI SDK wrapper because it gave us a structured way to compose AI capabilities with existing .NET services. The kernel&apos;s plugin model let us wire up real database queries as tool functions that the model could call - so when a clinician asks &quot;what medication is this patient on?&quot;, the model calls our <code>GetCurrentMedications</code> plugin, which runs a parameterised SQL query and returns structured data, not something retrieved from unstructured training data.</p><h2>The Confidence Scoring Layer</h2><p>Every AI response in the platform goes through a confidence evaluation step before it reaches clinical staff. We built a two-stage pipeline: the primary model generates a response, and a separate evaluator prompt scores the response against the source data on a 0–1 scale. Responses below 0.7 are held back and replaced with a &quot;I need more information to answer that safely&quot; message. This added latency but was non-negotiable for the clinical sign-off.</p><h2>RAG Implementation</h2><p>We use <strong>Retrieval-Augmented Generation (RAG)</strong> to ground the model in patient-specific context. Care notes, assessments, and observations are chunked, embedded using the Azure OpenAI embeddings API, and stored in a <strong>vector index</strong> in Azure AI Search. When a question comes in, the top-k most relevant chunks are retrieved and injected into the system prompt as context. This dramatically reduced hallucinations about patient history.</p><h2>Prompt Engineering Pitfalls</h2><ul><li><strong>System prompts are not magic</strong> - writing &quot;you are a helpful clinical assistant, never make up information&quot; in the system prompt does not stop the model making up information. You need structural guardrails, not just instructional ones.</li><li><strong>Temperature matters more than you think</strong> - in a healthcare context, temperature 0 (deterministic) is almost always right. Any creativity in the output is a liability.</li><li><strong>Token limits creep up on you</strong> - care notes for a long-stay patient can be tens of thousands of tokens. You need a chunking strategy from day one, not as a retrofit.</li></ul><h2>Cost Management</h2><p>Azure OpenAI costs scale with token consumption. Our confidence scoring layer doubled the token usage per query. We offset this by aggressively caching responses for identical queries within a session window and by using <strong>GPT-4o mini</strong> for the evaluator step instead of the full GPT-4o model - the evaluator is a simpler scoring task that does not need the full model.</p><h2>The Lesson</h2><p>AI in production is not an API call - it is a pipeline with guardrails, evaluation steps, fallback behaviour, cost controls, and an audit trail. Build those things before you go live, not after your first clinical incident.</p>",
-                            Category = "AI",
-                            FeaturedImage = "/images/ai-dotnet.svg",
-                            IsPublished = true,
-                            MetaDescription = "Production lessons from Semantic Kernel and Azure OpenAI in .NET - prompt engineering, confidence scoring, hallucination guards, and the cost of getting it wrong.",
-                            MetaTitle = "Building AI into .NET Without Losing Your Mind",
-                            PublishedDate = new DateTime(2025, 8, 5, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReadMinutes = 12,
-                            Slug = "building-ai-into-dotnet-without-losing-your-mind",
-                            Summary = "Production lessons from integrating Semantic Kernel and Azure OpenAI into a .NET 10 application - including prompt engineering pitfalls, confidence scoring, hallucination guards, and the cost of getting it wrong in a healthcare context.",
-                            Tags = "AI, Semantic Kernel, Azure OpenAI, .NET, RAG, Vector Search, Hallucination",
-                            Title = "Building AI into .NET Without Losing Your Mind"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Body = "<h2>The Checklist Problem</h2><p>Every developer I have ever worked with has encountered the OWASP Top Ten as a checklist. A security team sends a spreadsheet. Column A lists the ten categories. Column B asks: &quot;Does this apply to our application?&quot; Column C is a checkbox. Someone marks all ten as &quot;Addressed&quot;, the spreadsheet goes back to the security team, and everyone moves on. Three months later, there is a SQL injection vulnerability in the search endpoint.</p><p>The problem is not that OWASP is wrong. The problem is the <strong>checklist mental model</strong>. The OWASP Top Ten is not a list of boxes to tick - it is a narrative about how attackers actually compromise real applications. Reading it as a story rather than a checklist changes everything about how you apply it.</p><h2>A01: Broken Access Control</h2><p>This is number one because it is the most common and the most dangerous. The story here is: <em>an authenticated user accesses something they should not be able to access</em>. In a .NET API, this usually means a missing <code>[Authorize]</code> attribute, an IDOR vulnerability where the user can change an object ID in the URL and get back someone else&apos;s data, or a missing ownership check on a PUT endpoint.</p><p>The fix is not a checklist item - it is a habit. Every endpoint that touches user data needs an explicit check: does the authenticated user own or have permission to access <em>this specific resource</em>?</p><h2>A02: Cryptographic Failures</h2><p>The story: sensitive data is readable by someone who should not be able to read it. In .NET applications, this is most often HTTPS misconfiguration, storing passwords with a weak hashing algorithm (or not hashing them at all), or leaving PII in application logs. <strong>Never log request bodies</strong>. They almost always contain something sensitive.</p><h2>A03: Injection</h2><p>SQL injection is not dead. It is less common than it was because Entity Framework Core parameterises queries by default, but developers still drop into raw SQL for performance-sensitive queries and forget to parameterise. The story: <em>user-controlled input reaches an interpreter without sanitisation</em>. In a .NET context this includes SQL, LDAP, OS commands, and XML queries.</p><h2>A07: Identification and Authentication Failures</h2><p>JWT authentication is ubiquitous in .NET APIs and is a rich source of vulnerabilities. The most common issues I have seen in the wild: algorithm confusion attacks (the API accepts <code>alg: none</code>), short or weak signing keys, tokens that never expire, and missing audience/issuer validation. The fix for all of these is to pin the algorithm explicitly and validate all claims:</p><pre><code>options.TokenValidationParameters = new TokenValidationParameters\n{\n    ValidateIssuer            = true,\n    ValidateAudience          = true,\n    ValidateLifetime          = true,\n    ValidAlgorithms           = new[] { SecurityAlgorithms.HmacSha256 },\n    ValidateIssuerSigningKey  = true,\n    IssuerSigningKey          = new SymmetricSecurityKey(keyBytes)\n};</code></pre><h2>Building the Habit</h2><p>The most effective security change I have made in teams is adding a security review step to the definition of done. Before any PR that touches an authentication flow, an API endpoint, or a data access layer is merged, one of these questions gets asked: <em>who can call this, what can they do, and what stops them doing more than they should?</em></p><p>That question is not on the OWASP Top Ten checklist. But it is what the Top Ten is trying to get you to ask.</p>",
-                            Category = "Security",
-                            FeaturedImage = "/images/secure-api.svg",
-                            IsPublished = true,
-                            MetaDescription = "Why the OWASP Top Ten is a story about how real applications get compromised, and how to use it to build genuinely more secure .NET APIs.",
-                            MetaTitle = "The OWASP Top Ten Is Not a Checklist: It Is a Story",
-                            PublishedDate = new DateTime(2025, 7, 12, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReadMinutes = 10,
-                            Slug = "owasp-top-ten-is-not-a-checklist-it-is-a-story",
-                            Summary = "Most teams treat the OWASP Top Ten as a compliance checklist. Here is why that is the wrong mental model, and how to actually use it to build more secure .NET applications.",
-                            Tags = "OWASP, Security, .NET, ASP.NET Core, JWT, SQL Injection, CORS",
-                            Title = "The OWASP Top Ten Is Not a Checklist: It Is a Story"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Body = "<h2>The Code I Am Most Proud Of</h2><p>The code I am most proud of writing is code that I have never had to look at again. Code that did its job, was clear enough for whoever maintained it after me to understand without calling me, and was correct enough that bugs were rare and obvious when they appeared. That is a higher bar than it sounds.</p><h2>Lesson 1: Naming Is the Hardest Part</h2><p>After thirty years of reading other people&apos;s code, I am convinced that the quality of a codebase correlates more strongly with the quality of its names than with any other single factor. A method called <code>Process()</code> could do anything. A method called <code>ApplyDiscount(order, customerId)</code> tells you exactly what it does and what it needs to do it. Bad names are a form of technical debt that compounds interest every day the code is read.</p><h2>Lesson 2: Tests Are Documentation</h2><p>Unit tests are the only documentation that cannot go out of date - if the test is wrong, the build fails. A test called <code>ApplyDiscount_WhenCustomerIsVip_Returns20PercentOff</code> tells the next developer exactly what the system is supposed to do in that scenario, in a way that no comment ever can, because the comment will not fail the build if it becomes untrue.</p><p><strong>Test-Driven Development</strong> is not about the tests - it is about the design pressure that writing the test first applies. If your code is hard to test, it is usually hard to understand and maintain too. The test suite is the early warning system.</p><h2>Lesson 3: The Right Time to Refactor Is Before You Add a Feature, Not After</h2><p>Technical debt is not the debt you know about - it is the debt that has become invisible because everyone has worked around it for so long. The moment to address it is when you are about to add a feature that touches the problematic code, because that is when the cost of the debt becomes concrete: you can feel exactly how much harder the messy code is making the new feature to add.</p><h2>Lesson 4: Abstractions Have a Cost</h2><p>Every layer of abstraction you add makes the code more flexible and less readable. Junior developers tend to add too few abstractions. Senior developers sometimes add too many. The discipline is knowing when the flexibility is worth the reading cost, and that judgement only comes with experience. A good heuristic: <strong>add the abstraction when you need it for the second time, not the first</strong>.</p><h2>Lesson 5: Simple Beats Clever</h2><p>The most senior developer in the room is not the one who writes the most complex code. It is the one who takes a complex problem and produces the simplest possible solution. Clever code is easy to write and hard to read. Simple code is hard to write and easy to read. The economics of software development strongly favour the second option.</p><h2>Lesson 6: Security Is Not a Feature, It Is a Foundation</h2><p>In thirty years I have seen security treated as a sprint item more times than I can count. &quot;We will add authentication in the next sprint.&quot; &quot;We will fix the SQL injection in the next release.&quot; Security that is retrofitted is always more expensive, always more fragile, and always has gaps. Build it in from the first commit or pay three times as much to add it later.</p><h2>What Has Not Changed</h2><p>In three decades, the tools, languages, frameworks, and platforms have changed beyond recognition. The fundamentals have not. Clarity over cleverness. Tests as design feedback. Naming as communication. Security as a foundation. These are not .NET lessons or C# lessons - they are software lessons, and they were true before I wrote my first line of code and they will be true after I write my last.</p>",
-                            Category = ".NET",
-                            FeaturedImage = "/images/dotnet-dev.svg",
-                            IsPublished = true,
-                            MetaDescription = "30 years of .NET development distilled into the principles and habits that separate code written to last from code written to ship.",
-                            MetaTitle = "What Three Decades of Software Development Taught Me About Writing Code That Lasts",
-                            PublishedDate = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReadMinutes = 11,
-                            Slug = "three-decades-software-development-writing-code-that-lasts",
-                            Summary = "A personal reflection on the principles, habits, and hard lessons that separate code written to last from code written to ship.",
-                            Tags = ".NET, Clean Code, Architecture, Career, TDD, Refactoring, Craftsmanship",
-                            Title = "What Three Decades of Software Development Taught Me About Writing Code That Lasts"
-                        });
                 });
 
             modelBuilder.Entity("Portfolio.Api.Models.CmsPage", b =>
@@ -662,6 +567,49 @@ namespace Portfolio.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MailSettings");
+                });
+
+            modelBuilder.Entity("Portfolio.Api.Models.MediaFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Alt")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("OriginalName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MediaFiles");
                 });
 
             modelBuilder.Entity("Portfolio.Api.Models.MenuItem", b =>

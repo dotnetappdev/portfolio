@@ -1,5 +1,5 @@
  
 cd src/Portfolio.Api
-dotnet ef migrations add FirstMigration6 --output-dir Data/Migrations
+dotnet ef migrations add FirstMigration2 --output-dir Data/Migrations
  
 dotnet ef database update

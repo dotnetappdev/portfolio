@@ -299,6 +299,38 @@ try
             logger.LogInformation("API seed complete. Admin account: {Email}", adminEmail);
         }
 
+        // Upsert blog posts from BlogPostSeedData — insert new, update content of existing.
+        // Look up by Slug (not Id) so we never attempt to INSERT an explicit value into
+        // the IDENTITY column, which SQL Server rejects when IDENTITY_INSERT is OFF.
+        var seedPosts = BlogPostSeedData.GetAll();
+        foreach (var seed in seedPosts)
+        {
+            var existing = await context.BlogPosts.FirstOrDefaultAsync(b => b.Slug == seed.Slug);
+            if (existing is null)
+            {
+                seed.Id = 0; // let SQL Server assign the identity value
+                context.BlogPosts.Add(seed);
+            }
+            else
+            {
+                existing.Title           = seed.Title;
+                existing.Slug            = seed.Slug;
+                existing.Summary         = seed.Summary;
+                existing.Category        = seed.Category;
+                existing.Tags            = seed.Tags;
+                existing.Body            = seed.Body;
+                existing.FeaturedImage   = seed.FeaturedImage;
+                existing.MetaTitle       = seed.MetaTitle;
+                existing.MetaDescription = seed.MetaDescription;
+                existing.ReadMinutes     = seed.ReadMinutes;
+                existing.PublishedDate   = seed.PublishedDate;
+                // IsPublished is intentionally NOT overwritten so CMS publish/unpublish
+                // actions made via the admin portal are preserved across restarts.
+            }
+        }
+        await context.SaveChangesAsync();
+        logger.LogInformation("Blog post seed complete. {Count} posts processed.", seedPosts.Count);
+
         // Seed initial MailSettings from appsettings if not yet configured in DB.
         if (!await context.MailSettings.AnyAsync())
         {

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"d:/sasproducts/shutdown/Shutdown/Shutdown/Shutdown/Components/App.razor\":*)",
+      "Bash(\"d:/sasproducts/shutdown/Shutdown/Shutdown/Shutdown/Components/Routes.razor\":*)",
+      "Bash(\"d:/sasproducts/shutdown/Shutdown/Shutdown/Shutdown/Components/_Imports.razor\":*)",
+      "Bash(\"d:/sasproducts/shutdown/Shutdown/Shutdown/Shutdown/MainPage.xaml\":*)",
+      "Bash(dotnet --version dotnet workload list)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet build:*)",
+       "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "Grep",
+      "Glob",
+      "LS",
+      "MultiEdit",
+      "NotebookRead",
+      "NotebookEdit",
+      "TodoRead",
+      "TodoWrite",
+      "WebSearch"
+    ]
+  }
+}

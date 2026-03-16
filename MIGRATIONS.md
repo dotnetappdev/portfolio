@@ -133,7 +133,7 @@ The admin account credentials are read from configuration:
 
 | Key | Default |
 |---|---|
-| `DefaultAdmin:Email` | `admin@portfolio.com` |
+| `DefaultAdmin:Email` | `admin@portfolio.dotnetappdevni.com` |
 | `DefaultAdmin:Password` | `Admin@123456!` |
 
 Override these via environment variable, Docker env, or a `.env` file before first run.

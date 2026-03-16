@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
-	  
-
 	  <ImplicitUsings>enable</ImplicitUsings>
     <!-- OutOfProcess runs the app on Kestrel outside of IIS/IIS Express.
          This avoids HTTP 500.30 start-up failures on Azure App Service

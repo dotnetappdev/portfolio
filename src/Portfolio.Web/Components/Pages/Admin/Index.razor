@@ -786,7 +786,18 @@
                         </MudCardHeader>
                         <MudCardContent>
                             <!-- Status filter tabs -->
-                            <MudStack Row="true" Spacing="1" Class="mb-3">
+                            <!-- Search bar -->
+                            <MudTextField @bind-Value="_postSearchQuery"
+                                          Placeholder="Search posts by title, category or tags…"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Clearable="true"
+                                          Class="mb-3" />
+
+                            <!-- Status filter chips -->
+                            <MudStack Row="true" Spacing="1" Class="mb-2" Style="flex-wrap:wrap;">
                                 @foreach (var label in new[] { "All", "Published", "Drafts" })
                                 {
                                     var count = label switch {
@@ -802,25 +813,60 @@
                                 }
                             </MudStack>
 
+                            <!-- Category quick-filter chips -->
+                            @{
+                                var categories = _blogPosts?
+                                    .Select(p => p.Category)
+                                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                                    .Distinct()
+                                    .OrderBy(c => c)
+                                    .ToList() ?? [];
+                            }
+                            @if (categories.Count > 0)
+                            {
+                                <MudStack Row="true" Spacing="1" Class="mb-3" Style="flex-wrap:wrap;">
+                                    @foreach (var cat in categories)
+                                    {
+                                        var isActive = _postStatusFilter == "cat:" + cat;
+                                        <MudChip T="string" Size="Size.Small"
+                                                 OnClick="@(() => _postStatusFilter = isActive ? "All" : "cat:" + cat)"
+                                                 Color="@(isActive ? Color.Secondary : Color.Default)"
+                                                 Variant="@(isActive ? Variant.Filled : Variant.Outlined)">
+                                            @cat
+                                        </MudChip>
+                                    }
+                                </MudStack>
+                            }
+
                             @if (_blogPosts == null)
                             {
                                 <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
                             }
                             else
                             {
-                                var filtered = _postStatusFilter switch {
-                                    "Published" => _blogPosts.Where(p => p.IsPublished).ToList(),
-                                    "Drafts"    => _blogPosts.Where(p => !p.IsPublished).ToList(),
-                                    _           => _blogPosts
+                                IEnumerable<Portfolio.Shared.Models.BlogPostDto> filtered = _postStatusFilter switch {
+                                    "Published"                                 => _blogPosts.Where(p => p.IsPublished),
+                                    "Drafts"                                    => _blogPosts.Where(p => !p.IsPublished),
+                                    var s when s.StartsWith("cat:")             => _blogPosts.Where(p => p.Category == s[4..]),
+                                    _                                           => _blogPosts
                                 };
+                                if (!string.IsNullOrWhiteSpace(_postSearchQuery))
+                                {
+                                    var q = _postSearchQuery.Trim().ToLowerInvariant();
+                                    filtered = filtered.Where(p =>
+                                        p.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                                        p.Category.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                                        (p.Tags ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase));
+                                }
+                                var filteredList = filtered.ToList();
 
-                                @if (filtered.Count == 0)
+                                @if (filteredList.Count == 0)
                                 {
                                     <MudText Color="Color.Secondary" Class="pa-4">No posts in this view.</MudText>
                                 }
                                 else
                                 {
-                                     <MudTable Items="@filtered" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm"
+                                     <MudTable Items="@filteredList" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm"
                                                       RowsPerPage="10">
                                         <HeaderContent>
                                             <MudTh>Title</MudTh>
@@ -881,6 +927,10 @@
                                                                    Size="Size.Small" Color="Color.Secondary"
                                                                    OnClick="@(() => TogglePublishPost(context))"
                                                                    aria-label="@(context.IsPublished ? "Unpublish" : "Publish")" />
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                                                                   Size="Size.Small" Color="Color.Default"
+                                                                   OnClick="@(() => DuplicatePost(context))"
+                                                                   aria-label="Duplicate post" />
                                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                                    Size="Size.Small" Color="Color.Error"
                                                                    OnClick="@(() => DeletePost(context.Id))"
@@ -989,11 +1039,22 @@
                             </MudStack>
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                                       OnClick="@SavePost" Disabled="@_savingPost"
-                                       StartIcon="@Icons.Material.Filled.Save">
-                                @(_savingPost ? "Saving…" : (_editingPost == null ? (_postIsPublished ? "Publish" : "Save Draft") : "Update"))
-                            </MudButton>
+                            <MudStack Style="width:100%;" Spacing="1">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                           OnClick="@SavePost" Disabled="@_savingPost"
+                                           StartIcon="@Icons.Material.Filled.Save">
+                                    @(_savingPost ? "Saving…" : (_editingPost == null ? (_postIsPublished ? "Publish" : "Save Draft") : "Update"))
+                                </MudButton>
+                                @if (_editingPost != null && _editingPost.IsPublished)
+                                {
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Default" FullWidth="true"
+                                               Href="@($"/blog/{_editingPost.Slug}")" Target="_blank"
+                                               StartIcon="@Icons.Material.Filled.OpenInNew"
+                                               Size="Size.Small">
+                                        View Post
+                                    </MudButton>
+                                }
+                            </MudStack>
                         </MudCardActions>
                     </MudCard>
 
@@ -2639,6 +2700,7 @@
     private bool _savingPost;
     private bool _postShowEditor;
     private string _postStatusFilter = "All";
+    private string _postSearchQuery  = string.Empty;
     private List<Portfolio.Shared.Models.BlogPostDto>? _blogPosts;
     private Portfolio.Shared.Models.BlogPostDto? _editingPost;
     private RichTextEditor _postBodyEditor = null!;
@@ -2727,6 +2789,7 @@
         _postTags            = string.Empty;
         _postReadMinutes     = 5;
         _postIsPublished     = true;
+        _postSearchQuery     = string.Empty;
         _postPublishedDateStr   = DateTime.Today.ToString("yyyy-MM-dd");
         _postFeaturedImage   = null;
         _postGitHubUrl       = null;
@@ -2822,6 +2885,34 @@
         await BlogService.DeleteAsync(id, token ?? string.Empty);
         _blogPosts = await BlogService.GetAllForAdminAsync(token ?? string.Empty);
         Snackbar.Add("Blog post deleted.", Severity.Info);
+    }
+
+    private async Task DuplicatePost(Portfolio.Shared.Models.BlogPostDto post)
+    {
+        var copy = new Portfolio.Shared.Models.BlogPostDto
+        {
+            Title           = post.Title + " (Copy)",
+            Slug            = post.Slug + "-copy-" + DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            Summary         = post.Summary,
+            Category        = post.Category,
+            Tags            = post.Tags,
+            Body            = post.Body,
+            ReadMinutes     = post.ReadMinutes,
+            FeaturedImage   = post.FeaturedImage,
+            GitHubUrl       = post.GitHubUrl,
+            GalleryImages   = post.GalleryImages,
+            MediaItemsJson  = post.MediaItemsJson,
+            MetaTitle       = post.MetaTitle,
+            MetaDescription = post.MetaDescription,
+            OgImage         = post.OgImage,
+            CanonicalUrl    = post.CanonicalUrl,
+            IsPublished     = false,
+            PublishedDate   = DateTime.UtcNow,
+        };
+        var token = await GetAdminTokenAsync();
+        await BlogService.CreateAsync(copy, token ?? string.Empty);
+        _blogPosts = await BlogService.GetAllForAdminAsync(token ?? string.Empty);
+        Snackbar.Add($"Duplicated as draft: \"{copy.Title}\"", Severity.Success);
     }
 
     private Color GetCategoryColor(string category) => category switch
