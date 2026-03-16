@@ -223,6 +223,52 @@ public class PortfolioApiAuthService(
         }
     }
 
+    /// <summary>Sends a password-reset email via the API (no auth required).</summary>
+    public async Task<(bool Success, string? Error)> ForgotPasswordAsync(ForgotPasswordDto dto)
+    {
+        try
+        {
+            var client   = GetClient();
+            var response = await client.PostAsJsonAsync("api/auth/forgot-password", dto);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Forgot-password API call failed");
+            return (false, ex.Message);
+        }
+    }
+
+    /// <summary>Resets a user's password using the Identity token from the reset email.</summary>
+    public async Task<(bool Success, string? Error)> ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        try
+        {
+            var client   = GetClient();
+            var response = await client.PostAsJsonAsync("api/auth/reset-password", dto);
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var body = await response.Content.ReadAsStringAsync();
+            // Try to parse a friendly message from the JSON body
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                if (doc.RootElement.TryGetProperty("message", out var msg))
+                    return (false, msg.GetString());
+            }
+            catch { }
+            return (false, body);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Reset-password API call failed");
+            return (false, ex.Message);
+        }
+    }
+
     /// <summary>Registers a new user account via the public API endpoint.</summary>
     public async Task<(bool Success, string? Error)> RegisterAsync(RegisterDto dto)
     {

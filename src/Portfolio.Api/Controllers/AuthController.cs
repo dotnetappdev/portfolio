@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Portfolio.Api.Data;
 using Portfolio.Api.Models;
+using Portfolio.Api.Services;
 using Portfolio.Shared.Models;
 
 namespace Portfolio.Api.Controllers;
@@ -17,11 +19,19 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
+    private readonly IEmailService _emailService;
 
-    public AuthController(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    public AuthController(
+        UserManager<ApplicationUser> userManager,
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        IEmailService emailService)
     {
-        _userManager = userManager;
+        _userManager  = userManager;
         _configuration = configuration;
+        _context      = context;
+        _emailService = emailService;
     }
 
     // ── Login ────────────────────────────────────────────────────────────────
@@ -149,6 +159,71 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
 
         return Ok(new { message = "Registration successful", email = user.Email });
+    }
+
+    // ── Forgot / Reset Password ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Generates an Identity password-reset token and emails a link to the user.
+    /// Always returns 200 to avoid leaking whether the address is registered.
+    /// </summary>
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+        if (user != null)
+        {
+            var token    = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var base64   = Convert.ToBase64String(Encoding.UTF8.GetBytes(token));
+            var baseUrl  = dto.CallbackBaseUrl.TrimEnd('/');
+            var resetUrl = $"{baseUrl}/reset-password?email={Uri.EscapeDataString(dto.Email)}&token={Uri.EscapeDataString(base64)}";
+
+            var mailSettings = await _context.MailSettings.FirstOrDefaultAsync();
+            if (mailSettings != null && mailSettings.IsEnabled)
+            {
+                var subject = "Reset your password";
+                var body    = $"""
+                    <p>Hi,</p>
+                    <p>You requested a password reset for your portfolio admin account.</p>
+                    <p><a href="{resetUrl}">Click here to reset your password</a></p>
+                    <p>This link expires after 1 hour. If you did not request this, you can safely ignore this email.</p>
+                    """;
+                await _emailService.SendAsync(mailSettings, dto.Email, subject, body, isHtml: true);
+            }
+        }
+
+        return Ok(new { message = "If that email is registered you will receive a reset link shortly." });
+    }
+
+    /// <summary>Validates the Identity reset token and sets the new password.</summary>
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        if (dto.NewPassword != dto.ConfirmPassword)
+            return BadRequest(new { message = "Passwords do not match." });
+
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return BadRequest(new { message = "Invalid request." });
+
+        string token;
+        try
+        {
+            token = Encoding.UTF8.GetString(Convert.FromBase64String(dto.Token));
+        }
+        catch
+        {
+            return BadRequest(new { message = "Invalid or malformed token." });
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+            return BadRequest(new { message = errors });
+        }
+
+        return Ok(new { message = "Password has been reset successfully." });
     }
 
     // ── User CRUD ────────────────────────────────────────────────────────────
